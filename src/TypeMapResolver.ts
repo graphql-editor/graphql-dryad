@@ -1,7 +1,11 @@
-import { TypeDefinition, ParserField, Utils, Parser } from 'graphql-zeus';
+import { TypeDefinition, ParserField, Utils, Parser, OperationType } from 'graphql-zeus';
 
 export interface TypeMap {
   [x: string]: Record<string, string>;
+}
+export interface GraphQLInfo {
+  typeMap: TypeMap;
+  root: { [OperationType.query]: string; [OperationType.mutation]?: string; [OperationType.subscription]?: string };
 }
 
 const resolveTypeMapType = (i: ParserField) => {
@@ -21,17 +25,31 @@ const resolveTypeMapType = (i: ParserField) => {
     }, {}),
   };
 };
-export const getTypeMap = async (url: string) => {
+
+export const getGraphQL = async (url: string): Promise<GraphQLInfo> => {
   const schemaSting = await Utils.getFromUrl(url);
   const schemaTree = Parser.parse(schemaSting);
-  return schemaTree.nodes
-    .map(resolveTypeMapType)
-    .filter((b) => !!b)
-    .reduce((a, b) => {
-      a = {
-        ...a,
-        ...b,
-      };
-      return a;
-    }, {});
+  return {
+    typeMap:
+      schemaTree.nodes
+        .map(resolveTypeMapType)
+        .filter((b) => !!b)
+        .reduce((a, b) => {
+          a = {
+            ...a,
+            ...b,
+          };
+          return a;
+        }, {}) || {},
+    root: {
+      [OperationType.query]: schemaTree.nodes.find((n) => n.type.operations?.find((o) => o === OperationType.query))!
+        .name,
+      [OperationType.mutation]: schemaTree.nodes.find((n) =>
+        n.type.operations?.find((o) => o === OperationType.mutation),
+      )?.name,
+      [OperationType.subscription]: schemaTree.nodes.find((n) =>
+        n.type.operations?.find((o) => o === OperationType.subscription),
+      )?.name,
+    },
+  };
 };

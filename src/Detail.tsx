@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { TypeMap, getTypeMap } from './TypeMapResolver';
+import { TypeMap, getGraphQL, GraphQLInfo } from './TypeMapResolver';
+import { OperationType } from 'graphql-zeus';
 export const DryadElement = ({
   // Replace with dryad options later
   dryad,
@@ -104,28 +105,71 @@ export const DryadGQL = ({
   url: string;
   withLabels?: boolean;
 }) => {
-  const [response, setResponse] = useState(null);
-  const [typemap, setTypemap] = useState<TypeMap>();
-
+  const [response, setResponse] = useState(undefined);
+  const [isFetching, setIsFetching] = useState<boolean>(false);
+  const [graphqlInfo, setGraphQLInfo] = useState<GraphQLInfo>();
+  const [operationType, setOperationType] = useState<OperationType>(OperationType.query);
+  const [operation, setOperation] = useState<string>();
   useEffect(() => {
-    fetch(url, {
-      body: JSON.stringify({ query: gql }),
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...headers,
-      },
-    })
-      .then((r) => r.json())
-      .then((r) => setResponse(r.data));
+    setIsFetching(true);
+    setResponse(undefined);
+    const parts = gql.split('{').flatMap((g) => g.split('}'));
+    let operationType = OperationType.query;
+    for (const part of parts) {
+      if (part.indexOf(OperationType.mutation) !== -1) {
+        operationType = OperationType.mutation;
+        break;
+      }
+      if (part.indexOf(OperationType.subscription) !== -1) {
+        operationType = OperationType.subscription;
+        break;
+      }
+    }
+    setOperationType(operationType);
+    //IIFE
+    (async () => {
+      try {
+        const response = await (
+          await fetch(url, {
+            body: JSON.stringify({ query: gql }),
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              ...headers,
+            },
+          })
+        ).json();
+        if (response.errors) {
+          throw new Error((response.errors as any).map((e: any) => e.message).join('\n'));
+        }
+        setResponse(response.data);
+        setIsFetching(false);
+      } catch (error) {
+        console.error(error);
+      }
+    })();
   }, [gql]);
   useEffect(() => {
     (async () => {
-      setTypemap(await getTypeMap(url));
+      setGraphQLInfo(await getGraphQL(url));
     })();
   }, []);
-  if (!response || !typemap) {
+  useEffect(() => {
+    if (graphqlInfo && graphqlInfo.typeMap && operationType) {
+      const ot = graphqlInfo.root[operationType];
+      setOperation(ot);
+    }
+  }, [operationType, JSON.stringify(graphqlInfo || {})]);
+  if (isFetching) {
+    return <>Fetching data...</>;
+  }
+  if (!response || !graphqlInfo?.typeMap || !operation) {
     return <>{children}</>;
   }
-  return <DryadElement withLabels={withLabels} typemap={typemap} prefix={'Root'} o={response} dryad={dryad} />;
+  if (response === null) {
+    return <>response is null</>;
+  }
+  return (
+    <DryadElement withLabels={withLabels} typemap={graphqlInfo.typeMap} prefix={operation} o={response} dryad={dryad} />
+  );
 };
