@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "sourceMap": true,
+    "target": "es6",
+    "module": "commonjs",
+    "jsx": "react",
+    "moduleResolution": "node",
+    "experimentalDecorators": true,
+    "skipLibCheck": true,
+    "declaration": true,
+    "incremental": true,
+    "removeComments": true,
+    "noUnusedLocals": true,
+    "strictNullChecks": true,
+    "esModuleInterop": true,
+    "strict": true,
+    "outDir": "./lib",
+    "lib": ["es6", "es7", "esnext", "dom"],
+    "rootDir": "./src",
+    "baseUrl": "./src/"
+  },
+  "exclude": ["lib", "node_modules", "docs", "__tests__", "generated", "examples", "sandbox"]
+}

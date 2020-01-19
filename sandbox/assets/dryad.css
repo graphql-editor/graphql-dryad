@@ -1,0 +1,75 @@
+
+    html,
+    body,
+    #root,
+    #routing {
+      height: 100%;
+      width: 100%;
+      margin: 0;
+      overflow: auto;
+      font-family: 'Fira Mono';
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+    .Title{
+      font-size: 24px;
+      text-align: center;
+    }
+    .Main{
+      max-width: 1024px;
+      margin:auto;
+      padding: 30px;
+      height: 100%;
+    }
+    .d-object{
+      margin-left: 10px;
+    }
+    .d-field{
+      font-weight: 100;
+    }
+    .d-label{
+      font-weight: 900;
+      margin-right: 10px;
+    }
+    .d-list{
+      column-count: 3;
+    }
+    .Card.d-object{
+      padding: 30px;
+      box-shadow: #00000011 1px 4px 10px;
+      margin-bottom: 20px;
+      display:grid;
+      grid-template-areas: 
+        "name"
+        "Attack"
+        "Defense"
+        "skills"
+        "attack";
+      break-inside: avoid;
+    }
+    .Card-name{
+      grid-area: name;
+      margin-bottom: 25px;
+      font-weight: bolder;
+      font-size: 14;
+    }
+    .Card-skills{
+      grid-area: skills;
+    }
+    .Card-Attack{
+      grid-area: Attack;
+    }
+    .Card-Defense{
+      grid-area: Defense;
+    }
+    .Card-attack{
+      grid-area: attack;
+    }
+    .edit {
+      padding: 12px 24px;
+      background:#AE0;
+      display: inline-block;
+      cursor: pointer
+  }
