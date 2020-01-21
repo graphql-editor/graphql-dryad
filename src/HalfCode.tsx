@@ -7,6 +7,15 @@ import { GqlSpecialLanguage } from './GqlSpecialLanguage';
 import { GqlSpecialTheme } from './GqlSpecialTheme';
 import { GqlSuggestions } from './GqlSuggestions';
 import { DryadGQL } from './Detail';
+import { Tabs } from './components/Tabs';
+
+export interface HalfCodeProps {
+  initialCss?: string;
+  initialGql?: string;
+  schemaURL: string;
+  schema?: string;
+}
+
 enum Editors {
   css = 'css',
   graphql = 'graphql',
@@ -16,14 +25,17 @@ monaco.languages.register({ id: 'gqlSpecial' });
 // Register a tokens provider for the language
 monaco.languages.setMonarchTokensProvider('gqlSpecial', GqlSpecialLanguage);
 monaco.editor.defineTheme('gqlSpecialTheme', GqlSpecialTheme);
-export const HalfCode = (props: { schemaURL: string }) => {
+
+export const HalfCode = ({ initialCss = '', initialGql = '', schemaURL, schema }: HalfCodeProps) => {
   const cssRef = useRef<HTMLDivElement>(null);
   const gqlRef = useRef<HTMLDivElement>(null);
+
   const [editor, setEditor] = useState<Editors>(Editors.graphql);
-  const [css, setCss] = useState('');
-  const [gql, setGql] = useState('');
+  const [css, setCss] = useState(initialCss);
+  const [gql, setGql] = useState(initialGql);
   const [monacoCss, setMonacoCss] = useState<monaco.editor.IStandaloneCodeEditor>();
   const [monacoGql, setMonacoGql] = useState<monaco.editor.IStandaloneCodeEditor>();
+
   useEffect(() => {
     if (cssRef.current?.style.display !== 'none') {
       if (monacoGql) {
@@ -45,9 +57,14 @@ export const HalfCode = (props: { schemaURL: string }) => {
         monacoCss.dispose();
         setMonacoCss(undefined);
       }
-      Utils.getFromUrl(props.schemaURL).then((schema) => {
+      if (schema) {
         monaco.languages.registerCompletionItemProvider('gqlSpecial', GqlSuggestions(schema));
-      });
+      }
+      if (!schema) {
+        Utils.getFromUrl(schemaURL).then((fetchedSchema) => {
+          monaco.languages.registerCompletionItemProvider('gqlSpecial', GqlSuggestions(fetchedSchema));
+        });
+      }
       const m = monaco.editor.create(gqlRef.current!, {
         language: 'gqlSpecial',
         value: gql,
@@ -62,6 +79,7 @@ export const HalfCode = (props: { schemaURL: string }) => {
       setMonacoGql(m);
     }
   }, [editor]);
+
   return (
     <>
       <div style={{ height: `100%`, width: `100%`, display: 'flex', flexFlow: 'row nowrap', alignItems: 'stretch' }}>
@@ -78,32 +96,19 @@ export const HalfCode = (props: { schemaURL: string }) => {
           maxWidth="100%"
           minWidth="1"
         >
-          <div style={{ height: 30, display: 'flex', alignItems: 'center' }}>
-            <a
-              style={{
-                marginRight: 5,
-                cursor: 'pointer',
-                background: Colors.grey[10],
-                padding: `4px 8px`,
-                fontSize: 10,
-              }}
-              onClick={() => setEditor(Editors.css)}
-            >
-              CSS
-            </a>
-            <a
-              style={{
-                marginRight: 5,
-                cursor: 'pointer',
-                background: Colors.grey[10],
-                padding: `4px 8px`,
-                fontSize: 10,
-              }}
-              onClick={() => setEditor(Editors.graphql)}
-            >
-              GQL
-            </a>
-          </div>
+          <Tabs
+            active={editor}
+            tabs={[
+              {
+                name: Editors.graphql,
+                onClick: () => setEditor(Editors.graphql),
+              },
+              {
+                name: Editors.css,
+                onClick: () => setEditor(Editors.css),
+              },
+            ]}
+          />
           <div
             style={{ height: `calc(100% - 30px)`, display: editor === Editors.css ? 'block' : 'none' }}
             ref={cssRef}
@@ -138,10 +143,30 @@ export const HalfCode = (props: { schemaURL: string }) => {
           )}
         </Resizable>
 
-        <div className="Main" style={{ flex: 1, overflowY: 'auto' }}>
-          <DryadGQL url="https://faker.graphqleditor.com/a-team/olympus/graphql" gql={gql}>
-            wait for objects to load
-          </DryadGQL>
+        <div
+          className="Place"
+          style={{
+            flex: 1,
+            background: Colors.grey[7],
+            padding: 40,
+            display: 'flex',
+            alignItems: 'stretch',
+            justifyContent: 'stretch',
+          }}
+        >
+          <div
+            style={{
+              flex: 1,
+              overflowY: 'auto',
+              background: Colors.grey[0],
+              boxShadow: `${Colors.grey[10]}99 3px 5px 4px`,
+              display: 'flex',
+            }}
+          >
+            <DryadGQL url={schemaURL} gql={gql}>
+              Type Gql Query to see data here
+            </DryadGQL>
+          </div>
         </div>
       </div>
       <style>{css}</style>

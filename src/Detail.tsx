@@ -1,16 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, FunctionComponent } from 'react';
 import { TypeMap, getGraphQL, GraphQLInfo } from './TypeMapResolver';
 import { OperationType } from 'graphql-zeus';
-export const DryadElement = ({
-  // Replace with dryad options later
-  dryad,
-  fieldName = '',
-  o,
-  parent,
-  prefix,
-  typemap,
-  withLabels,
-}: {
+export const DryadElement = (props: {
   dryad?: any;
   fieldName?: string;
   o: any;
@@ -19,6 +10,17 @@ export const DryadElement = ({
   typemap: TypeMap;
   withLabels?: boolean;
 }) => {
+  const {
+    // Replace with dryad options later
+    dryad,
+    fieldName = '',
+    o,
+    parent,
+    prefix,
+    typemap,
+    withLabels,
+  } = props;
+
   const className = [parent, fieldName].filter((d) => !!d).join('-');
   if (dryad && dryad.render && parent && fieldName) {
     const dr = dryad.render as any;
@@ -89,6 +91,20 @@ export const DryadElement = ({
   );
 };
 
+const Placehold: FunctionComponent = ({ children }) => (
+  <div
+    style={{
+      flex: 1,
+      alignSelf: 'stretch',
+      alignItems: 'center',
+      justifyContent: 'center',
+      display: 'flex',
+    }}
+  >
+    {children}
+  </div>
+);
+
 export const DryadGQL = ({
   children,
   dryad,
@@ -110,9 +126,13 @@ export const DryadGQL = ({
   const [graphqlInfo, setGraphQLInfo] = useState<GraphQLInfo>();
   const [operationType, setOperationType] = useState<OperationType>(OperationType.query);
   const [operation, setOperation] = useState<string>();
+
   useEffect(() => {
-    setIsFetching(true);
     setResponse(undefined);
+    if (gql.length === 0) {
+      return;
+    }
+    setIsFetching(true);
     const parts = gql.split('{').flatMap((g) => g.split('}'));
     let operationType = OperationType.query;
     for (const part of parts) {
@@ -149,25 +169,28 @@ export const DryadGQL = ({
       }
     })();
   }, [gql]);
+
   useEffect(() => {
     (async () => {
       setGraphQLInfo(await getGraphQL(url));
     })();
   }, []);
+
   useEffect(() => {
     if (graphqlInfo && graphqlInfo.typeMap && operationType) {
       const ot = graphqlInfo.root[operationType];
       setOperation(ot);
     }
   }, [operationType, JSON.stringify(graphqlInfo || {})]);
+
   if (isFetching) {
-    return <>Fetching data...</>;
+    return <Placehold>Fetching data...</Placehold>;
   }
   if (!response || !graphqlInfo?.typeMap || !operation) {
-    return <>{children}</>;
+    return <Placehold>{children}</Placehold>;
   }
   if (response === null) {
-    return <>response is null</>;
+    return <Placehold>response is null</Placehold>;
   }
   return (
     <DryadElement withLabels={withLabels} typemap={graphqlInfo.typeMap} prefix={operation} o={response} dryad={dryad} />
