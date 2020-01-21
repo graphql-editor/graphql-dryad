@@ -99,6 +99,7 @@ const Placehold: FunctionComponent = ({ children }) => (
       alignItems: 'center',
       justifyContent: 'center',
       display: 'flex',
+      padding: 50,
     }}
   >
     {children}

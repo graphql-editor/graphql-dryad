@@ -25,7 +25,11 @@
   "dependencies": {
     "graphql-language-service-interface": "^2.3.3",
     "graphql-zeus": "^2.5.2",
-    "re-resizable": "^6.1.1"
+    "install": "^0.13.0",
+    "npm": "^6.13.6",
+    "re-resizable": "^6.1.1",
+    "react-feather": "^2.0.3",
+    "react-feather-icons": "0.0.1"
   },
   "peerDependencies": {
     "monaco-editor": "^0.18.1",

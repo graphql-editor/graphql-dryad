@@ -3,7 +3,7 @@ import * as monaco from 'monaco-editor';
 import { Colors } from './Colors';
 import { Resizable } from 're-resizable';
 import { Utils } from 'graphql-zeus';
-import { GqlSpecialLanguage } from './GqlSpecialLanguage';
+import { GqlSpecialLanguage, GqlLanguageConfiguration } from './GqlSpecialLanguage';
 import { GqlSpecialTheme } from './GqlSpecialTheme';
 import { GqlSuggestions } from './GqlSuggestions';
 import { DryadGQL } from './Detail';
@@ -21,7 +21,7 @@ enum Editors {
   graphql = 'graphql',
 }
 monaco.languages.register({ id: 'gqlSpecial' });
-
+monaco.languages.setLanguageConfiguration('gqlSpecial', GqlLanguageConfiguration);
 // Register a tokens provider for the language
 monaco.languages.setMonarchTokensProvider('gqlSpecial', GqlSpecialLanguage);
 monaco.editor.defineTheme('gqlSpecialTheme', GqlSpecialTheme);
@@ -31,11 +31,17 @@ export const HalfCode = ({ initialCss = '', initialGql = '', schemaURL, schema }
   const gqlRef = useRef<HTMLDivElement>(null);
 
   const [editor, setEditor] = useState<Editors>(Editors.graphql);
+  const [schemaString, setSchema] = useState(schema);
   const [css, setCss] = useState(initialCss);
   const [gql, setGql] = useState(initialGql);
   const [monacoCss, setMonacoCss] = useState<monaco.editor.IStandaloneCodeEditor>();
   const [monacoGql, setMonacoGql] = useState<monaco.editor.IStandaloneCodeEditor>();
 
+  useEffect(() => {
+    if (schemaString) {
+      monaco.languages.registerCompletionItemProvider('gqlSpecial', GqlSuggestions(schemaString));
+    }
+  }, [schemaString]);
   useEffect(() => {
     if (cssRef.current?.style.display !== 'none') {
       if (monacoGql) {
@@ -45,6 +51,13 @@ export const HalfCode = ({ initialCss = '', initialGql = '', schemaURL, schema }
       const m = monaco.editor.create(cssRef.current!, {
         language: 'css',
         value: css,
+        formatOnType: true,
+        suggestOnTriggerCharacters: true,
+        quickSuggestions: true,
+        fixedOverflowWidgets: true,
+        parameterHints: {
+          enabled: true,
+        },
         theme: 'vs-dark',
       });
       m.onDidChangeModelContent((e) => {
@@ -57,14 +70,6 @@ export const HalfCode = ({ initialCss = '', initialGql = '', schemaURL, schema }
         monacoCss.dispose();
         setMonacoCss(undefined);
       }
-      if (schema) {
-        monaco.languages.registerCompletionItemProvider('gqlSpecial', GqlSuggestions(schema));
-      }
-      if (!schema) {
-        Utils.getFromUrl(schemaURL).then((fetchedSchema) => {
-          monaco.languages.registerCompletionItemProvider('gqlSpecial', GqlSuggestions(fetchedSchema));
-        });
-      }
       const m = monaco.editor.create(gqlRef.current!, {
         language: 'gqlSpecial',
         value: gql,
@@ -74,7 +79,8 @@ export const HalfCode = ({ initialCss = '', initialGql = '', schemaURL, schema }
         console.log('Ended');
       });
       m.onDidBlurEditorText(() => {
-        setGql(m.getModel()?.getValue() || '');
+        const value = m.getModel()?.getValue();
+        setGql(value || '');
       });
       setMonacoGql(m);
     }
@@ -88,10 +94,26 @@ export const HalfCode = ({ initialCss = '', initialGql = '', schemaURL, schema }
             width: 340,
             height: '100%',
           }}
-          style={{ background: '#333', color: '#aaa' }}
+          style={{ background: '#333', color: '#aaa', overflowY: 'hidden' }}
           onResize={() => {
             const currentEditor = monacoCss || monacoGql;
             currentEditor?.layout();
+          }}
+          enable={{
+            bottom: false,
+            bottomLeft: false,
+            bottomRight: false,
+            left: false,
+            right: true,
+            top: false,
+            topLeft: false,
+            topRight: false,
+          }}
+          handleStyles={{
+            right: {
+              width: 5,
+              right: 0,
+            },
           }}
           maxWidth="100%"
           minWidth="1"
@@ -117,6 +139,26 @@ export const HalfCode = ({ initialCss = '', initialGql = '', schemaURL, schema }
             style={{ height: `calc(100% - 30px)`, display: editor === Editors.graphql ? 'block' : 'none' }}
             ref={gqlRef}
           ></div>
+          <style>
+            {`.editor-widget{
+              position:fixed !important;
+            }
+            .context-view{
+              position:fixed !important;
+            }
+            `}
+          </style>
+        </Resizable>
+
+        <div
+          className="Place"
+          style={{
+            flex: 1,
+            background: Colors.grey[7],
+            padding: 40,
+            overflowY: 'auto',
+          }}
+        >
           {editor === Editors.graphql && (
             <div
               style={{
@@ -125,12 +167,13 @@ export const HalfCode = ({ initialCss = '', initialGql = '', schemaURL, schema }
                 height: 40,
                 width: 40,
                 justifyContent: 'center',
-                right: -15,
+                marginLeft: -60,
                 display: 'flex',
                 alignItems: 'center',
                 background: Colors.blue[3],
                 color: Colors.grey[0],
                 cursor: 'pointer',
+                zIndex: 2,
               }}
               onClick={() => {
                 const spaces = Math.floor(Math.random() * 200);
@@ -141,32 +184,18 @@ export const HalfCode = ({ initialCss = '', initialGql = '', schemaURL, schema }
               R
             </div>
           )}
-        </Resizable>
-
-        <div
-          className="Place"
-          style={{
-            flex: 1,
-            background: Colors.grey[7],
-            padding: 40,
-            display: 'flex',
-            alignItems: 'stretch',
-            justifyContent: 'stretch',
-          }}
-        >
           <div
             style={{
               flex: 1,
-              overflowY: 'auto',
               background: Colors.grey[0],
-              boxShadow: `${Colors.grey[10]}99 3px 5px 4px`,
-              display: 'flex',
+              boxShadow: `${Colors.grey[10]}11 3px 5px 4px`,
             }}
           >
             <DryadGQL url={schemaURL} gql={gql}>
               Type Gql Query to see data here
             </DryadGQL>
           </div>
+          <div style={{ marginBottom: 40 }}></div>
         </div>
       </div>
       <style>{css}</style>

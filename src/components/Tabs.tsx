@@ -17,6 +17,8 @@ export const Tabs: FunctionComponent<TabsProps> = ({ tabs, active }) => {
       style={{
         display: 'flex',
         justifyContent: 'flex-start',
+        height: 30,
+        alignItems: 'center',
       }}
     >
       {tabs.map((t) => (

@@ -15,12 +15,14 @@ const getSuggestions = (props: {
 }): monaco.languages.ProviderResult<monaco.languages.CompletionList> => {
   const graphqlSchema = buildSchema(props.schema);
   const suggestions = getAutocompleteSuggestions(graphqlSchema, props.queryText, props.position);
+
   return {
     suggestions: suggestions.map(
       (ci) =>
         ({
           insertText: ci.label,
           documentation: ci.documentation,
+          detail: ci.detail,
           label: ci.label,
         } as monaco.languages.CompletionItem),
     ),
