@@ -2,16 +2,19 @@ import React, { useRef, useEffect, useState } from 'react';
 import * as monaco from 'monaco-editor';
 import { Colors } from './Colors';
 import { Resizable } from 're-resizable';
-import { Utils } from 'graphql-zeus';
+import { Utils, Parser, TypeDefinition } from 'graphql-zeus';
 import { GqlSpecialLanguage, GqlLanguageConfiguration } from './GqlSpecialLanguage';
 import { GqlSpecialTheme } from './GqlSpecialTheme';
 import { GqlSuggestions } from './GqlSuggestions';
 import { DryadGQL } from './Detail';
-import { Tabs } from './components/Tabs';
+import { R, Tabs } from './components';
+import { CSSSuggestions } from './CssSuggestions';
+import { JSTypings } from './JSTypings';
 
 export interface HalfCodeProps {
   initialCss?: string;
   initialGql?: string;
+  initialJS?: string;
   schemaURL: string;
   schema?: string;
 }
@@ -19,6 +22,7 @@ export interface HalfCodeProps {
 enum Editors {
   css = 'css',
   graphql = 'graphql',
+  js = 'js',
 }
 monaco.languages.register({ id: 'gqlSpecial' });
 monaco.languages.setLanguageConfiguration('gqlSpecial', GqlLanguageConfiguration);
@@ -26,20 +30,48 @@ monaco.languages.setLanguageConfiguration('gqlSpecial', GqlLanguageConfiguration
 monaco.languages.setMonarchTokensProvider('gqlSpecial', GqlSpecialLanguage);
 monaco.editor.defineTheme('gqlSpecialTheme', GqlSpecialTheme);
 
-export const HalfCode = ({ initialCss = '', initialGql = '', schemaURL, schema }: HalfCodeProps) => {
+export const HalfCode = ({
+  initialCss = '',
+  initialGql = '',
+  initialJS = `// CTRL/CMD + space in dryad
+// to write injects in
+// string html templates
+
+dryad = {
+    
+}`,
+  schemaURL,
+  schema,
+}: HalfCodeProps) => {
   const cssRef = useRef<HTMLDivElement>(null);
   const gqlRef = useRef<HTMLDivElement>(null);
+  const jsRef = useRef<HTMLDivElement>(null);
 
   const [editor, setEditor] = useState<Editors>(Editors.graphql);
   const [schemaString, setSchema] = useState(schema);
+
   const [css, setCss] = useState(initialCss);
   const [gql, setGql] = useState(initialGql);
+  const [js, setJs] = useState(initialJS);
+  const [dryad, setDryad] = useState<any>({});
+
   const [monacoCss, setMonacoCss] = useState<monaco.editor.IStandaloneCodeEditor>();
   const [monacoGql, setMonacoGql] = useState<monaco.editor.IStandaloneCodeEditor>();
+  const [monacoJS, setMonacoJS] = useState<monaco.editor.IStandaloneCodeEditor>();
 
   useEffect(() => {
     if (schemaString) {
       monaco.languages.registerCompletionItemProvider('gqlSpecial', GqlSuggestions(schemaString));
+      const graphqlTree = Parser.parse(schemaString);
+      const typings = JSTypings(graphqlTree.nodes);
+      monaco.languages.typescript.javascriptDefaults.addExtraLib(typings);
+      const fields = graphqlTree.nodes.filter(
+        (n) =>
+          n.data?.type === TypeDefinition.ObjectTypeDefinition ||
+          n.data?.type === TypeDefinition.ScalarTypeDefinition ||
+          n.data?.type === TypeDefinition.EnumTypeDefinition,
+      );
+      monaco.languages.registerCompletionItemProvider('css', CSSSuggestions(fields));
     }
   }, [schemaString]);
   useEffect(() => {
@@ -48,12 +80,13 @@ export const HalfCode = ({ initialCss = '', initialGql = '', schemaURL, schema }
         monacoGql.dispose();
         setMonacoGql(undefined);
       }
+      if (monacoJS) {
+        monacoJS.dispose();
+        setMonacoJS(undefined);
+      }
       const m = monaco.editor.create(cssRef.current!, {
         language: 'css',
         value: css,
-        formatOnType: true,
-        suggestOnTriggerCharacters: true,
-        quickSuggestions: true,
         fixedOverflowWidgets: true,
         parameterHints: {
           enabled: true,
@@ -70,6 +103,15 @@ export const HalfCode = ({ initialCss = '', initialGql = '', schemaURL, schema }
         monacoCss.dispose();
         setMonacoCss(undefined);
       }
+      if (monacoJS) {
+        monacoJS.dispose();
+        setMonacoJS(undefined);
+      }
+      if (!schemaString) {
+        Utils.getFromUrl(schemaURL).then((fetchedSchema) => {
+          setSchema(fetchedSchema);
+        });
+      }
       const m = monaco.editor.create(gqlRef.current!, {
         language: 'gqlSpecial',
         value: gql,
@@ -84,6 +126,44 @@ export const HalfCode = ({ initialCss = '', initialGql = '', schemaURL, schema }
       });
       setMonacoGql(m);
     }
+    if (jsRef.current?.style.display !== 'none') {
+      if (monacoCss) {
+        monacoCss.dispose();
+        setMonacoCss(undefined);
+      }
+      if (monacoGql) {
+        monacoGql.dispose();
+        setMonacoGql(undefined);
+      }
+      const m = monaco.editor.create(jsRef.current!, {
+        language: 'javascript',
+        value: js,
+        theme: 'vs-dark',
+      });
+      m.onDidBlurEditorText(() => {
+        const value = m.getModel()?.getValue();
+        console.log(value);
+        if (value) {
+          try {
+            const isMatching = value.match(/(dryad\s?=\s?{)/);
+            if (!isMatching) {
+              throw new Error("Cannot find 'dryad = {'");
+            }
+            const dryadPart = value.replace(/(dryad\s?=\s?{)/, 'const $1');
+            const dryadFunction = new Function([dryadPart, `return dryad`].join('\n'));
+            const dryadResult = dryadFunction();
+            console.log(dryadResult);
+            setDryad({
+              render: dryadResult,
+            });
+          } catch (error) {
+            console.log(error);
+          }
+        }
+        setJs(value || '');
+      });
+      setMonacoJS(m);
+    }
   }, [editor]);
 
   return (
@@ -96,7 +176,7 @@ export const HalfCode = ({ initialCss = '', initialGql = '', schemaURL, schema }
           }}
           style={{ background: '#333', color: '#aaa', overflowY: 'hidden' }}
           onResize={() => {
-            const currentEditor = monacoCss || monacoGql;
+            const currentEditor = monacoCss || monacoGql || monacoJS;
             currentEditor?.layout();
           }}
           enable={{
@@ -129,6 +209,10 @@ export const HalfCode = ({ initialCss = '', initialGql = '', schemaURL, schema }
                 name: Editors.css,
                 onClick: () => setEditor(Editors.css),
               },
+              {
+                name: Editors.js,
+                onClick: () => setEditor(Editors.js),
+              },
             ]}
           />
           <div
@@ -139,12 +223,19 @@ export const HalfCode = ({ initialCss = '', initialGql = '', schemaURL, schema }
             style={{ height: `calc(100% - 30px)`, display: editor === Editors.graphql ? 'block' : 'none' }}
             ref={gqlRef}
           ></div>
+          <div
+            style={{ height: `calc(100% - 30px)`, display: editor === Editors.js ? 'block' : 'none' }}
+            ref={jsRef}
+          ></div>
           <style>
             {`.editor-widget{
               position:fixed !important;
             }
             .context-view{
               position:fixed !important;
+            }
+            .monaco-aria-container{
+              bottom: 0;
             }
             `}
           </style>
@@ -160,29 +251,13 @@ export const HalfCode = ({ initialCss = '', initialGql = '', schemaURL, schema }
           }}
         >
           {editor === Editors.graphql && (
-            <div
-              style={{
-                position: 'absolute',
-                top: 'calc(50% - 20px)',
-                height: 40,
-                width: 40,
-                justifyContent: 'center',
-                marginLeft: -60,
-                display: 'flex',
-                alignItems: 'center',
-                background: Colors.blue[3],
-                color: Colors.grey[0],
-                cursor: 'pointer',
-                zIndex: 2,
-              }}
+            <R
               onClick={() => {
                 const spaces = Math.floor(Math.random() * 200);
                 const spacestring = new Array(spaces).fill(' ').join('');
                 setGql(gql + spacestring);
               }}
-            >
-              R
-            </div>
+            />
           )}
           <div
             style={{
@@ -191,7 +266,7 @@ export const HalfCode = ({ initialCss = '', initialGql = '', schemaURL, schema }
               boxShadow: `${Colors.grey[10]}11 3px 5px 4px`,
             }}
           >
-            <DryadGQL url={schemaURL} gql={gql}>
+            <DryadGQL dryad={dryad} url={schemaURL} gql={gql}>
               Type Gql Query to see data here
             </DryadGQL>
           </div>

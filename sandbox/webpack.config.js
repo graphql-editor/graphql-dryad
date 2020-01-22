@@ -32,7 +32,7 @@ module.exports = {
         options: { configFile: 'sandbox/tsconfig.json' },
       },
       { test: /\.(png|svg)$/, use: 'url-loader?limit=10000' },
-      { test: /\.(jpg|gif|graphql|gql)$/, use: 'file-loader' },
+      { test: /\.(jpg|gif|graphql|gql|ttf)$/, use: 'file-loader' },
       {
         test: /\.css$/i,
         use: ['style-loader', 'css-loader'],
@@ -41,7 +41,7 @@ module.exports = {
   },
   plugins: [
     new MonacoWebpackPlugin({
-      languages: ['css', 'graphql'],
+      languages: ['css', 'graphql', 'javascript', 'typescript'],
     }),
     new HtmlWebpackPlugin({
       template: 'assets/index.html',

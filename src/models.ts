@@ -15,12 +15,18 @@
 //             : never
 //           : never;
 //         className: string;
-//       }) => React.ReactNode;
+//       }) => string;
 //     };
 //   };
 //   inject?: {
 //     [P in keyof PartialObjects['Query']]: (
 //       o: PartialObjects['Query'][P] extends Array<infer R> ? R : PartialObjects['Query'][P],
-//     ) => React.ReactNode;
+//     ) => string;
 //   };
 // }
+
+export interface BuiltInStyle {
+  detail: string;
+  description: string;
+  insertText: string;
+}

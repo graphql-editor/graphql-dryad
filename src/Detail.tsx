@@ -1,6 +1,7 @@
-import React, { useState, useEffect, FunctionComponent } from 'react';
+import React, { useState, useEffect } from 'react';
 import { TypeMap, getGraphQL, GraphQLInfo } from './TypeMapResolver';
 import { OperationType } from 'graphql-zeus';
+import { Placehold } from './components';
 export const DryadElement = (props: {
   dryad?: any;
   fieldName?: string;
@@ -22,21 +23,28 @@ export const DryadElement = (props: {
   } = props;
 
   const className = [parent, fieldName].filter((d) => !!d).join('-');
-  if (dryad && dryad.render && parent && fieldName) {
-    const dr = dryad.render as any;
-    if (parent in dr) {
-      const scalarFields = dr[parent];
-      if (fieldName in scalarFields) {
-        return (
-          <>
-            {scalarFields[fieldName]({
-              name: fieldName,
-              value: o,
-              className,
-            })}
-          </>
-        );
+  if (dryad && dryad.render && fieldName) {
+    try {
+      const dryadRender = dryad.render as any;
+      if (parent && parent in dryadRender) {
+        const scalarFields = dryadRender[parent];
+        if (fieldName in scalarFields && typeof scalarFields[fieldName] === 'function') {
+          return (
+            <div
+              style={{ display: 'contents' }}
+              dangerouslySetInnerHTML={{
+                __html: scalarFields[fieldName]({
+                  name: fieldName,
+                  value: o,
+                  className,
+                }),
+              }}
+            />
+          );
+        }
       }
+    } catch (error) {
+      console.error('Dryad error', error.message);
     }
   }
   if (Array.isArray(o)) {
@@ -44,6 +52,7 @@ export const DryadElement = (props: {
       <div className={`${prefix} ${className} d-list`}>
         {o.map((vv: any, index: number) => (
           <DryadElement
+            key={index}
             withLabels={withLabels}
             typemap={typemap}
             fieldName={`d-item`}
@@ -60,7 +69,7 @@ export const DryadElement = (props: {
       <div className={`${prefix} d-object`}>
         {Object.keys(o)
           .filter((k) => k !== '__typename')
-          .map((k) => {
+          .map((k, i) => {
             const p = o.__typename || prefix;
             const rp = typemap[p];
             if (!rp) {
@@ -74,7 +83,7 @@ export const DryadElement = (props: {
                 fieldName={k}
                 prefix={typemap[p][k]}
                 o={o[k]}
-                key={fieldName}
+                key={`${fieldName}-${i}`}
                 withLabels={withLabels}
               />
             );
@@ -90,21 +99,6 @@ export const DryadElement = (props: {
     </div>
   );
 };
-
-const Placehold: FunctionComponent = ({ children }) => (
-  <div
-    style={{
-      flex: 1,
-      alignSelf: 'stretch',
-      alignItems: 'center',
-      justifyContent: 'center',
-      display: 'flex',
-      padding: 50,
-    }}
-  >
-    {children}
-  </div>
-);
 
 export const DryadGQL = ({
   children,
@@ -127,6 +121,7 @@ export const DryadGQL = ({
   const [graphqlInfo, setGraphQLInfo] = useState<GraphQLInfo>();
   const [operationType, setOperationType] = useState<OperationType>(OperationType.query);
   const [operation, setOperation] = useState<string>();
+  const [backendErrors, setBackendErrors] = useState<string[]>([]);
 
   useEffect(() => {
     setResponse(undefined);
@@ -161,12 +156,15 @@ export const DryadGQL = ({
           })
         ).json();
         if (response.errors) {
-          throw new Error((response.errors as any).map((e: any) => e.message).join('\n'));
+          setBackendErrors(response.errors.map((e: any) => e.message));
+          setResponse(undefined);
+          return;
         }
+        setBackendErrors([]);
         setResponse(response.data);
         setIsFetching(false);
       } catch (error) {
-        console.error(error);
+        setBackendErrors([error.message]);
       }
     })();
   }, [gql]);
@@ -184,6 +182,9 @@ export const DryadGQL = ({
     }
   }, [operationType, JSON.stringify(graphqlInfo || {})]);
 
+  if (backendErrors.length) {
+    return <Placehold>{backendErrors.join('\n')}</Placehold>;
+  }
   if (isFetching) {
     return <Placehold>Fetching data...</Placehold>;
   }
