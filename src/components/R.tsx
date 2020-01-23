@@ -11,7 +11,7 @@ export interface RProps {
 const useStyle = createUseStyles({
   main: {
     position: 'absolute',
-    top: 'calc(50% - 20px)',
+    top: 'calc(50% - 35px)',
     height: 40,
     width: 40,
     justifyContent: 'center',

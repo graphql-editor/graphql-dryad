@@ -27,7 +27,6 @@ const getSuggestions = ({ fields, range }: { fields: ParserField[]; range: any }
 export const CSSSuggestions = (fields: ParserField[]): monaco.languages.CompletionItemProvider => {
   return {
     provideCompletionItems: function(model, position) {
-      const timeLabel = 'Provide CSS';
       const line = position.lineNumber;
       const character = position.column;
       var textUntilPosition = model.getValueInRange({
@@ -72,6 +71,11 @@ export const CSSSuggestions = (fields: ParserField[]): monaco.languages.Completi
           insertText: '.d-list',
           description: `Returned for fields returning List`,
         },
+        {
+          detail: 'body',
+          insertText: '.DryadBody',
+          description: 'Body of mock frontend( white element with shadow )',
+        },
       ];
       const builtInStylesSuggestions = builtInStyles.map(
         (bs) =>
@@ -83,10 +87,8 @@ export const CSSSuggestions = (fields: ParserField[]): monaco.languages.Completi
             range,
           } as monaco.languages.CompletionItem),
       );
-      builtInStylesSuggestions;
-      console.timeEnd(timeLabel);
       return {
-        suggestions: [...suggestions, ...builtInScalarsSuggestions],
+        suggestions: [...suggestions, ...builtInScalarsSuggestions, ...builtInStylesSuggestions],
       };
     },
   };

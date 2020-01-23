@@ -4,8 +4,8 @@ import { Colors } from '../Colors';
 export const Name: FunctionComponent = ({ children }) => (
   <div
     style={{
-      position: 'absolute',
-      top: 0,
+      position: 'relative',
+      marginTop: -30,
       fontSize: 11,
       color: Colors.grey[4],
       height: 30,

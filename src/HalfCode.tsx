@@ -1,23 +1,24 @@
 import React, { useRef, useEffect, useState } from 'react';
 import * as monaco from 'monaco-editor';
-import { Colors } from './Colors';
 import { Resizable } from 're-resizable';
 import { Utils, Parser, TypeDefinition } from 'graphql-zeus';
 import { GqlSpecialLanguage, GqlLanguageConfiguration } from './languages';
 import { GqlSpecialTheme } from './themes';
 import { GqlSuggestions, CSSSuggestions } from './suggestions';
 import { DryadGQL } from './DryadGQL';
-import { R, Tabs, Name } from './components';
+import { R, Tabs, Name, Container, Place, DryadBody } from './components';
 import { JSTypings } from './typings';
 
 export interface HalfCodeProps {
-  name?: string;
+  className?: string;
+  editorOptions?: monaco.editor.IEditorOptions;
   initialCss?: string;
   initialGql?: string;
   initialJS?: string;
-  schemaURL: string;
+  name?: string;
+  onChange?: (props: { css: string; gql: string; js: string }) => void;
   schema?: string;
-  className?: string;
+  schemaURL: string;
   style?: React.CSSProperties;
 }
 
@@ -34,16 +35,23 @@ monaco.editor.defineTheme('gqlSpecialTheme', GqlSpecialTheme);
 
 export const HalfCode = ({
   className = '',
+  editorOptions,
   initialCss = '',
   initialGql = '',
   initialJS = `// CTRL/CMD + space in dryad
 // to write injects in
 // string html templates
+// inject function format is:
+// ({name,value,className})
+// => string containing html
+// ({value}) => 
+//    \`<div>\${value}</div>\`
 
 dryad = {
     
 }`,
   name,
+  onChange,
   schemaURL,
   schema,
   style = {},
@@ -60,9 +68,13 @@ dryad = {
   const [js, setJs] = useState(initialJS);
   const [dryad, setDryad] = useState<any>({});
 
-  const [monacoCss, setMonacoCss] = useState<monaco.editor.IStandaloneCodeEditor>();
-  const [monacoGql, setMonacoGql] = useState<monaco.editor.IStandaloneCodeEditor>();
-  const [monacoJS, setMonacoJS] = useState<monaco.editor.IStandaloneCodeEditor>();
+  const [monacoInstance, setMonacoInstance] = useState<monaco.editor.IStandaloneCodeEditor>();
+
+  useEffect(() => {
+    if ((css !== initialCss || gql !== initialGql || js !== initialJS) && onChange) {
+      onChange({ css, gql, js });
+    }
+  }, [css, gql, js]);
 
   useEffect(() => {
     if (schemaString) {
@@ -79,16 +91,40 @@ dryad = {
       monaco.languages.registerCompletionItemProvider('css', CSSSuggestions(fields));
     }
   }, [schemaString]);
+
   useEffect(() => {
-    if (cssRef.current?.style.display !== 'none') {
-      if (monacoGql) {
-        monacoGql.dispose();
-        setMonacoGql(undefined);
+    if (initialGql !== gql) {
+      setGql(initialGql);
+      if (editor === Editors.graphql) {
+        monacoInstance?.getModel()?.setValue(initialGql);
       }
-      if (monacoJS) {
-        monacoJS.dispose();
-        setMonacoJS(undefined);
+    }
+  }, [initialGql]);
+
+  useEffect(() => {
+    if (initialCss !== css) {
+      setGql(initialCss);
+      if (editor === Editors.css) {
+        monacoInstance?.getModel()?.setValue(initialCss);
       }
+    }
+  }, [initialCss]);
+
+  useEffect(() => {
+    if (initialJS !== js) {
+      setGql(initialJS);
+      if (editor === Editors.js) {
+        monacoInstance?.getModel()?.setValue(initialJS);
+      }
+    }
+  }, [initialJS]);
+
+  useEffect(() => {
+    if (monacoInstance) {
+      monacoInstance.dispose();
+      setMonacoInstance(undefined);
+    }
+    if (editor === Editors.css) {
       const m = monaco.editor.create(cssRef.current!, {
         language: 'css',
         value: css,
@@ -98,20 +134,15 @@ dryad = {
         },
         theme: 'vs-dark',
       });
+      if (editorOptions) {
+        m.updateOptions(editorOptions);
+      }
       m.onDidChangeModelContent((e) => {
         setCss(m.getModel()?.getValue() || '');
       });
-      setMonacoCss(m);
+      setMonacoInstance(m);
     }
-    if (gqlRef.current?.style.display !== 'none') {
-      if (monacoCss) {
-        monacoCss.dispose();
-        setMonacoCss(undefined);
-      }
-      if (monacoJS) {
-        monacoJS.dispose();
-        setMonacoJS(undefined);
-      }
+    if (editor === Editors.graphql) {
       if (!schemaString) {
         Utils.getFromUrl(schemaURL).then((fetchedSchema) => {
           setSchema(fetchedSchema);
@@ -122,24 +153,16 @@ dryad = {
         value: gql,
         theme: 'gqlSpecialTheme',
       });
-      m.onCompositionEnd(() => {
-        console.log('Ended');
-      });
+      if (editorOptions) {
+        m.updateOptions(editorOptions);
+      }
       m.onDidBlurEditorText(() => {
         const value = m.getModel()?.getValue();
         setGql(value || '');
       });
-      setMonacoGql(m);
+      setMonacoInstance(m);
     }
-    if (jsRef.current?.style.display !== 'none') {
-      if (monacoCss) {
-        monacoCss.dispose();
-        setMonacoCss(undefined);
-      }
-      if (monacoGql) {
-        monacoGql.dispose();
-        setMonacoGql(undefined);
-      }
+    if (editor === Editors.js) {
       const m = monaco.editor.create(jsRef.current!, {
         language: 'javascript',
         value: js,
@@ -147,7 +170,6 @@ dryad = {
       });
       m.onDidBlurEditorText(() => {
         const value = m.getModel()?.getValue();
-        console.log(value);
         if (value) {
           try {
             const isMatching = value.match(/(dryad\s?=\s?{)/);
@@ -157,33 +179,25 @@ dryad = {
             const dryadPart = value.replace(/(dryad\s?=\s?{)/, 'const $1');
             const dryadFunction = new Function([dryadPart, `return dryad`].join('\n'));
             const dryadResult = dryadFunction();
-            console.log(dryadResult);
             setDryad({
               render: dryadResult,
             });
           } catch (error) {
-            console.log(error);
+            console.error(error);
           }
         }
         setJs(value || '');
       });
-      setMonacoJS(m);
+      if (editorOptions) {
+        m.updateOptions(editorOptions);
+      }
+      setMonacoInstance(m);
     }
   }, [editor]);
 
   return (
     <>
-      <div
-        className={className}
-        style={{
-          height: `100%`,
-          width: `100%`,
-          display: 'flex',
-          flexFlow: 'row nowrap',
-          alignItems: 'stretch',
-          ...style,
-        }}
-      >
+      <Container className={className} style={style}>
         <Resizable
           defaultSize={{
             width: 340,
@@ -191,8 +205,7 @@ dryad = {
           }}
           style={{ background: '#333', color: '#aaa', overflowY: 'hidden' }}
           onResize={() => {
-            const currentEditor = monacoCss || monacoGql || monacoJS;
-            currentEditor?.layout();
+            monacoInstance?.layout();
           }}
           enable={{
             bottom: false,
@@ -256,15 +269,7 @@ dryad = {
           </style>
         </Resizable>
 
-        <div
-          className="Place"
-          style={{
-            flex: 1,
-            background: Colors.grey[7],
-            padding: 30,
-            overflowY: 'auto',
-          }}
-        >
+        <Place>
           <Name>{name}</Name>
           {editor === Editors.graphql && (
             <R
@@ -275,20 +280,13 @@ dryad = {
               }}
             />
           )}
-          <div
-            style={{
-              flex: 1,
-              background: Colors.grey[0],
-              boxShadow: `${Colors.grey[10]}11 3px 5px 4px`,
-            }}
-          >
+          <DryadBody>
             <DryadGQL dryad={dryad} url={schemaURL} gql={gql}>
               Type Gql Query to see data here
             </DryadGQL>
-          </div>
-          <div style={{ marginBottom: 40 }}></div>
-        </div>
-      </div>
+          </DryadBody>
+        </Place>
+      </Container>
       <style>{css}</style>
     </>
   );
