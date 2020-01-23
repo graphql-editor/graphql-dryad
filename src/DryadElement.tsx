@@ -48,7 +48,7 @@ export const DryadElement = (props: {
   }
   if (Array.isArray(o)) {
     return (
-      <div className={`${prefix} ${className} d-list`}>
+      <div className={`${prefix}-list ${className} d-list`}>
         {o.map((vv: any, index: number) => (
           <DryadElement
             key={index}
@@ -65,7 +65,7 @@ export const DryadElement = (props: {
   }
   if (o !== null && typeof o === 'object') {
     return (
-      <div className={`${prefix} d-object`}>
+      <div className={`${prefix} ${className} d-object`}>
         {Object.keys(o)
           .filter((k) => k !== '__typename')
           .map((k, i) => {
