@@ -3,11 +3,12 @@ import * as monaco from 'monaco-editor';
 import { Resizable } from 're-resizable';
 import { Utils, Parser, TypeDefinition } from 'graphql-zeus';
 import { GqlSpecialLanguage, GqlLanguageConfiguration } from './languages';
-import { GqlSpecialTheme } from './themes';
+import { GqlSpecialTheme, CssTheme, JsTheme } from './themes';
 import { GqlSuggestions, CSSSuggestions } from './suggestions';
 import { DryadGQL } from './DryadGQL';
 import { R, Tabs, Name, Container, Place, DryadBody } from './components';
 import { JSTypings } from './typings';
+import * as initialParameters from './initial';
 
 export interface HalfCodeProps {
   className?: string;
@@ -32,24 +33,15 @@ monaco.languages.setLanguageConfiguration('gqlSpecial', GqlLanguageConfiguration
 // Register a tokens provider for the language
 monaco.languages.setMonarchTokensProvider('gqlSpecial', GqlSpecialLanguage);
 monaco.editor.defineTheme('gqlSpecialTheme', GqlSpecialTheme);
+monaco.editor.defineTheme('js', JsTheme);
+monaco.editor.defineTheme('css', CssTheme);
 
 export const HalfCode = ({
   className = '',
   editorOptions,
-  initialCss = '',
-  initialGql = '',
-  initialJS = `// CTRL/CMD + space in dryad
-// to write injects in
-// string html templates
-// inject function format is:
-// ({name,value,className})
-// => string containing html
-// ({value}) => 
-//    \`<div>\${value}</div>\`
-
-dryad = {
-    
-}`,
+  initialCss = initialParameters.initialCss,
+  initialGql = initialParameters.initialGql,
+  initialJS = initialParameters.initialJS,
   name,
   onChange,
   schemaURL,
@@ -132,7 +124,7 @@ dryad = {
         parameterHints: {
           enabled: true,
         },
-        theme: 'vs-dark',
+        theme: 'css',
       });
       if (editorOptions) {
         m.updateOptions(editorOptions);
@@ -166,7 +158,7 @@ dryad = {
       const m = monaco.editor.create(jsRef.current!, {
         language: 'javascript',
         value: js,
-        theme: 'vs-dark',
+        theme: 'js',
       });
       m.onDidBlurEditorText(() => {
         const value = m.getModel()?.getValue();

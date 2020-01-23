@@ -14,6 +14,7 @@ export const GqlSpecialLanguage: languages.IMonarchLanguage = <languages.IMonarc
       [/@[^\s]*/, 'directive'],
       [/[\s]?(\d+)/, 'number'],
       [/[\s]?"[^[^\]"]*"/, 'stringinner'],
+      [/#.*$/, 'comment'],
       [
         /[a-z_$][\w$]*/,
         {
