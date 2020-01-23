@@ -192,7 +192,7 @@ export const HalfCode = ({
       <Container className={className} style={style}>
         <Resizable
           defaultSize={{
-            width: 340,
+            width: 400,
             height: '100%',
           }}
           style={{ background: '#333', color: '#aaa', overflowY: 'hidden' }}

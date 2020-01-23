@@ -3,11 +3,15 @@ to write overrides in
 string html templates
 inject function format is:
 
-(value)
+(v:{
+    name: string
+    value: type of value
+    className: class assigned
+})
     => string containing html
 
-(value) => 
-    \`<div>\${value}</div>\` */
+(v) => 
+    \`<div>\${v.value}</div>\` */
 
 dryad = {
   
