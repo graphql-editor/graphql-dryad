@@ -55,3 +55,7 @@ export const mix = (c1: HexaDecimal, c2: HexaDecimal, weight: number = 50) => {
 
   return color; // PROFIT!
 };
+
+export const EditorColors = {
+  background: '#1e1e1e',
+};

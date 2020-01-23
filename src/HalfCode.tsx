@@ -7,16 +7,19 @@ import { GqlSpecialLanguage, GqlLanguageConfiguration } from './GqlSpecialLangua
 import { GqlSpecialTheme } from './GqlSpecialTheme';
 import { GqlSuggestions } from './GqlSuggestions';
 import { DryadGQL } from './Detail';
-import { R, Tabs } from './components';
+import { R, Tabs, Name } from './components';
 import { CSSSuggestions } from './CssSuggestions';
 import { JSTypings } from './JSTypings';
 
 export interface HalfCodeProps {
+  name?: string;
   initialCss?: string;
   initialGql?: string;
   initialJS?: string;
   schemaURL: string;
   schema?: string;
+  className?: string;
+  style?: React.CSSProperties;
 }
 
 enum Editors {
@@ -31,6 +34,7 @@ monaco.languages.setMonarchTokensProvider('gqlSpecial', GqlSpecialLanguage);
 monaco.editor.defineTheme('gqlSpecialTheme', GqlSpecialTheme);
 
 export const HalfCode = ({
+  className = '',
   initialCss = '',
   initialGql = '',
   initialJS = `// CTRL/CMD + space in dryad
@@ -40,8 +44,10 @@ export const HalfCode = ({
 dryad = {
     
 }`,
+  name,
   schemaURL,
   schema,
+  style = {},
 }: HalfCodeProps) => {
   const cssRef = useRef<HTMLDivElement>(null);
   const gqlRef = useRef<HTMLDivElement>(null);
@@ -168,7 +174,17 @@ dryad = {
 
   return (
     <>
-      <div style={{ height: `100%`, width: `100%`, display: 'flex', flexFlow: 'row nowrap', alignItems: 'stretch' }}>
+      <div
+        className={className}
+        style={{
+          height: `100%`,
+          width: `100%`,
+          display: 'flex',
+          flexFlow: 'row nowrap',
+          alignItems: 'stretch',
+          ...style,
+        }}
+      >
         <Resizable
           defaultSize={{
             width: 340,
@@ -246,10 +262,11 @@ dryad = {
           style={{
             flex: 1,
             background: Colors.grey[7],
-            padding: 40,
+            padding: 30,
             overflowY: 'auto',
           }}
         >
+          <Name>{name}</Name>
           {editor === Editors.graphql && (
             <R
               onClick={() => {

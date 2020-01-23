@@ -1,4 +1,5 @@
 import React, { FunctionComponent } from 'react';
+import { Colors } from '../Colors';
 
 export const Placehold: FunctionComponent = ({ children }) => (
   <div
@@ -9,6 +10,7 @@ export const Placehold: FunctionComponent = ({ children }) => (
       justifyContent: 'center',
       display: 'flex',
       padding: 50,
+      color: Colors.grey[3],
     }}
   >
     {children}
