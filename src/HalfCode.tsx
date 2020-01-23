@@ -3,13 +3,12 @@ import * as monaco from 'monaco-editor';
 import { Colors } from './Colors';
 import { Resizable } from 're-resizable';
 import { Utils, Parser, TypeDefinition } from 'graphql-zeus';
-import { GqlSpecialLanguage, GqlLanguageConfiguration } from './GqlSpecialLanguage';
-import { GqlSpecialTheme } from './GqlSpecialTheme';
-import { GqlSuggestions } from './GqlSuggestions';
-import { DryadGQL } from './Detail';
+import { GqlSpecialLanguage, GqlLanguageConfiguration } from './languages';
+import { GqlSpecialTheme } from './themes';
+import { GqlSuggestions, CSSSuggestions } from './suggestions';
+import { DryadGQL } from './DryadGQL';
 import { R, Tabs, Name } from './components';
-import { CSSSuggestions } from './CssSuggestions';
-import { JSTypings } from './JSTypings';
+import { JSTypings } from './typings';
 
 export interface HalfCodeProps {
   name?: string;
