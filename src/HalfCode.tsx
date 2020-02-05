@@ -59,6 +59,8 @@ export const HalfCode = ({
   const [gql, setGql] = useState(initialGql);
   const [js, setJs] = useState(initialJS);
   const [dryad, setDryad] = useState<any>({});
+  const [, setProviderCSS] = useState<monaco.IDisposable>();
+  const [, setProviderGql] = useState<monaco.IDisposable>();
 
   const [monacoInstance, setMonacoInstance] = useState<monaco.editor.IStandaloneCodeEditor>();
 
@@ -70,7 +72,10 @@ export const HalfCode = ({
 
   useEffect(() => {
     if (schemaString) {
-      monaco.languages.registerCompletionItemProvider('gqlSpecial', GqlSuggestions(schemaString));
+      setProviderGql((p) => {
+        p?.dispose();
+        return monaco.languages.registerCompletionItemProvider('gqlSpecial', GqlSuggestions(schemaString));
+      });
       const graphqlTree = Parser.parse(schemaString);
       const typings = JSTypings(graphqlTree.nodes);
       monaco.languages.typescript.javascriptDefaults.addExtraLib(typings);
@@ -80,7 +85,10 @@ export const HalfCode = ({
           n.data?.type === TypeDefinition.ScalarTypeDefinition ||
           n.data?.type === TypeDefinition.EnumTypeDefinition,
       );
-      monaco.languages.registerCompletionItemProvider('css', CSSSuggestions(fields));
+      setProviderCSS((p) => {
+        p?.dispose();
+        return monaco.languages.registerCompletionItemProvider('css', CSSSuggestions(fields));
+      });
     }
   }, [schemaString]);
 
