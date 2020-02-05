@@ -170,22 +170,6 @@ export const HalfCode = ({
       });
       m.onDidBlurEditorText(() => {
         const value = m.getModel()?.getValue();
-        if (value) {
-          try {
-            const isMatching = value.match(/(dryad\s?=\s?{)/);
-            if (!isMatching) {
-              throw new Error("Cannot find 'dryad = {'");
-            }
-            const dryadPart = value.replace(/(dryad\s?=\s?{)/, 'const $1');
-            const dryadFunction = new Function([dryadPart, `return dryad`].join('\n'));
-            const dryadResult = dryadFunction();
-            setDryad({
-              render: dryadResult,
-            });
-          } catch (error) {
-            console.error(error);
-          }
-        }
         setJs(value || '');
       });
       if (editorOptions) {
@@ -195,6 +179,24 @@ export const HalfCode = ({
     }
   }, [editor]);
 
+  useEffect(() => {
+    if (js) {
+      try {
+        const isMatching = js.match(/(dryad\s?=\s?{)/);
+        if (!isMatching) {
+          throw new Error("Cannot find 'dryad = {'");
+        }
+        const dryadPart = js.replace(/(dryad\s?=\s?{)/, 'const $1');
+        const dryadFunction = new Function([dryadPart, `return dryad`].join('\n'));
+        const dryadResult = dryadFunction();
+        setDryad({
+          render: dryadResult,
+        });
+      } catch (error) {
+        console.error(error);
+      }
+    }
+  }, [js]);
   return (
     <>
       <Container className={className} style={style}>
