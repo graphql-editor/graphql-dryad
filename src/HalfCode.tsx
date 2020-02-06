@@ -155,6 +155,7 @@ export const HalfCode = ({
       });
       if (editorOptions) {
         m.updateOptions(editorOptions);
+        monaco.editor.remeasureFonts();
       }
       m.onDidBlurEditorText(() => {
         const value = m.getModel()?.getValue();
