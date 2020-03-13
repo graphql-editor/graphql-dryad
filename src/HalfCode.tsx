@@ -59,10 +59,17 @@ export const HalfCode = ({
   const [gql, setGql] = useState(initialGql);
   const [js, setJs] = useState(initialJS);
   const [dryad, setDryad] = useState<any>({});
-  const [, setProviderCSS] = useState<monaco.IDisposable>();
-  const [, setProviderGql] = useState<monaco.IDisposable>();
+  const [providerCSS, setProviderCSS] = useState<monaco.IDisposable>();
+  const [providerGql, setProviderGql] = useState<monaco.IDisposable>();
 
   const [monacoInstance, setMonacoInstance] = useState<monaco.editor.IStandaloneCodeEditor>();
+
+  useEffect(() => {
+    return () => {
+      providerCSS?.dispose();
+      providerGql?.dispose();
+    };
+  }, [providerCSS, providerGql]);
 
   useEffect(() => {
     if ((css !== initialCss || gql !== initialGql || js !== initialJS) && onChange) {
@@ -72,10 +79,7 @@ export const HalfCode = ({
 
   useEffect(() => {
     if (schemaString) {
-      setProviderGql((p) => {
-        p?.dispose();
-        return monaco.languages.registerCompletionItemProvider('gqlSpecial', GqlSuggestions(schemaString));
-      });
+      setProviderGql(monaco.languages.registerCompletionItemProvider('gqlSpecial', GqlSuggestions(schemaString)));
       const graphqlTree = Parser.parse(schemaString);
       const typings = JSTypings(graphqlTree.nodes);
       monaco.languages.typescript.javascriptDefaults.addExtraLib(typings);
@@ -85,10 +89,7 @@ export const HalfCode = ({
           n.data?.type === TypeDefinition.ScalarTypeDefinition ||
           n.data?.type === TypeDefinition.EnumTypeDefinition,
       );
-      setProviderCSS((p) => {
-        p?.dispose();
-        return monaco.languages.registerCompletionItemProvider('css', CSSSuggestions(fields));
-      });
+      setProviderCSS(monaco.languages.registerCompletionItemProvider('css', CSSSuggestions(fields)));
     }
   }, [schemaString]);
 
@@ -122,6 +123,10 @@ export const HalfCode = ({
   useEffect(() => {
     if (monacoInstance) {
       monacoInstance.dispose();
+      const model = monacoInstance.getModel();
+      if (model) {
+        model.dispose();
+      }
       setMonacoInstance(undefined);
     }
     if (editor === Editors.css) {

@@ -1,4 +1,5 @@
 import React from 'react';
+import ReactDOMServer from 'react-dom/server';
 import { TypeMap } from './TypeMapResolver';
 
 export const DryadElement = (props: {
@@ -28,6 +29,18 @@ export const DryadElement = (props: {
       if (parent && parent in dryadRender) {
         const scalarFields = dryadRender[parent];
         if (fieldName in scalarFields && typeof scalarFields[fieldName] === 'function') {
+          console.log(dryad);
+          const decoupledDryad = {
+            ...dryad,
+            render: {
+              ...dryad.render,
+              [parent]: {
+                ...dryad.render[parent],
+                [fieldName]: undefined,
+              },
+            },
+          };
+          console.log(decoupledDryad);
           return (
             <div
               style={{ display: 'contents' }}
@@ -35,6 +48,7 @@ export const DryadElement = (props: {
                 __html: scalarFields[fieldName]({
                   name: fieldName,
                   value: o,
+                  original: ReactDOMServer.renderToString(<DryadElement {...props} dryad={decoupledDryad} />),
                   className,
                 }),
               }}
