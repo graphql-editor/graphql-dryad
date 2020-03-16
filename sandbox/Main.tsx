@@ -9,12 +9,10 @@ export const Main = () => {
         <button onClick={() => setHide((hidden) => !hidden)}>hide</button>
         {!hide && (
           <HalfCode
-            name="https://api.github.com/graphql"
+            name="https://faker.graphqleditor.com/aexol/olympus/graphql"
             settings={{
-              url: 'https://api.github.com/graphql',
-              headers: {
-                Authorization: 'bearer ea3bb6b3614e3827d56399e7607c866e8bcc3ba3',
-              },
+              url: 'https://faker.graphqleditor.com/aexol/olympus/graphql',
+              headers: {},
             }}
             editorOptions={{
               fontFamily: `'Fira Mono'`,
