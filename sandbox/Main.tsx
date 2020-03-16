@@ -9,23 +9,19 @@ export const Main = () => {
         <button onClick={() => setHide((hidden) => !hidden)}>hide</button>
         {!hide && (
           <HalfCode
-            name="https://faker.graphqleditor.com/showcase/fake-twitter/graphql"
-            schemaURL="https://faker.graphqleditor.com/showcase/fake-twitter/graphql"
+            name="https://api.github.com/graphql"
+            settings={{
+              url: 'https://api.github.com/graphql',
+              headers: {
+                Authorization: 'bearer ea3bb6b3614e3827d56399e7607c866e8bcc3ba3',
+              },
+            }}
             editorOptions={{
               fontFamily: `'Fira Mono'`,
             }}
-            initialGql={`{
-      Twits{
-          Author{
-              username
-              avatar
-          }
-          sentence
-          retweets{
-              username
-          }
-      }
-  }`}
+            initial={{
+              graphql: ``,
+            }}
           />
         )}
       </div>

@@ -41,7 +41,7 @@ module.exports = {
   },
   plugins: [
     new MonacoWebpackPlugin({
-      languages: ['css', 'graphql', 'javascript', 'typescript'],
+      languages: ['css', 'graphql', 'javascript', 'typescript', 'json'],
     }),
     new HtmlWebpackPlugin({
       template: 'assets/index.html',

@@ -10,3 +10,4 @@ sandbox
 .idea
 package-lock.json
 __tests__
+examples

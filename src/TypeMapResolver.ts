@@ -1,9 +1,11 @@
 import { TypeDefinition, ParserField, Utils, Parser, OperationType } from 'graphql-zeus';
+import { buildASTSchema, parse, GraphQLSchema } from 'graphql';
 
 export interface TypeMap {
   [x: string]: Record<string, string>;
 }
 export interface GraphQLInfo {
+  GraphQLSchema: GraphQLSchema;
   typeMap: TypeMap;
   root: { [OperationType.query]: string; [OperationType.mutation]?: string; [OperationType.subscription]?: string };
 }
@@ -26,10 +28,12 @@ const resolveTypeMapType = (i: ParserField) => {
   };
 };
 
-export const getGraphQL = async (url: string): Promise<GraphQLInfo> => {
-  const schemaSting = await Utils.getFromUrl(url);
+export const getGraphQL = async (url: string, headers?: string[]): Promise<GraphQLInfo> => {
+  const schemaSting = await Utils.getFromUrl(url, headers);
+  const GraphQLSchema = buildASTSchema(parse(schemaSting));
   const schemaTree = Parser.parse(schemaSting);
   return {
+    GraphQLSchema,
     typeMap:
       schemaTree.nodes
         .map(resolveTypeMapType)

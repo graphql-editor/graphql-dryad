@@ -1,0 +1,51 @@
+/* Write css for returned
+data from graphql here
+type '.' dot and press
+CTRL/CMD + space to see 
+returned types from GraphQL */
+.Query{
+    background: #e2e2e2;
+    font-family: Helvetica Neue;
+}
+.Issue{
+    background: #fff;
+    margin:12px;
+    padding: 24px;
+    font-size: 0.8rem;
+    display: flex;
+    flex-flow: column nowrap;
+}
+.Issue-assignees{
+    order: 0;
+}
+.Issue-body{
+    order: 3;
+}
+.Issue-title{
+    font-size: 1rem;
+    font-weight: bold;
+    margin-bottom: 4px;
+    order: 1;
+}
+.Issue-createdAt{
+    font-size:0.6rem;
+    margin-bottom: 12px;
+    order:2
+}
+.Issue-comments{
+    border-top: 1px solid #eee;
+    padding-top: 10px;
+    margin-top: 10px;
+    order:4
+}
+.Actor{
+    display: flex;
+    align-items: center;
+    font-size: 0.6em;
+    font-weight: bold;
+}
+.Actor-avatarUrl, .User-avatarUrl{
+    width: 30px;
+    border-radius: 15px;
+    margin-right: 8px;
+}

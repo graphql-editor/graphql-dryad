@@ -1,11 +1,12 @@
 import React, { FunctionComponent } from 'react';
 import { Colors } from '../Colors';
-import { RefreshCw } from 'react-feather';
+import { RefreshCw, Play } from 'react-feather';
 import { createUseStyles } from 'react-jss';
 
 export interface RProps {
   onClick: () => void;
   isRefreshing?: boolean;
+  variant: 'refresh' | 'play';
 }
 
 const useStyle = createUseStyles({
@@ -32,11 +33,12 @@ const useStyle = createUseStyles({
   },
 });
 
-export const R: FunctionComponent<RProps> = ({ onClick }) => {
+export const R: FunctionComponent<RProps> = ({ onClick, variant }) => {
   const { main } = useStyle();
   return (
     <div title="Refresh" className={main} onClick={onClick}>
-      <RefreshCw size={15} />
+      {variant === 'refresh' && <RefreshCw size={15} />}
+      {variant === 'play' && <Play size={15} />}
     </div>
   );
 };

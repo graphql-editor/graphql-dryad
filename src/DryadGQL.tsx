@@ -13,8 +13,8 @@ export const DryadGQL = ({
   withLabels,
 }: {
   // Replace with DryadOptions Later
-  dryad?: any;
   children: React.ReactNode;
+  dryad?: any;
   gql: string;
   headers?: Record<string, string>;
   url: string;
@@ -29,7 +29,7 @@ export const DryadGQL = ({
 
   useEffect(() => {
     setResponse(undefined);
-    if (gql.length === 0) {
+    if (gql.length === 0 || !graphqlInfo) {
       return;
     }
     setIsFetching(true);
@@ -75,7 +75,12 @@ export const DryadGQL = ({
 
   useEffect(() => {
     (async () => {
-      setGraphQLInfo(await getGraphQL(url));
+      const info = await getGraphQL(
+        url,
+        Object.keys(headers).map((h) => `${h}: ${headers[h]}`),
+      );
+      console.log(info);
+      setGraphQLInfo(info);
     })();
   }, []);
 

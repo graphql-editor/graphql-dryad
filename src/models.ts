@@ -30,3 +30,7 @@ export interface BuiltInStyle {
   description: string;
   insertText: string;
 }
+export interface Settings {
+  url: string;
+  headers: Record<string, string>;
+}

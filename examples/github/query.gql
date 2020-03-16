@@ -1,0 +1,46 @@
+{
+    repository(
+        owner:"graphql-editor",
+        name:"graphql-editor"
+    ){
+        issues(
+            first:100,
+            filterBy:{
+                states:[OPEN]
+            }
+            orderBy:{
+                direction:DESC
+                field: UPDATED_AT
+            }
+        ){
+            edges{
+                node{
+                    title
+                    createdAt
+                    body
+                    assignees(first:10){
+                        edges{
+                            node{
+                                avatarUrl
+                            }
+                        }
+                    }
+                    comments(
+                        first:100
+                    ){
+                        edges{
+                            node{
+                                body
+                                createdAt
+                                author{
+                                    avatarUrl
+                                    login
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

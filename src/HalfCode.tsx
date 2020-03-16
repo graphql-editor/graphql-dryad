@@ -3,79 +3,105 @@ import * as monaco from 'monaco-editor';
 import { Resizable } from 're-resizable';
 import { Utils, Parser, TypeDefinition } from 'graphql-zeus';
 import { GqlSpecialLanguage, GqlLanguageConfiguration } from './languages';
-import { GqlSpecialTheme, CssTheme, JsTheme } from './themes';
+import { GqlSpecialTheme, CssTheme, JsTheme, SettingsTheme } from './themes';
 import { GqlSuggestions, CSSSuggestions } from './suggestions';
 import { DryadGQL } from './DryadGQL';
-import { R, Tabs, Name, Container, Place, DryadBody } from './components';
-import { JSTypings } from './typings';
+import { R, Tabs, Name, Container, Place, DryadBody, Tab } from './components';
 import * as initialParameters from './initial';
+import { JSTypings } from './typings';
+import { Values, Editors, Config, Refs } from './Config';
+import { Settings } from './models';
+import { useThrottledState } from './Throttle';
+import * as icons from './icons';
 
 export interface HalfCodeProps {
   className?: string;
   editorOptions?: monaco.editor.IEditorOptions;
-  initialCss?: string;
-  initialGql?: string;
-  initialJS?: string;
+  initial?: Exclude<Partial<Values>, Editors.settings>;
   name?: string;
-  onChange?: (props: { css: string; gql: string; js: string }) => void;
-  schema?: string;
-  schemaURL: string;
+  onChange?: (props: Values) => void;
   style?: React.CSSProperties;
+  settings: Settings;
+  disabled?: Editors[];
 }
 
-enum Editors {
-  css = 'css',
-  graphql = 'graphql',
-  js = 'js',
-}
 monaco.languages.register({ id: 'gqlSpecial' });
+
 monaco.languages.setLanguageConfiguration('gqlSpecial', GqlLanguageConfiguration);
 // Register a tokens provider for the language
 monaco.languages.setMonarchTokensProvider('gqlSpecial', GqlSpecialLanguage);
+
 monaco.editor.defineTheme('gqlSpecialTheme', GqlSpecialTheme);
 monaco.editor.defineTheme('js', JsTheme);
 monaco.editor.defineTheme('css', CssTheme);
+monaco.editor.defineTheme('faker', SettingsTheme);
 
 export const HalfCode = ({
   className = '',
   editorOptions,
-  initialCss = initialParameters.initialCss,
-  initialGql = initialParameters.initialGql,
-  initialJS = initialParameters.initialJS,
+  initial = {},
   name,
   onChange,
-  schemaURL,
-  schema,
+  settings,
   style = {},
+  disabled = [],
 }: HalfCodeProps) => {
-  const cssRef = useRef<HTMLDivElement>(null);
-  const gqlRef = useRef<HTMLDivElement>(null);
-  const jsRef = useRef<HTMLDivElement>(null);
+  const refs: Refs = {
+    css: useRef<HTMLDivElement>(null),
+    graphql: useRef<HTMLDivElement>(null),
+    js: useRef<HTMLDivElement>(null),
+    settings: useRef<HTMLDivElement>(null),
+  };
+
+  const allEditors = [Editors.graphql, Editors.css, Editors.js, Editors.settings].filter((e) => !disabled.includes(e));
 
   const [editor, setEditor] = useState<Editors>(Editors.graphql);
-  const [schemaString, setSchema] = useState(schema);
+  const [schemaString, setSchema] = useState('');
+  const [currentSettings, setCurrentSettings] = useState(settings);
 
-  const [css, setCss] = useState(initialCss);
-  const [gql, setGql] = useState(initialGql);
-  const [js, setJs] = useState(initialJS);
+  const initialValues: Values = {
+    css: initialParameters.initialCss,
+    graphql: initialParameters.initialGql,
+    js: initialParameters.initialJS,
+    settings: JSON.stringify(settings, null, 4),
+    ...initial,
+  };
+  const [value, setValue] = useState(initialValues);
+
   const [dryad, setDryad] = useState<any>({});
   const [providerCSS, setProviderCSS] = useState<monaco.IDisposable>();
   const [providerGql, setProviderGql] = useState<monaco.IDisposable>();
+  const [gqlRefresher, setGqlRefresher] = useState('');
 
   const [monacoInstance, setMonacoInstance] = useState<monaco.editor.IStandaloneCodeEditor>();
 
-  useEffect(() => {
-    return () => {
-      providerCSS?.dispose();
-      providerGql?.dispose();
-    };
-  }, [providerCSS, providerGql]);
+  const currentRef = refs[editor];
+  const currentValue = value[editor];
+  const currentInitialValue = initialValues[editor];
+  const currentConfig = Config[editor];
+  const [graphQLCall, setGraphQLCall] = useThrottledState({
+    value: value[Editors.graphql],
+    delay: 10000,
+  });
 
   useEffect(() => {
-    if ((css !== initialCss || gql !== initialGql || js !== initialJS) && onChange) {
-      onChange({ css, gql, js });
+    setGraphQLCall(value[Editors.graphql] + gqlRefresher);
+  }, [gqlRefresher]);
+
+  useEffect(() => {
+    if (currentInitialValue !== initialValues[editor]) {
+      return () => {
+        providerCSS?.dispose();
+        providerGql?.dispose();
+      };
     }
-  }, [css, gql, js]);
+  }, [currentInitialValue]);
+
+  useEffect(() => {
+    if (currentValue !== currentInitialValue && onChange) {
+      onChange(value);
+    }
+  }, [currentValue]);
 
   useEffect(() => {
     if (schemaString) {
@@ -94,31 +120,22 @@ export const HalfCode = ({
   }, [schemaString]);
 
   useEffect(() => {
-    if (initialGql !== gql) {
-      setGql(initialGql);
-      if (editor === Editors.graphql) {
-        monacoInstance?.getModel()?.setValue(initialGql);
-      }
+    if (currentInitialValue !== initialValues[editor]) {
+      setValue((value) => ({
+        ...value,
+        [editor]: currentInitialValue,
+      }));
     }
-  }, [initialGql]);
+  }, [currentInitialValue]);
 
   useEffect(() => {
-    if (initialCss !== css) {
-      setGql(initialCss);
-      if (editor === Editors.css) {
-        monacoInstance?.getModel()?.setValue(initialCss);
-      }
-    }
-  }, [initialCss]);
-
-  useEffect(() => {
-    if (initialJS !== js) {
-      setGql(initialJS);
-      if (editor === Editors.js) {
-        monacoInstance?.getModel()?.setValue(initialJS);
-      }
-    }
-  }, [initialJS]);
+    Utils.getFromUrl(
+      currentSettings.url,
+      Object.keys(currentSettings.headers).map((k) => `${k}: ${currentSettings.headers[k]}`),
+    ).then((fetchedSchema) => {
+      setSchema(fetchedSchema);
+    });
+  }, [currentSettings.url]);
 
   useEffect(() => {
     if (monacoInstance) {
@@ -129,63 +146,22 @@ export const HalfCode = ({
       }
       setMonacoInstance(undefined);
     }
-    if (editor === Editors.css) {
-      const m = monaco.editor.create(cssRef.current!, {
-        language: 'css',
-        value: css,
-        fixedOverflowWidgets: true,
-        parameterHints: {
-          enabled: true,
-        },
-        theme: 'css',
-      });
-      if (editorOptions) {
-        m.updateOptions(editorOptions);
-      }
-      m.onDidChangeModelContent((e) => {
-        setCss(m.getModel()?.getValue() || '');
-      });
-      setMonacoInstance(m);
+    const m = monaco.editor.create(currentRef.current!, { ...currentConfig.options, value: currentValue });
+    if (editorOptions) {
+      m.updateOptions(editorOptions);
+      monaco.editor.remeasureFonts();
     }
-    if (editor === Editors.graphql) {
-      if (!schemaString) {
-        Utils.getFromUrl(schemaURL).then((fetchedSchema) => {
-          setSchema(fetchedSchema);
-        });
+    m.onDidChangeModelContent((e) => {
+      const model = m.getModel();
+      if (model) {
+        setValue((value) => ({ ...value, [editor]: model.getValue() }));
       }
-      const m = monaco.editor.create(gqlRef.current!, {
-        language: 'gqlSpecial',
-        value: gql,
-        theme: 'gqlSpecialTheme',
-      });
-      if (editorOptions) {
-        m.updateOptions(editorOptions);
-        monaco.editor.remeasureFonts();
-      }
-      m.onDidBlurEditorText(() => {
-        const value = m.getModel()?.getValue();
-        setGql(value || '');
-      });
-      setMonacoInstance(m);
-    }
-    if (editor === Editors.js) {
-      const m = monaco.editor.create(jsRef.current!, {
-        language: 'javascript',
-        value: js,
-        theme: 'js',
-      });
-      m.onDidBlurEditorText(() => {
-        const value = m.getModel()?.getValue();
-        setJs(value || '');
-      });
-      if (editorOptions) {
-        m.updateOptions(editorOptions);
-      }
-      setMonacoInstance(m);
-    }
+    });
+    setMonacoInstance(m);
   }, [editor]);
 
   useEffect(() => {
+    const js = value[Editors.js];
     if (js) {
       try {
         const isMatching = js.match(/(dryad\s?=\s?{)/);
@@ -202,7 +178,18 @@ export const HalfCode = ({
         console.error(error);
       }
     }
-  }, [js]);
+  }, [value[Editors.js]]);
+
+  useEffect(() => {
+    const settingsValue = value[Editors.js];
+    if (settingsValue) {
+      try {
+        const newSettings = JSON.parse(settingsValue);
+        setCurrentSettings(newSettings);
+      } catch (error) {}
+    }
+  }, [value[Editors.settings]]);
+
   return (
     <>
       <Container className={className} style={style}>
@@ -234,35 +221,23 @@ export const HalfCode = ({
           maxWidth="100%"
           minWidth="1"
         >
-          <Tabs
-            active={editor}
-            tabs={[
-              {
-                name: Editors.graphql,
-                onClick: () => setEditor(Editors.graphql),
-              },
-              {
-                name: Editors.css,
-                onClick: () => setEditor(Editors.css),
-              },
-              {
-                name: Editors.js,
-                onClick: () => setEditor(Editors.js),
-              },
-            ]}
-          />
-          <div
-            style={{ height: `calc(100% - 30px)`, display: editor === Editors.css ? 'block' : 'none' }}
-            ref={cssRef}
-          ></div>
-          <div
-            style={{ height: `calc(100% - 30px)`, display: editor === Editors.graphql ? 'block' : 'none' }}
-            ref={gqlRef}
-          ></div>
-          <div
-            style={{ height: `calc(100% - 30px)`, display: editor === Editors.js ? 'block' : 'none' }}
-            ref={jsRef}
-          ></div>
+          <Tabs>
+            {allEditors.map((t) => {
+              const Icon = icons[Config[t].icon];
+              return (
+                <Tab active={editor === t} onClick={() => setEditor(t)} key={t}>
+                  <Icon size={12} />.{t}
+                </Tab>
+              );
+            })}
+          </Tabs>
+          {allEditors.map((e) => (
+            <div
+              key={e}
+              style={{ height: `calc(100% - 30px)`, display: editor === e ? 'block' : 'none' }}
+              ref={refs[e]}
+            ></div>
+          ))}
           <style>
             {`.editor-widget{
               position:fixed !important;
@@ -281,21 +256,22 @@ export const HalfCode = ({
           <Name>{name}</Name>
           {editor === Editors.graphql && (
             <R
+              variant="refresh"
               onClick={() => {
                 const spaces = Math.floor(Math.random() * 200);
                 const spacestring = new Array(spaces).fill(' ').join('');
-                setGql(gql + spacestring);
+                setGqlRefresher(spacestring);
               }}
             />
           )}
           <DryadBody>
-            <DryadGQL dryad={dryad} url={schemaURL} gql={gql}>
+            <DryadGQL headers={currentSettings.headers} dryad={dryad} url={currentSettings.url} gql={graphQLCall || ''}>
               Type Gql Query to see data here
             </DryadGQL>
           </DryadBody>
         </Place>
       </Container>
-      <style>{css}</style>
+      <style>{value[Editors.css]}</style>
     </>
   );
 };
