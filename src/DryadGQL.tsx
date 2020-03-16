@@ -79,7 +79,6 @@ export const DryadGQL = ({
         url,
         Object.keys(headers).map((h) => `${h}: ${headers[h]}`),
       );
-      console.log(info);
       setGraphQLInfo(info);
     })();
   }, []);

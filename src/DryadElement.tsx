@@ -29,7 +29,6 @@ export const DryadElement = (props: {
       if (parent && parent in dryadRender) {
         const scalarFields = dryadRender[parent];
         if (fieldName in scalarFields && typeof scalarFields[fieldName] === 'function') {
-          console.log(dryad);
           const decoupledDryad = {
             ...dryad,
             render: {
@@ -40,7 +39,6 @@ export const DryadElement = (props: {
               },
             },
           };
-          console.log(decoupledDryad);
           return (
             <div
               style={{ display: 'contents' }}
