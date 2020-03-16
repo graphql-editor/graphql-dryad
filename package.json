@@ -24,7 +24,7 @@
   "homepage": "https://github.com/graphql-editor/graphql-dryad#readme",
   "dependencies": {
     "graphql-language-service-interface": "^2.3.3",
-    "graphql-zeus": "^2.5.2",
+    "graphql-zeus": "^2.6.3",
     "install": "^0.13.0",
     "npm": "^6.13.6",
     "re-resizable": "^6.1.1",
@@ -33,9 +33,13 @@
     "react-jss": "^10.0.3"
   },
   "peerDependencies": {
-    "monaco-editor": "^0.18.1",
-    "react": "^16.12.0",
-    "react-dom": "^16.12.0"
+    "react": ">=16.12.0",
+    "react-dom": ">=16.12.0",
+    "monaco-editor": ">=0.19.1",
+    "monaco-editor-webpack-plugin": ">=1.8.1",
+    "worker-loader": ">=2.0.0",
+    "file-loader": ">=5.0.2",
+    "css-loader": ">=2.1.1"
   },
   "devDependencies": {
     "@types/react": "^16.9.14",
