@@ -71,9 +71,11 @@ export const HalfCode = ({
   const [dryad, setDryad] = useState<any>({});
   const [providerCSS, setProviderCSS] = useState<monaco.IDisposable>();
   const [providerGql, setProviderGql] = useState<monaco.IDisposable>();
+  const [providerJS, setProviderJS] = useState<monaco.IDisposable>();
   const [gqlRefresher, setGqlRefresher] = useState('');
 
   const [monacoInstance, setMonacoInstance] = useState<monaco.editor.IStandaloneCodeEditor>();
+  const [monacoSubscription, setMonacoSubscription] = useState<monaco.IDisposable>();
 
   const currentRef = refs[editor];
   const currentValue = value[editor];
@@ -89,13 +91,19 @@ export const HalfCode = ({
   }, [gqlRefresher]);
 
   useEffect(() => {
-    if (currentInitialValue !== initialValues[editor]) {
-      return () => {
-        providerCSS?.dispose();
-        providerGql?.dispose();
-      };
-    }
-  }, [currentInitialValue]);
+    return () => {
+      monacoInstance?.dispose();
+      monacoSubscription?.dispose();
+    };
+  }, [monacoInstance, monacoSubscription]);
+
+  useEffect(() => {
+    return () => {
+      providerCSS?.dispose();
+      providerGql?.dispose();
+      providerJS?.dispose();
+    };
+  }, [providerGql, providerCSS, providerJS]);
 
   useEffect(() => {
     if (currentValue !== currentInitialValue && onChange) {
@@ -105,17 +113,26 @@ export const HalfCode = ({
 
   useEffect(() => {
     if (schemaString) {
-      setProviderGql(monaco.languages.registerCompletionItemProvider('gqlSpecial', GqlSuggestions(schemaString)));
       const graphqlTree = Parser.parse(schemaString);
       const typings = JSTypings(graphqlTree.nodes);
-      monaco.languages.typescript.javascriptDefaults.addExtraLib(typings);
       const fields = graphqlTree.nodes.filter(
         (n) =>
           n.data?.type === TypeDefinition.ObjectTypeDefinition ||
           n.data?.type === TypeDefinition.ScalarTypeDefinition ||
           n.data?.type === TypeDefinition.EnumTypeDefinition,
       );
-      setProviderCSS(monaco.languages.registerCompletionItemProvider('css', CSSSuggestions(fields)));
+      setProviderGql((p) => {
+        p?.dispose();
+        return monaco.languages.registerCompletionItemProvider('gqlSpecial', GqlSuggestions(schemaString));
+      });
+      setProviderCSS((p) => {
+        p?.dispose();
+        return monaco.languages.registerCompletionItemProvider('css', CSSSuggestions(fields));
+      });
+      setProviderJS((p) => {
+        p?.dispose();
+        return monaco.languages.typescript.javascriptDefaults.addExtraLib(typings);
+      });
     }
   }, [schemaString]);
 
@@ -138,26 +155,32 @@ export const HalfCode = ({
   }, [currentSettings.url]);
 
   useEffect(() => {
-    if (monacoInstance) {
-      monacoInstance.dispose();
-      const model = monacoInstance.getModel();
-      if (model) {
-        model.dispose();
-      }
-      setMonacoInstance(undefined);
-    }
     const m = monaco.editor.create(currentRef.current!, { ...currentConfig.options, value: currentValue });
     if (editorOptions) {
       m.updateOptions(editorOptions);
       monaco.editor.remeasureFonts();
     }
-    m.onDidChangeModelContent((e) => {
-      const model = m.getModel();
-      if (model) {
-        setValue((value) => ({ ...value, [editor]: model.getValue() }));
+    setMonacoSubscription((s) => {
+      if (s) {
+        s.dispose();
       }
+      return m.onDidChangeModelContent((e) => {
+        const model = m.getModel();
+        if (model) {
+          setValue((value) => ({ ...value, [editor]: model.getValue() }));
+        }
+      });
     });
-    setMonacoInstance(m);
+    setMonacoInstance((i) => {
+      if (i) {
+        const model = i.getModel();
+        if (model) {
+          model.dispose();
+        }
+        i.dispose();
+      }
+      return m;
+    });
   }, [editor]);
 
   useEffect(() => {
