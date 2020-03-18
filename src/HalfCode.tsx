@@ -13,6 +13,11 @@ import { Values, Editors, Config, Refs } from './Config';
 import { Settings } from './models';
 import { useThrottledState } from './Throttle';
 import * as icons from './icons';
+import { Menu } from './components/Menu';
+import ReactDOMServer from 'react-dom/server';
+import { HtmlSkeleton } from './HtmlSkeleton';
+import { RenderToHTML } from './RenderToHtml';
+import { saveAs } from 'file-saver';
 
 export interface HalfCodeProps {
   className?: string;
@@ -76,6 +81,9 @@ export const HalfCode = ({
 
   const [monacoInstance, setMonacoInstance] = useState<monaco.editor.IStandaloneCodeEditor>();
   const [monacoSubscription, setMonacoSubscription] = useState<monaco.IDisposable>();
+  const [, setMonacoModel] = useState<monaco.editor.ITextModel>();
+
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const currentRef = refs[editor];
   const currentValue = value[editor];
@@ -155,15 +163,18 @@ export const HalfCode = ({
   }, [currentSettings.url]);
 
   useEffect(() => {
-    const m = monaco.editor.create(currentRef.current!, { ...currentConfig.options, value: currentValue });
+    const model = monaco.editor.createModel(currentValue, currentConfig.options.language);
+    setMonacoModel((oldModel) => {
+      oldModel?.dispose();
+      return model;
+    });
+    const m = monaco.editor.create(currentRef.current!, { ...currentConfig.options, model });
     if (editorOptions) {
       m.updateOptions(editorOptions);
       monaco.editor.remeasureFonts();
     }
     setMonacoSubscription((s) => {
-      if (s) {
-        s.dispose();
-      }
+      s?.dispose();
       return m.onDidChangeModelContent((e) => {
         const model = m.getModel();
         if (model) {
@@ -172,13 +183,7 @@ export const HalfCode = ({
       });
     });
     setMonacoInstance((i) => {
-      if (i) {
-        const model = i.getModel();
-        if (model) {
-          model.dispose();
-        }
-        i.dispose();
-      }
+      i?.dispose();
       return m;
     });
   }, [editor]);
@@ -244,6 +249,29 @@ export const HalfCode = ({
           maxWidth="100%"
           minWidth="1"
         >
+          {menuOpen && (
+            <Menu
+              categories={[
+                {
+                  name: 'Export',
+                  onClick: async () => {
+                    const renderedBody = await RenderToHTML({
+                      headers: currentSettings.headers,
+                      dryad,
+                      url: currentSettings.url,
+                      gql: graphQLCall || '',
+                    });
+                    const body = ReactDOMServer.renderToString(<DryadBody>{renderedBody || ''}</DryadBody>);
+                    const compiled = HtmlSkeleton({
+                      body,
+                      style: value[Editors.css],
+                    });
+                    saveAs(compiled, 'index.html');
+                  },
+                },
+              ]}
+            />
+          )}
           <Tabs>
             {allEditors.map((t) => {
               const Icon = icons[Config[t].icon];
@@ -253,6 +281,9 @@ export const HalfCode = ({
                 </Tab>
               );
             })}
+            <Tab style={{ marginLeft: 'auto' }} active={menuOpen} onClick={() => setMenuOpen(!menuOpen)}>
+              <icons.More size={12} />
+            </Tab>
           </Tabs>
           {allEditors.map((e) => (
             <div

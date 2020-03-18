@@ -23,6 +23,7 @@
   },
   "homepage": "https://github.com/graphql-editor/graphql-dryad#readme",
   "dependencies": {
+    "file-saver": "^2.0.2",
     "graphql-language-service-interface": "^2.3.3",
     "graphql-zeus": "^2.6.3",
     "install": "^0.13.0",
@@ -42,6 +43,7 @@
     "css-loader": ">=2.1.1"
   },
   "devDependencies": {
+    "@types/file-saver": "^2.0.1",
     "@types/react": "^16.9.14",
     "@types/react-dom": "^16.9.4",
     "@types/react-jss": "^10.0.0",

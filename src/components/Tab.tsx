@@ -4,9 +4,10 @@ import { Colors, EditorColors } from '../Colors';
 export interface TabProps {
   onClick: () => void;
   active: boolean;
+  style?: React.CSSProperties;
 }
 
-export const Tab: React.FC<TabProps> = ({ children, onClick, active }) => {
+export const Tab: React.FC<TabProps> = ({ children, onClick, active, style = {} }) => {
   return (
     <div
       style={{
@@ -19,6 +20,8 @@ export const Tab: React.FC<TabProps> = ({ children, onClick, active }) => {
         borderRight: `1px dotted ${Colors.grey[0]}11`,
         display: 'flex',
         alignItems: 'center',
+        userSelect: 'none',
+        ...style,
       }}
       onClick={onClick}
     >
