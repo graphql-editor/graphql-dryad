@@ -10,6 +10,7 @@ export const Main = () => {
         {!hide && (
           <HalfCode
             name="https://faker.graphqleditor.com/aexol/olympus/graphql"
+            exportEnabled={true}
             settings={{
               url: 'https://faker.graphqleditor.com/aexol/olympus/graphql',
               headers: {},

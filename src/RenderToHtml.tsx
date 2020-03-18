@@ -58,5 +58,7 @@ export const RenderToHTML = async ({
     }
     const res = response.data;
     return <DryadElement withLabels={withLabels} typemap={graphqlInfo.typeMap} prefix={ot!} o={res} dryad={dryad} />;
-  } catch (error) {}
+  } catch (error) {
+    console.log(error);
+  }
 };

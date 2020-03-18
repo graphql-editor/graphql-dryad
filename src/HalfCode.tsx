@@ -17,7 +17,7 @@ import { Menu } from './components/Menu';
 import ReactDOMServer from 'react-dom/server';
 import { HtmlSkeleton } from './HtmlSkeleton';
 import { RenderToHTML } from './RenderToHtml';
-import { saveAs } from 'file-saver';
+import FileSaver from 'file-saver';
 
 export interface HalfCodeProps {
   className?: string;
@@ -261,7 +261,8 @@ export const HalfCode = ({
                       body,
                       style: value[Editors.css],
                     });
-                    saveAs(compiled, 'index.html');
+                    console.log(compiled);
+                    FileSaver.saveAs(new Blob([compiled]), 'dryad.html');
                   },
                 },
               ]}
