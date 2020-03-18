@@ -28,6 +28,7 @@ export interface HalfCodeProps {
   style?: React.CSSProperties;
   settings: Settings;
   disabled?: Editors[];
+  exportEnabled?: boolean;
 }
 
 monaco.languages.register({ id: 'gqlSpecial' });
@@ -40,6 +41,7 @@ monaco.editor.defineTheme('gqlSpecialTheme', GqlSpecialTheme);
 monaco.editor.defineTheme('js', JsTheme);
 monaco.editor.defineTheme('css', CssTheme);
 monaco.editor.defineTheme('faker', SettingsTheme);
+monaco.languages.typescript.typescriptDefaults.setEagerModelSync(true);
 
 export const HalfCode = ({
   className = '',
@@ -50,6 +52,7 @@ export const HalfCode = ({
   settings,
   style = {},
   disabled = [],
+  exportEnabled = false,
 }: HalfCodeProps) => {
   const refs: Refs = {
     css: useRef<HTMLDivElement>(null),
@@ -81,7 +84,6 @@ export const HalfCode = ({
 
   const [monacoInstance, setMonacoInstance] = useState<monaco.editor.IStandaloneCodeEditor>();
   const [monacoSubscription, setMonacoSubscription] = useState<monaco.IDisposable>();
-  const [, setMonacoModel] = useState<monaco.editor.ITextModel>();
 
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -163,29 +165,22 @@ export const HalfCode = ({
   }, [currentSettings.url]);
 
   useEffect(() => {
-    const model = monaco.editor.createModel(currentValue, currentConfig.options.language);
-    setMonacoModel((oldModel) => {
-      oldModel?.dispose();
-      return model;
-    });
-    const m = monaco.editor.create(currentRef.current!, { ...currentConfig.options, model });
+    const m = monaco.editor.create(currentRef.current!, { ...currentConfig.options, value: currentValue });
     if (editorOptions) {
       m.updateOptions(editorOptions);
       monaco.editor.remeasureFonts();
     }
-    setMonacoSubscription((s) => {
-      s?.dispose();
-      return m.onDidChangeModelContent((e) => {
-        const model = m.getModel();
-        if (model) {
-          setValue((value) => ({ ...value, [editor]: model.getValue() }));
-        }
-      });
+    monacoSubscription?.dispose();
+    monacoInstance?.getModel()?.dispose();
+    monacoInstance?.dispose();
+    const subscription = m.onDidChangeModelContent(() => {
+      const model = m.getModel();
+      if (model) {
+        setValue((value) => ({ ...value, [editor]: model.getValue() }));
+      }
     });
-    setMonacoInstance((i) => {
-      i?.dispose();
-      return m;
-    });
+    setMonacoInstance(m);
+    setMonacoSubscription(subscription);
   }, [editor]);
 
   useEffect(() => {
@@ -281,9 +276,11 @@ export const HalfCode = ({
                 </Tab>
               );
             })}
-            <Tab style={{ marginLeft: 'auto' }} active={menuOpen} onClick={() => setMenuOpen(!menuOpen)}>
-              <icons.More size={12} />
-            </Tab>
+            {exportEnabled && (
+              <Tab style={{ marginLeft: 'auto' }} active={menuOpen} onClick={() => setMenuOpen(!menuOpen)}>
+                <icons.More size={12} />
+              </Tab>
+            )}
           </Tabs>
           {allEditors.map((e) => (
             <div
