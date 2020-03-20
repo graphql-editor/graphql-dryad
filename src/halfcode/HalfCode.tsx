@@ -54,7 +54,7 @@ export const HalfCode = ({
   const [schemaString, setSchema] = useState('');
   const [currentSettings, setCurrentSettings] = useState({ ...settings });
   const [passedSettings, setPassedSettings] = useState({ ...settings });
-  console.log(passedSettings);
+
   const initialValues: Values = {
     css: initialParameters.initialCss,
     graphql: initialParameters.initialGql,
@@ -250,7 +250,6 @@ export const HalfCode = ({
                       body,
                       style: value[Editors.css],
                     });
-                    console.log(compiled);
                     FileSaver.saveAs(new Blob([compiled]), 'dryad.html');
                   },
                 },
