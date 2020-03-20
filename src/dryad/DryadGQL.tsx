@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { getGraphQL, GraphQLInfo } from './TypeMapResolver';
 import { OperationType } from 'graphql-zeus';
-import { Placehold } from './components';
+import { Placehold } from '../components';
 import { DryadElement } from './DryadElement';
 
 export const DryadGQL = ({
@@ -71,9 +71,10 @@ export const DryadGQL = ({
         setBackendErrors([error.message]);
       }
     })();
-  }, [gql]);
+  }, [gql, graphqlInfo]);
 
   useEffect(() => {
+    setGraphQLInfo(undefined);
     (async () => {
       const info = await getGraphQL(
         url,
@@ -81,7 +82,7 @@ export const DryadGQL = ({
       );
       setGraphQLInfo(info);
     })();
-  }, []);
+  }, [url, headers]);
 
   useEffect(() => {
     if (graphqlInfo && graphqlInfo.typeMap && operationType) {

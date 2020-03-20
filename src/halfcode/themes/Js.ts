@@ -1,4 +1,4 @@
-import { Colors } from '../Colors';
+import { Colors } from '../../Colors';
 import { editor } from 'monaco-editor';
 
 export const JsTheme: editor.IStandaloneThemeData = {

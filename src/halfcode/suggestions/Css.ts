@@ -1,6 +1,6 @@
 import * as monaco from 'monaco-editor';
 import { ParserField, ScalarTypes } from 'graphql-zeus';
-import { BuiltInStyle } from '../models';
+import { BuiltInStyle } from '../../models';
 const getSuggestions = ({ fields, range }: { fields: ParserField[]; range: any }) =>
   fields.flatMap((ci) => {
     return [

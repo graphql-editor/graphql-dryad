@@ -19,7 +19,7 @@ const useStyle = createUseStyles({
     marginLeft: -60,
     display: 'flex',
     alignItems: 'center',
-    background: Colors.grey[9],
+    background: Colors.green[6],
     color: Colors.grey[3],
     borderRadius: `100%`,
     cursor: 'pointer',
@@ -27,8 +27,8 @@ const useStyle = createUseStyles({
     transform: 'rotate(0deg)',
     transition: '0.25s all',
     '&:hover': {
-      transform: 'rotate(360deg)',
       color: Colors.grey[0],
+      background: Colors.green[2],
     },
   },
 });
@@ -36,7 +36,7 @@ const useStyle = createUseStyles({
 export const R: FunctionComponent<RProps> = ({ onClick, variant }) => {
   const { main } = useStyle();
   return (
-    <div title="Refresh" className={main} onClick={onClick}>
+    <div title="Run GraphQL Query" className={main} onClick={onClick} about="Run query">
       {variant === 'refresh' && <RefreshCw size={15} />}
       {variant === 'play' && <Play size={15} />}
     </div>

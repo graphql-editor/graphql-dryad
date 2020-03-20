@@ -2,22 +2,21 @@ import React, { useRef, useEffect, useState } from 'react';
 import * as monaco from 'monaco-editor';
 import { Resizable } from 're-resizable';
 import { Utils, Parser, TypeDefinition } from 'graphql-zeus';
-import { GqlSpecialLanguage, GqlLanguageConfiguration } from './languages';
-import { GqlSpecialTheme, CssTheme, JsTheme, SettingsTheme } from './themes';
+import { initLanguages } from './languages';
 import { GqlSuggestions, CSSSuggestions } from './suggestions';
-import { DryadGQL } from './DryadGQL';
-import { R, Tabs, Name, Container, Place, DryadBody, Tab } from './components';
+import { DryadGQL } from '../dryad';
+import { R, Tabs, Name, Container, Place, DryadBody, Tab } from '../components';
 import * as initialParameters from './initial';
 import { JSTypings } from './typings';
 import { Values, Editors, Config, Refs } from './Config';
-import { Settings } from './models';
-import { useThrottledState } from './Throttle';
+import { Settings } from '../models';
 import * as icons from './icons';
-import { Menu } from './components/Menu';
+import { Menu } from '../components/Menu';
 import ReactDOMServer from 'react-dom/server';
-import { HtmlSkeleton } from './HtmlSkeleton';
-import { RenderToHTML } from './RenderToHtml';
+import { HtmlSkeletonStatic, RenderToHTML } from '../ssg';
 import FileSaver from 'file-saver';
+
+initLanguages();
 
 export interface HalfCodeProps {
   className?: string;
@@ -30,18 +29,6 @@ export interface HalfCodeProps {
   disabled?: Editors[];
   exportEnabled?: boolean;
 }
-
-monaco.languages.register({ id: 'gqlSpecial' });
-
-monaco.languages.setLanguageConfiguration('gqlSpecial', GqlLanguageConfiguration);
-// Register a tokens provider for the language
-monaco.languages.setMonarchTokensProvider('gqlSpecial', GqlSpecialLanguage);
-
-monaco.editor.defineTheme('gqlSpecialTheme', GqlSpecialTheme);
-monaco.editor.defineTheme('js', JsTheme);
-monaco.editor.defineTheme('css', CssTheme);
-monaco.editor.defineTheme('faker', SettingsTheme);
-monaco.languages.typescript.typescriptDefaults.setEagerModelSync(true);
 
 export const HalfCode = ({
   className = '',
@@ -65,8 +52,9 @@ export const HalfCode = ({
 
   const [editor, setEditor] = useState<Editors>(Editors.graphql);
   const [schemaString, setSchema] = useState('');
-  const [currentSettings, setCurrentSettings] = useState(settings);
-
+  const [currentSettings, setCurrentSettings] = useState({ ...settings });
+  const [passedSettings, setPassedSettings] = useState({ ...settings });
+  console.log(passedSettings);
   const initialValues: Values = {
     css: initialParameters.initialCss,
     graphql: initialParameters.initialGql,
@@ -91,10 +79,7 @@ export const HalfCode = ({
   const currentValue = value[editor];
   const currentInitialValue = initialValues[editor];
   const currentConfig = Config[editor];
-  const [graphQLCall, setGraphQLCall] = useThrottledState({
-    value: value[Editors.graphql],
-    delay: 10000,
-  });
+  const [graphQLCall, setGraphQLCall] = useState(initialValues.graphql);
 
   useEffect(() => {
     setGraphQLCall(value[Editors.graphql] + gqlRefresher);
@@ -157,12 +142,12 @@ export const HalfCode = ({
 
   useEffect(() => {
     Utils.getFromUrl(
-      currentSettings.url,
-      Object.keys(currentSettings.headers).map((k) => `${k}: ${currentSettings.headers[k]}`),
+      passedSettings.url,
+      Object.keys(passedSettings.headers).map((k) => `${k}: ${passedSettings.headers[k]}`),
     ).then((fetchedSchema) => {
       setSchema(fetchedSchema);
     });
-  }, [currentSettings.url]);
+  }, [passedSettings.url]);
 
   useEffect(() => {
     const m = monaco.editor.create(currentRef.current!, { ...currentConfig.options, value: currentValue });
@@ -181,6 +166,9 @@ export const HalfCode = ({
     });
     setMonacoInstance(m);
     setMonacoSubscription(subscription);
+    if (currentSettings.url !== passedSettings.url) {
+      setPassedSettings({ ...currentSettings });
+    }
   }, [editor]);
 
   useEffect(() => {
@@ -204,7 +192,7 @@ export const HalfCode = ({
   }, [value[Editors.js]]);
 
   useEffect(() => {
-    const settingsValue = value[Editors.js];
+    const settingsValue = value[Editors.settings];
     if (settingsValue) {
       try {
         const newSettings = JSON.parse(settingsValue);
@@ -248,7 +236,8 @@ export const HalfCode = ({
             <Menu
               categories={[
                 {
-                  name: 'Export',
+                  name: 'Export Static Website',
+                  description: 'Export your GraphQL query together with CSS as static website with prefetched data',
                   onClick: async () => {
                     const renderedBody = await RenderToHTML({
                       headers: currentSettings.headers,
@@ -257,7 +246,7 @@ export const HalfCode = ({
                       gql: graphQLCall || '',
                     });
                     const body = ReactDOMServer.renderToString(<DryadBody>{renderedBody || ''}</DryadBody>);
-                    const compiled = HtmlSkeleton({
+                    const compiled = HtmlSkeletonStatic({
                       body,
                       style: value[Editors.css],
                     });
@@ -306,18 +295,17 @@ export const HalfCode = ({
 
         <Place>
           <Name>{name}</Name>
-          {editor === Editors.graphql && (
-            <R
-              variant="refresh"
-              onClick={() => {
-                const spaces = Math.floor(Math.random() * 200);
-                const spacestring = new Array(spaces).fill(' ').join('');
-                setGqlRefresher(spacestring);
-              }}
-            />
-          )}
+          <R
+            variant={'play'}
+            onClick={() => {
+              const spaces = Math.floor(Math.random() * 200);
+              const spacestring = new Array(spaces).fill(' ').join('');
+              setPassedSettings({ ...currentSettings });
+              setGqlRefresher(spacestring);
+            }}
+          />
           <DryadBody>
-            <DryadGQL headers={currentSettings.headers} dryad={dryad} url={currentSettings.url} gql={graphQLCall || ''}>
+            <DryadGQL headers={passedSettings.headers} dryad={dryad} url={passedSettings.url} gql={graphQLCall || ''}>
               Type Gql Query to see data here
             </DryadGQL>
           </DryadBody>

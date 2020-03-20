@@ -1,8 +1,7 @@
 import React from 'react';
-import { getGraphQL } from './TypeMapResolver';
 import { OperationType } from 'graphql-zeus';
-import { Placehold } from './components';
-import { DryadElement } from './DryadElement';
+import { Placehold } from '../components';
+import { DryadElement, getGraphQL } from '../dryad';
 
 export const RenderToHTML = async ({
   dryad,
