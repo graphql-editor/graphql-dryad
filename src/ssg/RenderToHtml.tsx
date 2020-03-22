@@ -1,7 +1,5 @@
-import React from 'react';
 import { OperationType } from 'graphql-zeus';
-import { Placehold } from '../components';
-import { DryadElement, getGraphQL } from '../dryad';
+import { DryadElementPlain, getGraphQL } from '../dryad';
 
 export const RenderToHTML = async ({
   dryad,
@@ -53,10 +51,16 @@ export const RenderToHTML = async ({
     }
 
     if (response === null) {
-      return <Placehold>response is null</Placehold>;
+      return 'response is null';
     }
     const res = response.data;
-    return <DryadElement withLabels={withLabels} typemap={graphqlInfo.typeMap} prefix={ot!} o={res} dryad={dryad} />;
+    return DryadElementPlain({
+      withLabels,
+      typemap: graphqlInfo.typeMap,
+      prefix: ot!,
+      o: res,
+      dryad,
+    });
   } catch (error) {
     console.log(error);
   }

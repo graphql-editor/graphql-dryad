@@ -12,7 +12,6 @@ import { Values, Editors, Config, Refs } from './Config';
 import { Settings } from '../models';
 import * as icons from './icons';
 import { Menu } from '../components/Menu';
-import ReactDOMServer from 'react-dom/server';
 import { HtmlSkeletonStatic, RenderToHTML } from '../ssg';
 import FileSaver from 'file-saver';
 
@@ -239,13 +238,15 @@ export const HalfCode = ({
                   name: 'Export Static Website',
                   description: 'Export your GraphQL query together with CSS as static website with prefetched data',
                   onClick: async () => {
-                    const renderedBody = await RenderToHTML({
+                    const body = await RenderToHTML({
                       headers: currentSettings.headers,
                       dryad,
                       url: currentSettings.url,
                       gql: graphQLCall || '',
                     });
-                    const body = ReactDOMServer.renderToString(<DryadBody>{renderedBody || ''}</DryadBody>);
+                    if (!body) {
+                      throw new Error('Cannot generate html');
+                    }
                     const compiled = HtmlSkeletonStatic({
                       body,
                       style: value[Editors.css],
