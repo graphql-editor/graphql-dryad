@@ -3,6 +3,7 @@ import { getGraphQL, GraphQLInfo } from './TypeMapResolver';
 import { OperationType } from 'graphql-zeus';
 import { Placehold } from '../components';
 import { DryadElement } from './DryadElement';
+import { ParseQuery } from './QueryParser';
 
 export const DryadGQL = ({
   children,
@@ -49,9 +50,10 @@ export const DryadGQL = ({
     //IIFE
     (async () => {
       try {
+        const parsedGql = ParseQuery(gql);
         const response = await (
           await fetch(url, {
-            body: JSON.stringify({ query: gql }),
+            body: JSON.stringify({ query: parsedGql }),
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -103,7 +105,5 @@ export const DryadGQL = ({
   if (response === null) {
     return <Placehold>response is null</Placehold>;
   }
-  return (
-    <DryadElement withLabels={withLabels} typemap={graphqlInfo.typeMap} prefix={operation} o={response} dryad={dryad} />
-  );
+  return <DryadElement withLabels={withLabels} parent={operation} o={response} dryad={dryad} />;
 };

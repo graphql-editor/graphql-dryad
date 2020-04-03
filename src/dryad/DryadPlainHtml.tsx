@@ -1,12 +1,8 @@
-import { TypeMap } from './TypeMapResolver';
-
 export const DryadElementPlain = (props: {
   dryad?: any;
   fieldName?: string;
   o: any;
   parent?: string;
-  prefix: string;
-  typemap: TypeMap;
   withLabels?: boolean;
 }): string => {
   const {
@@ -15,8 +11,6 @@ export const DryadElementPlain = (props: {
     fieldName = '',
     o,
     parent,
-    prefix,
-    typemap,
     withLabels,
   } = props;
 
@@ -50,14 +44,13 @@ export const DryadElementPlain = (props: {
     }
   }
   if (Array.isArray(o)) {
-    return `<div class="${prefix}-list ${className} d-list">
+    return `<div class="${className}">
         ${o
           .map((vv: any) =>
             DryadElementPlain({
-              typemap,
+              parent: className,
               dryad,
               fieldName: 'd-item',
-              prefix,
               o: vv,
               withLabels,
             }),
@@ -66,21 +59,14 @@ export const DryadElementPlain = (props: {
       </div>`;
   }
   if (o !== null && typeof o === 'object') {
-    return `<div class="${prefix} ${className} d-object">
+    return `<div class="${o.__typename!}">
         ${Object.keys(o)
           .filter((k) => k !== '__typename')
           .map((k, i) => {
-            const p = o.__typename || prefix;
-            const rp = typemap[p];
-            if (!rp) {
-              throw new Error('Cannot detect type for union/interface types, please include __typename in your query');
-            }
             return DryadElementPlain({
-              typemap,
               dryad,
               fieldName: k,
-              parent: prefix,
-              prefix: typemap[p][k],
+              parent: o.__typename!,
               o: o[k],
               withLabels,
             });
@@ -90,7 +76,7 @@ export const DryadElementPlain = (props: {
       </div>`;
   }
   return `
-    <div class="${prefix} ${className} d-field">
+    <div class="${className} ${o && typeof o}">
       ${withLabels && fieldName ? `<span class="d-label">${fieldName}</span>` : ''}
       <span class="d-value">${o}</span>
     </div>`;

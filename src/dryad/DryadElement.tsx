@@ -1,14 +1,11 @@
 import React from 'react';
 import ReactDOMServer from 'react-dom/server';
-import { TypeMap } from './TypeMapResolver';
 
 export const DryadElement = (props: {
   dryad?: any;
   fieldName?: string;
   o: any;
   parent?: string;
-  prefix: string;
-  typemap: TypeMap;
   withLabels?: boolean;
 }) => {
   const {
@@ -17,8 +14,6 @@ export const DryadElement = (props: {
     fieldName = '',
     o,
     parent,
-    prefix,
-    typemap,
     withLabels,
   } = props;
 
@@ -60,15 +55,14 @@ export const DryadElement = (props: {
   }
   if (Array.isArray(o)) {
     return (
-      <div className={`${prefix}-list ${className} d-list`}>
+      <div className={`${className}`}>
         {o.map((vv: any, index: number) => (
           <DryadElement
+            parent={className}
             key={index}
             withLabels={withLabels}
-            typemap={typemap}
             fieldName={`d-item`}
             dryad={dryad}
-            prefix={`${prefix}`}
             o={vv}
           />
         ))}
@@ -77,22 +71,15 @@ export const DryadElement = (props: {
   }
   if (o !== null && typeof o === 'object') {
     return (
-      <div className={`${prefix} ${className} d-object`}>
+      <div className={`${o.__typename!}`}>
         {Object.keys(o)
           .filter((k) => k !== '__typename')
           .map((k, i) => {
-            const p = o.__typename || prefix;
-            const rp = typemap[p];
-            if (!rp) {
-              throw new Error(`Cannot detect type for union/interface types, please include __typename in your query`);
-            }
             return (
               <DryadElement
-                typemap={typemap}
-                parent={prefix}
+                parent={o.__typename!}
                 dryad={dryad}
                 fieldName={k}
-                prefix={typemap[p][k]}
                 o={o[k]}
                 key={`${fieldName}-${i}`}
                 withLabels={withLabels}
@@ -104,9 +91,9 @@ export const DryadElement = (props: {
     );
   }
   return (
-    <div className={`${prefix} ${className} d-field`}>
+    <div className={`${className} ${o && typeof o}`}>
       {withLabels && fieldName && <span className={`d-label`}>{fieldName}</span>}
-      <span className={`d-value`}>{o}</span>
+      {o && <span className={`d-value`}>{o}</span>}
     </div>
   );
 };

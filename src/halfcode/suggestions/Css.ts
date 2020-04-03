@@ -1,5 +1,5 @@
 import * as monaco from 'monaco-editor';
-import { ParserField, ScalarTypes } from 'graphql-zeus';
+import { ParserField } from 'graphql-zeus';
 import { BuiltInStyle } from '../../models';
 const getSuggestions = ({ fields, range }: { fields: ParserField[]; range: any }) =>
   fields.flatMap((ci) => {
@@ -50,31 +50,26 @@ export const CSSSuggestions = (fields: ParserField[]): monaco.languages.Completi
         endColumn: word.endColumn,
       };
       const suggestions = getSuggestions({ fields, range });
-      const builtInScalarsSuggestions = Object.keys(ScalarTypes).map(
-        (scalar) =>
-          ({
-            insertText: `.${scalar}`,
-            detail: `${scalar} type`,
-            label: `.${scalar}`,
-            documentation: `Scalar field style. It appears on every field of type: ${scalar}`,
-            range,
-          } as monaco.languages.CompletionItem),
-      );
       const builtInStyles: BuiltInStyle[] = [
         {
-          detail: 'Object',
-          insertText: '.d-object',
-          description: `Returned for all fields returning GraphQL type`,
+          detail: 'string',
+          insertText: '.string',
+          description: `Class added if value is string`,
         },
         {
-          detail: 'List',
-          insertText: '.d-list',
-          description: `Returned for fields returning List`,
+          detail: 'number',
+          insertText: '.number',
+          description: `Class added if value is number`,
+        },
+        {
+          detail: 'boolean',
+          insertText: '.boolean',
+          description: 'Class added if value is boolean',
         },
         {
           detail: 'body',
-          insertText: '.DryadBody',
-          description: 'Body of mock frontend( white element with shadow )',
+          insertText: '.null',
+          description: 'Class added when value is empty',
         },
       ];
       const builtInStylesSuggestions = builtInStyles.map(
@@ -88,7 +83,7 @@ export const CSSSuggestions = (fields: ParserField[]): monaco.languages.Completi
           } as monaco.languages.CompletionItem),
       );
       return {
-        suggestions: [...suggestions, ...builtInScalarsSuggestions, ...builtInStylesSuggestions],
+        suggestions: [...suggestions, ...builtInStylesSuggestions],
       };
     },
   };

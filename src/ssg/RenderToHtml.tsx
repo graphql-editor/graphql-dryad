@@ -56,8 +56,7 @@ export const RenderToHTML = async ({
     const res = response.data;
     return DryadElementPlain({
       withLabels,
-      typemap: graphqlInfo.typeMap,
-      prefix: ot!,
+      parent: ot!,
       o: res,
       dryad,
     });
