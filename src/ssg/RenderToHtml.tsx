@@ -1,5 +1,6 @@
 import { OperationType } from 'graphql-zeus';
 import { DryadElementPlain, getGraphQL } from '../dryad';
+import { ParseQuery } from '../dryad/QueryParser';
 
 export const RenderToHTML = async ({
   dryad,
@@ -36,9 +37,10 @@ export const RenderToHTML = async ({
     return;
   }
   try {
+    const parsedGql = ParseQuery(gql);
     const response = await (
       await fetch(url, {
-        body: JSON.stringify({ query: gql }),
+        body: JSON.stringify({ query: parsedGql }),
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -54,6 +56,7 @@ export const RenderToHTML = async ({
       return 'response is null';
     }
     const res = response.data;
+    console.log(ot!);
     return DryadElementPlain({
       withLabels,
       parent: ot!,

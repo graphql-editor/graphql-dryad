@@ -130,7 +130,7 @@ export const tokenizer = (input: string): Token[] => {
     }
 
     // The last type of token will be a `field` token.
-    const LETTERS = /[a-z_]/i;
+    const LETTERS = /[a-z_.]/i;
     if (LETTERS.test(char)) {
       let value = '';
 

@@ -5,6 +5,7 @@
   "main": "lib/index.js",
   "scripts": {
     "start": "webpack-dev-server --config ./sandbox/webpack.config.js --content-base ./sandbox/ --port 1456 --hot --inline --open",
+    "live": "webpack-dev-server --config ./livedoc/webpack.config.js --content-base ./livedoc/ --port 1456 --hot --inline --open",
     "build": "tsc --build",
     "schema": "zeus https://faker.graphqleditor.com/a-team/olympus/graphql ./src/generated/ -g ./ --ts"
   },
@@ -27,6 +28,7 @@
     "graphql-language-service-interface": "^2.3.3",
     "graphql-zeus": "^2.6.3",
     "install": "^0.13.0",
+    "jszip": "^3.3.0",
     "npm": "^6.13.6",
     "re-resizable": "^6.1.1",
     "react-feather": "^2.0.3",
@@ -44,6 +46,7 @@
   },
   "devDependencies": {
     "@types/file-saver": "^2.0.1",
+    "@types/jszip": "^3.1.7",
     "@types/react": "^16.9.14",
     "@types/react-dom": "^16.9.4",
     "@types/react-jss": "^10.0.0",
