@@ -37,6 +37,10 @@ module.exports = {
         test: /\.css$/i,
         use: ['style-loader', 'css-loader'],
       },
+      {
+        test: /\.txt$/i,
+        use: 'raw-loader',
+      },
     ],
   },
   plugins: [

@@ -1,8 +1,10 @@
 export const css = `
+
 @import url('https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@300;400;700&display=swap');
 .Query{
     display: flex;
     flex-flow: row nowrap;
+    font-family: "Roboto Condensed";
 }
 .__Schema{
     width: 200px;
@@ -57,18 +59,23 @@ export const css = `
     height:100vh;
     overflow: auto;
 }
+.__Type-kind{
+    order: 2;
+    font-size: 1rem;
+    margin-bottom: 15px;
+    color: #5a5;
+}
 .__Type-name{
     order: 1;
     font-size: 2rem;
-    margin-bottom: 15px;
 }
 .__Type-description{
-    order: 2;
+    order: 3;
     padding: 20px;
     border:2px #eee dashed
 }
 .__Type-fields{
-    order: 3;
+    order: 4;
 }
 .__Type-fields h3{
     color: #334;
@@ -102,8 +109,5 @@ export const css = `
 }
 .FieldDescription{
     font-weight: 100;
-}
-.Query{
-    font-family: "Roboto Condensed";
 }
 `;

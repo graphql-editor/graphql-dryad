@@ -8,6 +8,7 @@ export const gql = (type: string) => `
     __type(name:"${type}"){
         name
         description
+        kind
         enumValues{
             name
             description
@@ -15,17 +16,23 @@ export const gql = (type: string) => `
         fields{
             type{
                 name
+                kind
                 ofType{
                     name
+                    kind
                     enumValues{
                         name
                     }
                     description
                     ofType{
                         name
+                        kind
+                        ofType{
+                            name
+                            kind
+                        }
                     }
                 }
-                kind
                 enumValues{
                     name
                 }

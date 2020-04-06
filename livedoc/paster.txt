@@ -1,0 +1,81 @@
+
+const determineType = (type) => {
+  return type.name || type.ofType.name || type.ofType.ofType.name || type.ofType.ofType.ofType.name;
+};
+const returnFieldKinds = (type, params = []) => {
+  if (type.kind) {
+    params.push(type.kind)
+  }
+  if (type.ofType) {
+    return returnFieldKinds(type.ofType, params)
+  }
+  return params
+}
+dryad = {
+  __Schema: {
+    types: (v) => {
+      if (!v.value) {
+        return ``
+      }
+      v.value.sort((a, b) => (a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1));
+      return `
+            <div class="Menu">
+                <div class="MenuHeader">
+                    <img class="Logo" src="https://graphqleditor.com/static/logoText-4ce01b90dc0eba15154a66bdee8f67d6.png" />
+                </div>
+                <div class="MenuSection">
+                    <h4>Types</h4>
+                    <div class="MenuTypes">
+                        ${v.value
+          .filter((t) => t.name.indexOf('__') === -1)
+          .map(
+            (t) => `
+                        <a href="${t.name}.html" class="Link ${t.name === 'Card' ? 'Active' : ''}" >${t.name}</a>
+                        `,
+          )
+          .join('')}
+                    </div>
+                </div>
+            </div>
+            `;
+    },
+  },
+  __Type: {
+    fields: (v) => `
+    <div class="__Type-fields">
+        <h3>Fields</h3>
+        <div class="Fields">
+            ${v.value
+        .map((field) => {
+          return `
+                <div class="Field">
+                    <div class="FieldParams">
+                        <div class="FieldName">${field.name}</div>
+                        <div class="FieldType">${determineType(field.type)}</div>
+                        ${returnFieldKinds(field.type).map(k => `<div class="FieldKind">${k}</div>`).join("")}
+                    </div>
+                    <div class="FieldDescription">${field.description}</div>
+                </div>
+                `;
+        })
+        .join('')}
+        </div>
+    </div>
+            `,
+    enumValues: v => v.value ? `
+    <div class="__Type-fields">
+        <h3>Enum Values</h3>
+        <div class="Fields">
+          ${v.value.map(field => {
+      return `
+              <div class="Field">
+                  <div class="FieldParams">
+                      <div class="FieldName">${field.name}</div>
+                  </div>
+                  <div class="FieldDescription">${field.description}</div>
+              </div>
+            `
+    }).join('')}
+        </div>` : ``
+  },
+};
