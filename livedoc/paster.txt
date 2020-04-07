@@ -1,4 +1,3 @@
-
 const determineType = (type) => {
   return type.name || type.ofType.name || type.ofType.ofType.name || type.ofType.ofType.ofType.name;
 };
@@ -11,6 +10,47 @@ const returnFieldKinds = (type, params = []) => {
   }
   return params
 }
+const realType = (kinds, type) => {
+  let rt = type
+  while(kinds.length > 0){
+    const kind = kinds.pop()
+    if(kind === 'NON_NULL'){
+      rt = `${rt}!`
+    }
+    if(kind === 'LIST'){
+      rt = `[${rt}]`
+    }
+  }
+  return rt
+}
+const typeLinks = (types,title,activeType) => {
+  return `
+  <div class="MenuTypes">
+      <h4>${title}</h4>
+      ${types.map((t) => `
+      <a href="${t}.html" class="Link ${t === activeType ? 'Active' : ''}" >${t}</a>
+      `).join('')}
+  </div>
+  `
+}
+
+const LinksForKind = (kind) => (types,title,activeType) => typeLinks(
+  types,
+  title,
+  activeType
+) 
+const MenuCategory = (kind) => (types,title,activeType) => {
+  const filteredTypes = types.filter(t => t.kind === kind).map(t => t.name)
+  if(filteredTypes.length === 0){
+    return ``
+  }
+  return `
+  <div class="MenuSection">
+    ${LinksForKind(kind)(filteredTypes, title, activeType)}
+  </div>
+  `
+}
+
 dryad = {
   Query:{
   __schema: (v) => {
@@ -23,24 +63,23 @@ dryad = {
         !(schemaTypes.includes(t.name))
       )
       types.sort((a, b) => (a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1));
+      const mainTypes = types
+          .filter((t) => t.name.indexOf('__') === -1)
+      
       return `
             <div class="Menu">
                 <div class="MenuHeader">
                     <img class="Logo" src="https://graphqleditor.com/static/logoText-4ce01b90dc0eba15154a66bdee8f67d6.png" />
                 </div>
                 <div class="MenuSection">
-                    <h4>Types</h4>
-                    <div class="MenuTypes">
-                        ${types
-          .filter((t) => t.name.indexOf('__') === -1)
-          .map(
-            (t) => `
-                        <a href="${t.name}.html" class="Link ${t.name === 'Card' ? 'Active' : ''}" >${t.name}</a>
-                        `,
-          )
-          .join('')}
-                    </div>
+                    ${typeLinks(schemaTypes,'Schema','Query')}
                 </div>
+                ${MenuCategory('OBJECT')(mainTypes,'Types','Card')}
+                ${MenuCategory('INTERFACE')(mainTypes,'Interfaces','Card')}
+                ${MenuCategory('UNION')(mainTypes,'Unions','Card')}
+                ${MenuCategory('INPUT')(mainTypes,'Inputs','Card')}
+                ${MenuCategory('ENUM')(mainTypes,'Enums','Card')}
+                ${MenuCategory('SCALAR')(mainTypes,'Scalars','Card')}
             </div>
             `;
     }
@@ -56,8 +95,7 @@ dryad = {
                 <div class="Field">
                     <div class="FieldParams">
                         <div class="FieldName">${field.name}</div>
-                        <div class="FieldType">${determineType(field.type)}</div>
-                        ${returnFieldKinds(field.type).map(k => `<div class="FieldKind">${k}</div>`).join("")}
+                        <a href="${determineType(field.type)}.html" class="FieldType">${realType(returnFieldKinds(field.type),determineType(field.type))}</a>
                     </div>
                     <div class="FieldDescription">${field.description}</div>
                 </div>

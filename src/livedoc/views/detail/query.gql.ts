@@ -1,8 +1,10 @@
 export const gql = (type: string) => `
+
 {
     __schema{
         types{
             name
+            kind
         }
         queryType{
             name
@@ -14,7 +16,7 @@ export const gql = (type: string) => `
             name
         }
     }
-    __type(name:"${type}"){
+    __type(name:"Query"){
         name
         description
         kind
@@ -58,4 +60,5 @@ export const gql = (type: string) => `
         }
     }
 }
+
 `;

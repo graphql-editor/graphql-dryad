@@ -4,10 +4,12 @@ export const css = `
     display: flex;
     flex-flow: row nowrap;
     font-family: "Roboto Condensed";
+    height: 100%;
 }
 .Menu{
     width: 200px;
     order:0;
+    height: 100%;
     background: #fafafa;
 }
 .Menu .MenuHeader{
@@ -55,7 +57,6 @@ export const css = `
     flex-flow: column nowrap;
     padding: 0 40px;
     padding-top:70px;
-    height:100vh;
     overflow: auto;
 }
 .__Type-kind{
@@ -90,16 +91,10 @@ export const css = `
     margin-bottom: 10px;
 }
 .FieldType{
-    color: #88b;
+    color: #d70;
     cursor: pointer;
-    font-weight: 500;
-}
-.FieldType, .FieldKind{
-    margin-right: 5px;
-    font-size: 0.75rem;
-}
-.FieldKind{
-    color: #8b8;
+    font-weight: bold;
+    text-decoration: none;
 }
 .FieldName{
     font-weight: 400;
@@ -109,6 +104,4 @@ export const css = `
 .FieldDescription{
     font-weight: 100;
 }
-
-
 `;

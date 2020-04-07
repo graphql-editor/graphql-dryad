@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { getGraphQL, GraphQLInfo } from './TypeMapResolver';
 import { OperationType } from 'graphql-zeus';
 import { Placehold } from '../components';
-import { DryadElement } from './DryadElement';
 import { ParseQuery } from './QueryParser';
+import { DryadElementPlain } from './DryadPlainHtml';
 
 export const DryadGQL = ({
   children,
@@ -105,5 +105,18 @@ export const DryadGQL = ({
   if (response === null) {
     return <Placehold>response is null</Placehold>;
   }
-  return <DryadElement withLabels={withLabels} parent={operation} o={response} dryad={dryad} />;
+  return (
+    <div
+      style={{ display: 'contents' }}
+      dangerouslySetInnerHTML={{
+        __html: DryadElementPlain({
+          withLabels,
+          parent: operation,
+          o: response,
+          dryad,
+        }),
+      }}
+    />
+  );
+  // return <DryadElement withLabels={withLabels} parent={operation} o={response} dryad={dryad} />;
 };

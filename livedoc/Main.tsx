@@ -1,15 +1,11 @@
-import React from 'react';
-import { LiveDoc } from '../src/livedoc';
+import React, { useEffect } from 'react';
+import { LiveDocHtml } from '../src/livedoc';
 
 export const Main = () => {
-  // useEffect(() => {
-  //   LiveDocHtml({
-  //     url: 'https://faker.graphqleditor.com/a-team/olympus/graphql',
-  //   });
-  // }, []);
-  return (
-    <>
-      <LiveDoc url={'https://faker.graphqleditor.com/a-team/olympus/graphql'} />
-    </>
-  );
+  useEffect(() => {
+    LiveDocHtml({
+      url: 'https://faker.graphqleditor.com/a-team/olympus/graphql',
+    });
+  }, []);
+  return <></>;
 };
