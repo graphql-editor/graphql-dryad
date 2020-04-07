@@ -13,6 +13,7 @@
     "noUnusedLocals": true,
     "strictNullChecks": true,
     "esModuleInterop": true,
+    "allowJs": true,
     "strict": true,
     "outDir": "./lib",
     "lib": ["es6", "es7", "esnext", "dom"],

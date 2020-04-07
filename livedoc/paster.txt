@@ -51,6 +51,18 @@ const MenuCategory = (kind) => (types,title,activeType) => {
   `
 }
 
+const RenderFieldTOC = (field) => {
+  const rt =realType(returnFieldKinds(field.type),determineType(field.type))
+  const argsRender = (field.args && field.args.length>0) ? `(${field.args.map(a=>{
+    const rtt = realType(returnFieldKinds(a.type),determineType(a.type))
+    return `${a.name}: ${rtt} `
+  }
+  ).join(", ")})` :''
+  return `
+     <a class="TableOfContentsLink" href="#${field.name}">${field.name}${argsRender}: ${rt}</a>
+  `
+}
+
 dryad = {
   Query:{
   __schema: (v) => {
@@ -87,6 +99,12 @@ dryad = {
   __Type: {
     fields: (v) => `
     <div class="__Type-fields">
+        <h3>Table of Contents</h3>
+        <div class="TableOfContents">
+        ${v.value.map(field => {
+          return RenderFieldTOC(field)
+        }).join('')}
+        </div>
         <h3>Fields</h3>
         <div class="Fields">
             ${v.value
@@ -94,7 +112,7 @@ dryad = {
           return `
                 <div class="Field">
                     <div class="FieldParams">
-                        <div class="FieldName">${field.name}</div>
+                        <div id="${field.name}" class="FieldName">${field.name}</div>
                         <a href="${determineType(field.type)}.html" class="FieldType">${realType(returnFieldKinds(field.type),determineType(field.type))}</a>
                     </div>
                     <div class="FieldDescription">${field.description}</div>

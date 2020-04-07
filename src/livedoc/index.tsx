@@ -1,7 +1,6 @@
 import React from 'react';
 import DetailView from './views/detail';
 import { DryadGQL } from '../dryad';
-import { Utils, Parser } from 'graphql-zeus';
 import zip from 'jszip';
 import { RenderToHTML, HtmlSkeletonStatic } from '../ssg';
 import { saveAs } from 'file-saver';
@@ -13,10 +12,30 @@ const Detail = ({ url }: LiveDocProps) => (
     Loading...
   </DryadGQL>
 );
-const returnTypeNames = async (url: string) => {
-  const schemaSting = await Utils.getFromUrl(url);
-  const schemaTree = Parser.parse(schemaSting);
-  return schemaTree.nodes.filter((t) => t.name).map((t) => t.name);
+const returnTypeNames = async (url: string, headers = {}): Promise<string[]> => {
+  const parsedGql = `
+  {
+    __schema{
+      types{
+        name
+      }
+    }
+  }
+  `;
+  const response = await (
+    await fetch(url, {
+      body: JSON.stringify({ query: parsedGql }),
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...headers,
+      },
+    })
+  ).json();
+  const qualifiedPageTypes = response.data.__schema.types
+    .filter((t: any) => t.name.indexOf('__') === -1)
+    .map((t: any) => t.name);
+  return qualifiedPageTypes;
 };
 export const LiveDocHtml = async ({ url }: LiveDocProps) => {
   const allTypes = await returnTypeNames(url);
@@ -24,7 +43,7 @@ export const LiveDocHtml = async ({ url }: LiveDocProps) => {
   const types = z.folder('types');
   for (const at of allTypes) {
     const html = await RenderToHTML({
-      dryad: { render: DetailView.dryad },
+      dryad: { render: DetailView.dryad(at) },
       gql: DetailView.gql(at),
       url,
       headers: {},

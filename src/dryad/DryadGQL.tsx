@@ -118,5 +118,4 @@ export const DryadGQL = ({
       }}
     />
   );
-  // return <DryadElement withLabels={withLabels} parent={operation} o={response} dryad={dryad} />;
 };

@@ -31,12 +31,12 @@ export const DryadElementPlain = (props: {
               },
             },
           };
-          return `<div style="display: contents" >${scalarFields[fieldName]({
+          return `${scalarFields[fieldName]({
             name: fieldName,
             value: o,
             original: DryadElementPlain({ ...props, dryad: decoupledDryad }),
             className,
-          })}</div>`;
+          })}`;
         }
       }
     } catch (error) {

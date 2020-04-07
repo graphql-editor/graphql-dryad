@@ -16,7 +16,7 @@ export const gql = (type: string) => `
             name
         }
     }
-    __type(name:"Query"){
+    __type(name:"${type}"){
         name
         description
         kind
@@ -51,6 +51,19 @@ export const gql = (type: string) => `
             args{
                 type{
                     name
+                    kind
+                    ofType{
+                        name
+                        kind
+                        ofType{
+                            name
+                            kind
+                            ofType{
+                                name
+                                kind
+                            }
+                        }
+                    }
                 }
                 name
             }
