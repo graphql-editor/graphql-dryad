@@ -1,12 +1,11 @@
 export const css = `
-
 @import url('https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@300;400;700&display=swap');
 .Query{
     display: flex;
     flex-flow: row nowrap;
     font-family: "Roboto Condensed";
 }
-.__Schema{
+.Menu{
     width: 200px;
     order:0;
     background: #fafafa;
@@ -110,4 +109,6 @@ export const css = `
 .FieldDescription{
     font-weight: 100;
 }
+
+
 `;

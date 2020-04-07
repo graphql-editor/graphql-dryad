@@ -4,6 +4,15 @@ export const gql = (type: string) => `
         types{
             name
         }
+        queryType{
+            name
+        }
+        mutationType{
+            name
+        }
+        subscriptionType{
+            name
+        }
     }
     __type(name:"${type}"){
         name

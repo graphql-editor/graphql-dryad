@@ -25,11 +25,11 @@ export function useThrottledState<T>(props: ThrottledState<T>) {
       }, delay);
     });
   };
-  const forceSetState = (state?: T) => {
+  const forceSetState = (value?: T) => {
     if (t) {
       window.clearTimeout(t);
     }
-    setState(state);
+    setState(value);
   };
   useEffect(() => {
     setThrottledState(value);

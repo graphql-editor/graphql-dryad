@@ -14,6 +14,7 @@ import * as icons from './icons';
 import { Menu } from '../components/Menu';
 import { HtmlSkeletonStatic, RenderToHTML } from '../ssg';
 import FileSaver from 'file-saver';
+import { useThrottledState } from '../Throttle';
 
 initLanguages();
 
@@ -79,6 +80,11 @@ export const HalfCode = ({
   const currentInitialValue = initialValues[editor];
   const currentConfig = Config[editor];
   const [graphQLCall, setGraphQLCall] = useState(initialValues.graphql);
+
+  const [dryadJS, setDryadJS] = useThrottledState({
+    value: value[Editors.js],
+    delay: 10000,
+  });
 
   useEffect(() => {
     setGraphQLCall(value[Editors.graphql] + gqlRefresher);
@@ -188,7 +194,7 @@ export const HalfCode = ({
         console.error(error);
       }
     }
-  }, [value[Editors.js]]);
+  }, [dryadJS]);
 
   useEffect(() => {
     const settingsValue = value[Editors.settings];
@@ -300,6 +306,7 @@ export const HalfCode = ({
             onClick={() => {
               const spaces = Math.floor(Math.random() * 200);
               const spacestring = new Array(spaces).fill(' ').join('');
+              setDryadJS(value[Editors.js]);
               setPassedSettings({ ...currentSettings });
               setGqlRefresher(spacestring);
             }}

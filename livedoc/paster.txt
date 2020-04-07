@@ -12,12 +12,17 @@ const returnFieldKinds = (type, params = []) => {
   return params
 }
 dryad = {
-  __Schema: {
-    types: (v) => {
+  Query:{
+  __schema: (v) => {
       if (!v.value) {
         return ``
       }
-      v.value.sort((a, b) => (a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1));
+      const {queryType, mutationType, subscriptionType} = v.value
+      const schemaTypes = [queryType,mutationType,subscriptionType].filter( t => !!t ).map( t=> t.name )
+      const types = v.value.types.filter(t => 
+        !(schemaTypes.includes(t.name))
+      )
+      types.sort((a, b) => (a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1));
       return `
             <div class="Menu">
                 <div class="MenuHeader">
@@ -26,7 +31,7 @@ dryad = {
                 <div class="MenuSection">
                     <h4>Types</h4>
                     <div class="MenuTypes">
-                        ${v.value
+                        ${types
           .filter((t) => t.name.indexOf('__') === -1)
           .map(
             (t) => `
@@ -38,7 +43,7 @@ dryad = {
                 </div>
             </div>
             `;
-    },
+    }
   },
   __Type: {
     fields: (v) => `
