@@ -1,5 +1,6 @@
 export const gql = (type: string) => `
 
+
 {
     __schema{
         types{
@@ -23,6 +24,37 @@ export const gql = (type: string) => `
         enumValues{
             name
             description
+        }
+        possibleTypes{
+            name
+        }
+        inputFields{
+            type{
+                name
+                kind
+                ofType{
+                    name
+                    kind
+                    enumValues{
+                        name
+                    }
+                    description
+                    ofType{
+                        name
+                        kind
+                        ofType{
+                            name
+                            kind
+                        }
+                    }
+                }
+                enumValues{
+                    name
+                }
+            }
+            name
+            description
+            __typename
         }
         fields{
             type{
@@ -73,5 +105,7 @@ export const gql = (type: string) => `
         }
     }
 }
+
+
 
 `;

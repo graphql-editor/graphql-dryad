@@ -1,6 +1,4 @@
 export const css = `
-
-
 @import url('https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@300;400;700&display=swap');
 .Query{
     display: flex;
@@ -87,6 +85,9 @@ export const css = `
 .__Type-fields h3{
     color: #aaa;
 }
+.__Type-possibleTypes{
+    order: 5;
+}
 .Field{
     font-size: 1rem;
     padding: 20px;
@@ -112,6 +113,13 @@ export const css = `
     font-weight: 100;
 }
 
+.PossibleUnionType{
+    display: block;
+    margin-bottom: 10px;
+    color: green;
+    text-decoration: none;
+}
+
 .TableOfContents{
     display: flex;
     flex-direction: column;
@@ -122,5 +130,4 @@ export const css = `
     color: #0ae;
     margin-bottom: 5px;
 }
-
 `;

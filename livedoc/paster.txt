@@ -12,18 +12,18 @@ const returnFieldKinds = (type, params = []) => {
 }
 const realType = (kinds, type) => {
   let rt = type
-  while(kinds.length > 0){
+  while (kinds.length > 0) {
     const kind = kinds.pop()
-    if(kind === 'NON_NULL'){
+    if (kind === 'NON_NULL') {
       rt = `${rt}!`
     }
-    if(kind === 'LIST'){
+    if (kind === 'LIST') {
       rt = `[${rt}]`
     }
   }
   return rt
 }
-const typeLinks = (types,title,activeType) => {
+const typeLinks = (types, title, activeType) => {
   return `
   <div class="MenuTypes">
       <h4>${title}</h4>
@@ -34,14 +34,14 @@ const typeLinks = (types,title,activeType) => {
   `
 }
 
-const LinksForKind = (kind) => (types,title,activeType) => typeLinks(
+const LinksForKind = (kind) => (types, title, activeType) => typeLinks(
   types,
   title,
   activeType
-) 
-const MenuCategory = (kind) => (types,title,activeType) => {
+)
+const MenuCategory = (kind) => (types, title, activeType) => {
   const filteredTypes = types.filter(t => t.kind === kind).map(t => t.name)
-  if(filteredTypes.length === 0){
+  if (filteredTypes.length === 0) {
     return ``
   }
   return `
@@ -52,77 +52,104 @@ const MenuCategory = (kind) => (types,title,activeType) => {
 }
 
 const RenderFieldTOC = (field) => {
-  const rt =realType(returnFieldKinds(field.type),determineType(field.type))
-  const argsRender = (field.args && field.args.length>0) ? `(${field.args.map(a=>{
-    const rtt = realType(returnFieldKinds(a.type),determineType(a.type))
-    return `${a.name}: ${rtt} `
+  const rt = realType(returnFieldKinds(field.type), determineType(field.type))
+  const argsRender = (field.args && field.args.length > 0) ? `(${field.args.map(a => {
+    const rtt = realType(returnFieldKinds(a.type), determineType(a.type))
+    return `<span class="ArgumentName">${a.name}</span>
+    <span>:</span>
+    <span class="FieldType">${rtt}</span>`
   }
-  ).join(", ")})` :''
+  ).join(", ")})` : ''
   return `
-     <a class="TableOfContentsLink" href="#${field.name}">${field.name}${argsRender}: ${rt}</a>
+     <a class="TableOfContentsLink" href="#${field.name}">${field.name}${argsRender}: <span class="FieldType">${rt}</span></a>
+  `
+}
+
+const RenderField = (field) => {
+   const argsRender = (field.args && field.args.length > 0) ? `(${field.args.map(a => {
+    const rtt = realType(returnFieldKinds(a.type), determineType(a.type))
+    return `<span class="ArgumentName">${a.name}</span>
+    <span>:</span>
+    <span class="FieldType">${rtt}</span>`
+  }
+  ).join(", ")})` : ''
+  return `
+  <div class="Field">
+      <div class="FieldParams">
+          <div id="${field.name}" class="FieldName">${field.name}${argsRender}</div>
+          <a href="${determineType(field.type)}.html" class="FieldType">${realType(returnFieldKinds(field.type), determineType(field.type))}</a>
+      </div>
+      <div class="FieldDescription">${field.description}</div>
+  </div>
   `
 }
 
 dryad = {
-  Query:{
-  __schema: (v) => {
+  Query: {
+    __schema: (v) => {
       if (!v.value) {
         return ``
       }
-      const {queryType, mutationType, subscriptionType} = v.value
-      const schemaTypes = [queryType,mutationType,subscriptionType].filter( t => !!t ).map( t=> t.name )
-      const types = v.value.types.filter(t => 
+      const { queryType, mutationType, subscriptionType } = v.value
+      const schemaTypes = [queryType, mutationType, subscriptionType].filter(t => !!t).map(t => t.name)
+      const types = v.value.types.filter(t =>
         !(schemaTypes.includes(t.name))
       )
       types.sort((a, b) => (a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1));
       const mainTypes = types
-          .filter((t) => t.name.indexOf('__') === -1)
-      
+        .filter((t) => t.name.indexOf('__') === -1)
+    console.log(mainTypes)
       return `
             <div class="Menu">
                 <div class="MenuHeader">
                     <img class="Logo" src="https://graphqleditor.com/static/logoText-4ce01b90dc0eba15154a66bdee8f67d6.png" />
                 </div>
                 <div class="MenuSection">
-                    ${typeLinks(schemaTypes,'Schema','Query')}
+                    ${typeLinks(schemaTypes, 'Schema', 'Query')}
                 </div>
-                ${MenuCategory('OBJECT')(mainTypes,'Types','Card')}
-                ${MenuCategory('INTERFACE')(mainTypes,'Interfaces','Card')}
-                ${MenuCategory('UNION')(mainTypes,'Unions','Card')}
-                ${MenuCategory('INPUT')(mainTypes,'Inputs','Card')}
-                ${MenuCategory('ENUM')(mainTypes,'Enums','Card')}
-                ${MenuCategory('SCALAR')(mainTypes,'Scalars','Card')}
+                ${MenuCategory('OBJECT')(mainTypes, 'Types', 'Card')}
+                ${MenuCategory('INTERFACE')(mainTypes, 'Interfaces', 'Card')}
+                ${MenuCategory('UNION')(mainTypes, 'Unions', 'Card')}
+                ${MenuCategory('INPUT_OBJECT')(mainTypes, 'Inputs', 'Card')}
+                ${MenuCategory('ENUM')(mainTypes, 'Enums', 'Card')}
+                ${MenuCategory('SCALAR')(mainTypes, 'Scalars', 'Card')}
             </div>
             `;
     }
   },
   __Type: {
-    fields: (v) => `
+    fields: (v) => v.value ? `
     <div class="__Type-fields">
         <h3>Table of Contents</h3>
         <div class="TableOfContents">
         ${v.value.map(field => {
-          return RenderFieldTOC(field)
-        }).join('')}
+      return RenderFieldTOC(field)
+    }).join('')}
         </div>
         <h3>Fields</h3>
         <div class="Fields">
             ${v.value
-        .map((field) => {
-          return `
-                <div class="Field">
-                    <div class="FieldParams">
-                        <div id="${field.name}" class="FieldName">${field.name}</div>
-                        <a href="${determineType(field.type)}.html" class="FieldType">${realType(returnFieldKinds(field.type),determineType(field.type))}</a>
-                    </div>
-                    <div class="FieldDescription">${field.description}</div>
-                </div>
-                `;
-        })
+        .map(RenderField)
         .join('')}
         </div>
     </div>
-            `,
+            `: ``,
+    inputFields: (v) => v.value ? `
+    <div class="__Type-fields">
+        <h3>Table of Contents</h3>
+        <div class="TableOfContents">
+        ${v.value.map(field => {
+      return RenderFieldTOC(field)
+    }).join('')}
+        </div>
+        <h3>Fields</h3>
+        <div class="Fields">
+            ${v.value
+        .map(RenderField)
+        .join('')}
+        </div>
+    </div>
+            `: ``,
     enumValues: v => v.value ? `
     <div class="__Type-fields">
         <h3>Enum Values</h3>
@@ -137,6 +164,20 @@ dryad = {
               </div>
             `
     }).join('')}
-        </div>` : ``
+        </div>` : ``,
+    possibleTypes: v => v.value ? `
+    <div class="__Type-possibleTypes">
+        <h3>Possible Types</h3>
+        <div class="Fields">
+            ${v.value
+        .map((field) => {
+          return `
+                <a href="${field.name}.html" class="PossibleUnionType">${field.name}</a>
+                `;
+        })
+        .join('')}
+        </div>
+    </div>
+    `:``
   },
 };
