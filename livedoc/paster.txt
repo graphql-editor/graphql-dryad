@@ -55,22 +55,18 @@ const RenderFieldTOC = (field) => {
   const rt = realType(returnFieldKinds(field.type), determineType(field.type))
   const argsRender = (field.args && field.args.length > 0) ? `(${field.args.map(a => {
     const rtt = realType(returnFieldKinds(a.type), determineType(a.type))
-    return `<span class="ArgumentName">${a.name}</span>
-    <span>:</span>
-    <span class="FieldType">${rtt}</span>`
+    return `<span class="ArgumentName">${a.name}:</span><span class="FieldType">${rtt}</span>`
   }
   ).join(", ")})` : ''
   return `
-     <a class="TableOfContentsLink" href="#${field.name}">${field.name}${argsRender}: <span class="FieldType">${rt}</span></a>
+     <a class="TableOfContentsLink" href="#${field.name}"><span class="FieldName">${field.name}:</span> <span class="FieldArgs">${argsRender}</span> <span class="FieldType">${rt}</span></a>
   `
 }
 
 const RenderField = (field) => {
    const argsRender = (field.args && field.args.length > 0) ? `(${field.args.map(a => {
     const rtt = realType(returnFieldKinds(a.type), determineType(a.type))
-    return `<span class="ArgumentName">${a.name}</span>
-    <span>:</span>
-    <span class="FieldType">${rtt}</span>`
+    return `<span class="ArgumentName">${a.name}:</span><span class="FieldType">${rtt}</span>`
   }
   ).join(", ")})` : ''
   return `
