@@ -205,7 +205,7 @@ export const css = `
     .FieldName--enum {
         color: var(--pink100);
     }
-    .FieldName--union-type {
+    .FieldName--unionType {
         color: var(--green100);
     }
     a.FieldName:hover,

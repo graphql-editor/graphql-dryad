@@ -168,7 +168,7 @@ dryad = {
             ${v.value
         .map((field) => {
           return `
-                <a href="${field.name}.html" class="FieldName FieldName--union-type">${field.name}</a>
+                <a href="${field.name}.html" class="FieldName FieldName--unionType">${field.name}</a>
                 `;
         })
         .join('')}
