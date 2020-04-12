@@ -55,28 +55,24 @@ const RenderFieldTOC = (field) => {
   const rt = realType(returnFieldKinds(field.type), determineType(field.type))
   const argsRender = (field.args && field.args.length > 0) ? `(${field.args.map(a => {
     const rtt = realType(returnFieldKinds(a.type), determineType(a.type))
-    return `<span class="ArgumentName">${a.name}</span>
-    <span>:</span>
-    <span class="FieldType">${rtt}</span>`
+    return `<span class="ArgumentName">${a.name}:</span><span class="FieldType">${rtt}</span>`
   }
   ).join(", ")})` : ''
   return `
-     <a class="TableOfContentsLink" href="#${field.name}">${field.name}${argsRender}: <span class="FieldType">${rt}</span></a>
+     <a class="TableOfContentsLink" href="#${field.name}"><span class="FieldName">${field.name}:</span> <span class="FieldArgs">${argsRender}</span> <span class="FieldType">${rt}</span></a>
   `
 }
 
 const RenderField = (field) => {
    const argsRender = (field.args && field.args.length > 0) ? `(${field.args.map(a => {
     const rtt = realType(returnFieldKinds(a.type), determineType(a.type))
-    return `<span class="ArgumentName">${a.name}</span>
-    <span>:</span>
-    <span class="FieldType">${rtt}</span>`
+    return `<span class="ArgumentName">${a.name}:</span><span class="FieldType">${rtt}</span>`
   }
   ).join(", ")})` : ''
   return `
   <div class="Field">
       <div class="FieldParams">
-          <div id="${field.name}" class="FieldName">${field.name}${argsRender}</div>
+          <div id="${field.name}" class="FieldName FieldName--field">${field.name}${argsRender}</div>
           <a href="${determineType(field.type)}.html" class="FieldType">${realType(returnFieldKinds(field.type), determineType(field.type))}</a>
       </div>
       <div class="FieldDescription">${field.description}</div>
@@ -158,7 +154,7 @@ dryad = {
       return `
               <div class="Field">
                   <div class="FieldParams">
-                      <div class="FieldName">${field.name}</div>
+                      <div class="FieldName FieldName--enum">${field.name}</div>
                   </div>
                   <div class="FieldDescription">${field.description}</div>
               </div>
@@ -172,7 +168,7 @@ dryad = {
             ${v.value
         .map((field) => {
           return `
-                <a href="${field.name}.html" class="PossibleUnionType">${field.name}</a>
+                <a href="${field.name}.html" class="FieldName FieldName--unionType">${field.name}</a>
                 `;
         })
         .join('')}
