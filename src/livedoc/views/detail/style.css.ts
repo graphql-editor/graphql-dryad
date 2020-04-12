@@ -13,6 +13,8 @@ export const css = `
         --green100: #31FFC8;
         --blue100: #30C1FF;
         --yellow100: #FED531;
+        --pink100: #FF59C5;
+
         --light: 300;
         --normal: 400;
         --bold: 700;
@@ -29,9 +31,7 @@ export const css = `
         cursor: pointer;
         color: inherit;
         text-decoration: none;
-    }
-    a:hover {
-        color: var(--grey100);
+        transition: 170ms ease-in-out;
     }
     ul {
         margin: 0;
@@ -114,7 +114,9 @@ export const css = `
         font-size: 0.875rem;
         line-height: 2.3;
         color: var(--grey90);
-        transition: 170ms ease-in-out;
+    }
+    .Link:hover {
+        color: var(--green100);
     }
     .Link.Active::before {
         content: '';
@@ -152,6 +154,7 @@ export const css = `
         font-weight: var(--bold);
         line-height: 1.16;
         color: var(--grey70);
+        margin-bottom: 0.125rem;
     }
     .__Type-description{
         order: 3;
@@ -165,10 +168,13 @@ export const css = `
     .__Type-possibleTypes{
         order: 5;
     }
+    .Fields + h3{
+        margin-top: 2.875rem;
+    }
     .Field{
         max-width: 40rem;
         width: 100%;
-        padding: 1.125rem;
+        padding: 1rem;
         background: var(--grey10);
     }
     .Field:not(:last-child) {
@@ -181,30 +187,39 @@ export const css = `
     .FieldType{
         color: var(--yellow100);
         font-weight: var(--bold);
-        transition: 170ms ease-in-out;
-    }
-    a.FieldType:hover {
-        opacity: 0.85;
     }
     .FieldArgs{
         margin-right: 0.1875rem;
     }
     .FieldName{
-        display: inline-flex;
-        flex-wrap: wrap;
+        display: block;
         font-weight: var(--bold);
-        color: var(--blue100);
         margin-right: 0.1875rem;
     }
-    .TableOfContentsLink > .FieldName {
+    .FieldName:not(:first-child) {
+        margin-top: 0.5rem;
+    }
+    .FieldName--field {
+        color: var(--blue100)
+    }
+    .FieldName--enum {
+        color: var(--pink100);
+    }
+    .FieldName--union-type {
+        color: var(--green100);
+    }
+    a.FieldName:hover,
+    a.FieldType:hover {
+        color: var(--grey100);
+    }
+    .TableOfContentsLink .FieldName {
         background-image: linear-gradient(currentColor, currentColor);
         background-position: 0% 100%;
         background-repeat: no-repeat;
         background-size: 0% 0.0625rem;
         transition: background-size .3s;
-        transition: 170ms ease-in-out;
     }
-    .TableOfContentsLink:hover > .FieldName {
+    .TableOfContentsLink:hover .FieldName {
         background-size: 100% 0.0625rem;
     }
     .ArgumentName {
@@ -213,9 +228,6 @@ export const css = `
     .FieldDescription{
         color: var(--grey70);
         font-weight: var(--light);
-    }
-    .PossibleUnionType{
-        display: block;
     }
     .TableOfContents{
         display: flex;

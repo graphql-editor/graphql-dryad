@@ -72,7 +72,7 @@ const RenderField = (field) => {
   return `
   <div class="Field">
       <div class="FieldParams">
-          <div id="${field.name}" class="FieldName">${field.name}${argsRender}</div>
+          <div id="${field.name}" class="FieldName FieldName--field">${field.name}${argsRender}</div>
           <a href="${determineType(field.type)}.html" class="FieldType">${realType(returnFieldKinds(field.type), determineType(field.type))}</a>
       </div>
       <div class="FieldDescription">${field.description}</div>
@@ -154,7 +154,7 @@ dryad = {
       return `
               <div class="Field">
                   <div class="FieldParams">
-                      <div class="FieldName">${field.name}</div>
+                      <div class="FieldName FieldName--enum">${field.name}</div>
                   </div>
                   <div class="FieldDescription">${field.description}</div>
               </div>
@@ -168,7 +168,7 @@ dryad = {
             ${v.value
         .map((field) => {
           return `
-                <a href="${field.name}.html" class="PossibleUnionType">${field.name}</a>
+                <a href="${field.name}.html" class="FieldName FieldName--union-type">${field.name}</a>
                 `;
         })
         .join('')}
