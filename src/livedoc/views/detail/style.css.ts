@@ -1,5 +1,4 @@
-export const css = `
-    @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap');
+export const css = `@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap');
     :root {
         --grey100: #FFFFFF;
         --grey90: #E6E6E6;
@@ -14,7 +13,7 @@ export const css = `
         --blue100: #30C1FF;
         --yellow100: #FED531;
         --pink100: #FF59C5;
-
+        
         --light: 300;
         --normal: 400;
         --bold: 700;
@@ -50,7 +49,7 @@ export const css = `
         font-weight: var(--light);
     }
     h1 {
-        font-size: 1.875rem;
+        font-size: 1.75rem;
         font-weight: var(--bold);
         line-height: 1.16;
         color: var(--grey70);
@@ -60,7 +59,7 @@ export const css = `
     }
     h3 {
         color: var(--grey70);
-        font-size: 1.375rem;
+        font-size: 1.25rem;
         font-weight: var(--bold);
         line-height: 1.18;
         margin: 0 0 1.125rem 0;
@@ -76,8 +75,7 @@ export const css = `
     }
     .Query{
         display: flex;
-        flex-flow: row nowrap;
-        height: 100%;
+        flex-direction: column;
         background: var(--grey0_1);
         font-family: "Roboto";
         font-size: 16px;
@@ -87,26 +85,27 @@ export const css = `
     }
     .Menu{
         min-width: 12.5rem;
-        max-width: 13.75rem;
         width:100%;
         order:0;
-        height: 100%;
         background: var(--grey0);
         word-break: break-all;
+        padding-bottom: 2rem;
         box-shadow: 0.25rem 0.25rem 1rem rgba(0, 0, 0, 0.25);
     }
     .Menu .MenuHeader{
-        padding: 1.875rem 1.875rem 2.25rem 1.875rem;
+        padding: 1.25rem;
         display: flex;
         align-items: center;
     }
     .Menu .MenuSection{
-        padding: 1.25rem 1.875rem 0.625rem 1.875rem;
+        padding: 1.25rem 1.25rem 0.625rem 1.25rem;
+    }
+    .Menu .MenuSection:not(:last-child){
         border-bottom: 1px solid var(--grey10);
     }
     .Menu .Logo{
+        width: 100%;
         max-width: 10.25rem;
-        margin: auto;
     }
     .Link{
         position: relative;
@@ -138,7 +137,7 @@ export const css = `
         flex: 1;
         display: flex;
         flex-flow: column nowrap;
-        padding: 4.75rem 1.875rem 5.375rem 1.875rem;
+        padding: 2rem 1.25rem 1rem 1.25rem;
         overflow: auto;
     }
     .__Type-kind{
@@ -150,7 +149,7 @@ export const css = `
     }
     .__Type-name{
         order: 1;
-        font-size: 1.875rem;
+        font-size: 1.75rem;
         font-weight: var(--bold);
         line-height: 1.16;
         color: var(--grey70);
@@ -160,7 +159,7 @@ export const css = `
         order: 3;
         color: var(--grey70);
         font-weight: var(--light);
-        margin-bottom: 3rem;
+        margin-bottom: 2rem;
     }
     .__Type-fields{
         order: 4;
@@ -168,8 +167,8 @@ export const css = `
     .__Type-possibleTypes{
         order: 5;
     }
-    .Fields + h3{
-        margin-top: 2.875rem;
+    .__Type-fields,.__Type-possibleTypes{
+        margin-bottom: 2.875rem;
     }
     .Field{
         max-width: 40rem;
@@ -208,19 +207,8 @@ export const css = `
     .FieldName--unionType {
         color: var(--green100);
     }
-    a.FieldName:hover,
-    a.FieldType:hover {
+    a.FieldName:hover,a.FieldType:hover {
         color: var(--grey100);
-    }
-    .TableOfContentsLink .FieldName {
-        background-image: linear-gradient(currentColor, currentColor);
-        background-position: 0% 100%;
-        background-repeat: no-repeat;
-        background-size: 0% 0.0625rem;
-        transition: background-size .3s;
-    }
-    .TableOfContentsLink:hover .FieldName {
-        background-size: 100% 0.0625rem;
     }
     .ArgumentName {
         margin-right: 0.1875rem;
@@ -233,7 +221,7 @@ export const css = `
         display: flex;
         flex-direction: column;
         align-items: flex-start;
-        margin-bottom: 2.875rem;
+        margin-bottom: 2.5rem;
     }
     .TableOfContentsLink{
         position: relative;
@@ -254,5 +242,54 @@ export const css = `
         height: 0.3125rem;
         border-radius: 100%;
         background: currentColor;
+    }
+    .TableOfContentsLink .FieldName {
+        background-image: linear-gradient(currentColor, currentColor);
+        background-position: 0% 100%;
+        background-repeat: no-repeat;
+        background-size: 0% 0.0625rem;
+        transition: background-size .3s;
+    }
+    .TableOfContentsLink:hover .FieldName {
+        background-size: 100% 0.0625rem;
+    }
+    @media (min-width: 768px){
+        .Query{
+            flex-direction: row;
+            flex-wrap: nowrap;
+        }
+        .Menu{
+            max-width: 13.75rem;
+        }
+        .Menu .Logo{
+            margin: auto;
+        }
+        .TableOfContents {
+            margin-bottom: 2.875rem;
+        }
+    }
+    @media (min-width: 1050px){
+        h1 {
+            font-size: 1.875rem;
+        }
+        h3 {
+            font-size: 1.375rem;
+        }
+        .Menu .MenuHeader{
+            padding: 1.875rem 1.875rem 2.25rem 1.875rem;
+        }
+        .Menu .MenuSection{
+            padding-left: 1.875rem;
+            padding-right: 1.875rem;
+        }
+        .__Type{
+            padding: 4.75rem 1.875rem 4rem 1.875rem;
+        }
+        .__Type-description{
+            margin-bottom: 3rem;
+        }
+        .__Type-name{
+            font-size: 1.875rem;
+        }
     }
 `;
