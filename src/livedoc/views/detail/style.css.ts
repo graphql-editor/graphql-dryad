@@ -106,6 +106,7 @@ export const css = `@import url('https://fonts.googleapis.com/css2?family=Roboto
     .Menu .Logo{
         width: 100%;
         max-width: 10.25rem;
+        filter: invert(100%) brightness(150%);
     }
     .Link{
         position: relative;
