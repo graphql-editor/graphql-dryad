@@ -1,3 +1,7 @@
+// @ts-ignore
+import { Remarkable } from 'remarkable';
+// @ts-ignore
+const md = new Remarkable();
 export const DryadElementPlain = (props: {
   dryad?: any;
   fieldName?: string;
@@ -36,6 +40,7 @@ export const DryadElementPlain = (props: {
             value: o,
             original: DryadElementPlain({ ...props, dryad: decoupledDryad }),
             className,
+            md,
           })}`;
         }
       }

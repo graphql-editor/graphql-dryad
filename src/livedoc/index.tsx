@@ -8,7 +8,7 @@ export interface LiveDocProps {
   url: string;
 }
 const Detail = ({ url }: LiveDocProps) => (
-  <DryadGQL gql={DetailView.gql('Card')} url={url} headers={{}} dryad={{ render: DetailView.dryad }}>
+  <DryadGQL gql={DetailView.gql('Company')} url={url} headers={{}} dryad={{ render: DetailView.dryad('Company') }}>
     Loading...
   </DryadGQL>
 );

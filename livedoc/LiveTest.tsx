@@ -12,24 +12,24 @@ export const Main = () => {
           style={{ position: 'absolute', top: 5, right: 30, zIndex: 100 }}
           onClick={() => {
             LiveDocHtml({
-              url: 'https://faker.graphqleditor.com/a-team/olympus/graphql',
+              url: 'https://faker.graphqleditor.com/a-team/finance-manager/graphql',
             });
           }}
         >
           export
         </button>
         <HalfCode
-          name="https://faker.graphqleditor.com/aexol/olympus/graphql"
+          name="https://faker.graphqleditor.com/a-team/finance-manager/graphql"
           exportEnabled={true}
           settings={{
-            url: 'https://faker.graphqleditor.com/aexol/olympus/graphql',
+            url: 'https://faker.graphqleditor.com/a-team/finance-manager/graphql',
             headers: {},
           }}
           editorOptions={{
             fontFamily: `'Fira Mono'`,
           }}
           initial={{
-            graphql: DetailView.gql('Query'),
+            graphql: DetailView.gql('Company'),
             css: DetailView.css,
             js: pasted.default,
           }}
