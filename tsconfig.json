@@ -20,5 +20,5 @@
     "rootDir": "./src",
     "baseUrl": "./src/"
   },
-  "exclude": ["lib", "node_modules", "docs", "__tests__", "generated", "examples", "sandbox"]
+  "exclude": ["lib", "node_modules", "docs", "__tests__", "generated", "examples", "sandbox", "livedoc","commitlint.config.js"]
 }
