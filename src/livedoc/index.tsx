@@ -6,9 +6,10 @@ import { saveAs } from 'file-saver';
 import { GqlContainer } from './GqlContainer';
 export interface LiveDocProps {
   url: string;
+  initial: string;
 }
-const Detail = ({ url }: LiveDocProps) => {
-  const [currentType, setCurrentType] = useState('Company');
+const Detail = ({ url, initial }: LiveDocProps) => {
+  const [currentType, setCurrentType] = useState(initial);
   useEffect(() => {
     //@ts-ignore
     window.route = (typeName: string) => {
@@ -73,7 +74,7 @@ export const LiveDocHtml = async ({ url }: LiveDocProps) => {
   saveAs(zipFile, 'livedoc.zip');
 };
 
-export const LiveDoc = ({ url }: LiveDocProps) => {
+export const LiveDoc = ({ url, initial }: LiveDocProps) => {
   // Make introspection
   // Get all type names
   // Iterate to generate type pages
@@ -86,7 +87,7 @@ export const LiveDoc = ({ url }: LiveDocProps) => {
   // if schema is live add place to add headers to query in settings Pane
   return (
     <div>
-      <Detail url={url} />
+      <Detail initial={initial} url={url} />
       <style>{DetailView.css}</style>
     </div>
   );
