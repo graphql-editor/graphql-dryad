@@ -2,12 +2,14 @@
 import { Remarkable } from 'remarkable';
 // @ts-ignore
 const md = new Remarkable();
+
 export const DryadElementPlain = (props: {
   dryad?: any;
   fieldName?: string;
   o: any;
   parent?: string;
   withLabels?: boolean;
+  isStatic?: boolean;
 }): string => {
   const {
     // Replace with dryad options later
@@ -16,6 +18,7 @@ export const DryadElementPlain = (props: {
     o,
     parent,
     withLabels,
+    isStatic,
   } = props;
 
   const className = [parent, fieldName].filter((d) => !!d).join('-');
@@ -41,6 +44,7 @@ export const DryadElementPlain = (props: {
             original: DryadElementPlain({ ...props, dryad: decoupledDryad }),
             className,
             md,
+            isStatic,
           })}`;
         }
       }
@@ -58,6 +62,7 @@ export const DryadElementPlain = (props: {
               fieldName: 'd-item',
               o: vv,
               withLabels,
+              isStatic,
             }),
           )
           .join('')}
@@ -74,6 +79,7 @@ export const DryadElementPlain = (props: {
               parent: o.__typename!,
               o: o[k],
               withLabels,
+              isStatic,
             });
           })
           .join('')}

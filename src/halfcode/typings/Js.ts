@@ -46,6 +46,16 @@ interface FuncProps<T> {
    * Original returned string from Editor
    */
   original: string;
+  /**
+   * Render markdown string
+   */
+  md: {
+    render: (value: string) => string
+  };
+  /**
+   * Determines if you are using static site export
+   */
+  isStatic: boolean
 }
 
 type Func<T> = (props: FuncProps<T>) => string;

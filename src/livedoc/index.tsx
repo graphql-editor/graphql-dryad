@@ -1,17 +1,31 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import DetailView from './views/detail';
-import { DryadGQL } from '../dryad';
 import zip from 'jszip';
 import { RenderToHTML, HtmlSkeletonStatic } from '../ssg';
 import { saveAs } from 'file-saver';
+import { GqlContainer } from './GqlContainer';
 export interface LiveDocProps {
   url: string;
 }
-const Detail = ({ url }: LiveDocProps) => (
-  <DryadGQL gql={DetailView.gql('Company')} url={url} headers={{}} dryad={{ render: DetailView.dryad('Company') }}>
-    Loading...
-  </DryadGQL>
-);
+const Detail = ({ url }: LiveDocProps) => {
+  const [currentType, setCurrentType] = useState('Company');
+  useEffect(() => {
+    //@ts-ignore
+    window.route = (typeName: string) => {
+      setCurrentType(typeName);
+    };
+  }, []);
+  return (
+    <GqlContainer
+      gql={DetailView.gql(currentType)}
+      url={url}
+      headers={{}}
+      dryad={{ render: DetailView.dryad(currentType) }}
+    >
+      Loading...
+    </GqlContainer>
+  );
+};
 const returnTypeNames = async (url: string, headers = {}): Promise<string[]> => {
   const parsedGql = `
   {

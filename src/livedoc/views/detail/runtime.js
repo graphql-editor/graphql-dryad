@@ -23,17 +23,13 @@ const realType = (kinds, type) => {
   }
   return rt;
 };
+let isStatic = false;
+const renderLinking = (to) => (isStatic ? `href="${to}.html"` : `onclick="route('${to}')"`);
 const typeLinks = (types, title, activeType) => {
   return `
   <div class="MenuTypes">
       <h4>${title}</h4>
-      ${types
-        .map(
-          (t) => `
-      <a href="${t}.html" class="Link ${t === activeType ? 'Active' : ''}" >${t}</a>
-      `,
-        )
-        .join('')}
+      ${types.map((t) => `<a ${renderLinking(t)} class="Link ${t === activeType ? 'Active' : ''}" >${t}</a>`).join('')}
   </div>
   `;
 };
@@ -144,6 +140,7 @@ const RenderFields = (fields) => `
 export const dryad = (type) => ({
   Query: {
     __schema: (v) => {
+      isStatic = v.isStatic;
       if (!v.value) {
         return ``;
       }
@@ -170,6 +167,7 @@ export const dryad = (type) => ({
             `;
     },
     __type: (v) => {
+      isStatic = v.isStatic;
       const { fields, enumValues, inputFields, possibleTypes, description, name, kind } = v.value;
       return `
         <div class="__Type">
@@ -186,7 +184,7 @@ export const dryad = (type) => ({
   },
   __Type: {
     fields: (v) => (v.value ? RenderFields(v.value) : ``),
-    inputFields: (v) => (v.value ? RenderInputValues(v.value) : ``),
+    inputFields: (v) => (v.value ? RenderFields(v.value) : ``),
     enumValues: (v) => (v.value ? RenderEnums(v.value) : ``),
     possibleTypes: (v) => (v.value ? RenderPossibleTypes(v.value) : ``),
   },
