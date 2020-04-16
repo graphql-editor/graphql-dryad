@@ -34,11 +34,12 @@ export const GqlContainer = ({
     const parts = gql.split('{').flatMap((g) => g.split('}'));
     let operationType = OperationType.query;
     for (const part of parts) {
-      if (part.indexOf(`${OperationType.mutation}{`) !== -1) {
+      const trimmed = part.replace(/\s/g, '');
+      if (trimmed === OperationType.mutation) {
         operationType = OperationType.mutation;
         break;
       }
-      if (part.indexOf(`${OperationType.subscription}{`) !== -1) {
+      if (trimmed === OperationType.subscription) {
         operationType = OperationType.subscription;
         break;
       }
