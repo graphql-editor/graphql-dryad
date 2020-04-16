@@ -34,11 +34,11 @@ export const GqlContainer = ({
     const parts = gql.split('{').flatMap((g) => g.split('}'));
     let operationType = OperationType.query;
     for (const part of parts) {
-      if (part.indexOf(OperationType.mutation) !== -1) {
+      if (part.indexOf(`${OperationType.mutation}{`) !== -1) {
         operationType = OperationType.mutation;
         break;
       }
-      if (part.indexOf(OperationType.subscription) !== -1) {
+      if (part.indexOf(`${OperationType.subscription}{`) !== -1) {
         operationType = OperationType.subscription;
         break;
       }
@@ -97,6 +97,7 @@ export const GqlContainer = ({
   if (response === null) {
     return <Placehold>response is null</Placehold>;
   }
+  console.log(operation);
   return (
     <div
       style={{ display: 'contents' }}
@@ -105,7 +106,7 @@ export const GqlContainer = ({
           withLabels,
           parent: operation,
           o: response,
-          dryad,
+          dryad: { render: dryad(operation) },
         }),
       }}
     />

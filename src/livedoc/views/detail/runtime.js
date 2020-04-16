@@ -137,8 +137,8 @@ const RenderFields = (fields) => `
     </div>
 `;
 
-export const dryad = (type) => ({
-  Query: {
+export const dryad = (type) => (queryType) => ({
+  [queryType]: {
     __schema: (v) => {
       isStatic = v.isStatic;
       if (!v.value) {

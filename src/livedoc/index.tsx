@@ -17,12 +17,7 @@ const Detail = ({ url, initial }: LiveDocProps) => {
     };
   }, []);
   return (
-    <GqlContainer
-      gql={DetailView.gql(currentType)}
-      url={url}
-      headers={{}}
-      dryad={{ render: DetailView.dryad(currentType) }}
-    >
+    <GqlContainer gql={DetailView.gql(currentType)} url={url} headers={{}} dryad={DetailView.dryad(currentType)}>
       Loading...
     </GqlContainer>
   );
