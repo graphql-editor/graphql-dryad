@@ -12,6 +12,7 @@ export const GqlContainer = ({
   headers = {},
   url,
   withLabels,
+  css,
 }: {
   // Replace with DryadOptions Later
   children: React.ReactNode;
@@ -20,6 +21,7 @@ export const GqlContainer = ({
   headers?: Record<string, string>;
   url: string;
   withLabels?: boolean;
+  css: string;
 }) => {
   const [response, setResponse] = useState(undefined);
   const [graphqlInfo, setGraphQLInfo] = useState<GraphQLInfo>();
@@ -98,18 +100,20 @@ export const GqlContainer = ({
   if (response === null) {
     return <Placehold>response is null</Placehold>;
   }
-  console.log(operation);
   return (
-    <div
-      style={{ display: 'contents' }}
-      dangerouslySetInnerHTML={{
-        __html: DryadElementPlain({
-          withLabels,
-          parent: operation,
-          o: response,
-          dryad: { render: dryad(operation) },
-        }),
-      }}
-    />
+    <>
+      <div
+        style={{ display: 'contents' }}
+        dangerouslySetInnerHTML={{
+          __html: DryadElementPlain({
+            withLabels,
+            parent: operation,
+            o: response,
+            dryad: { render: dryad(operation) },
+          }),
+        }}
+      />
+      <style>{css.replace(/.Query\{/g, `.${operation}{`)}</style>
+    </>
   );
 };

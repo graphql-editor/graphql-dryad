@@ -17,7 +17,13 @@ const Detail = ({ url, initial }: LiveDocProps) => {
     };
   }, []);
   return (
-    <GqlContainer gql={DetailView.gql(currentType)} url={url} headers={{}} dryad={DetailView.dryad(currentType)}>
+    <GqlContainer
+      css={DetailView.css}
+      gql={DetailView.gql(currentType)}
+      url={url}
+      headers={{}}
+      dryad={DetailView.dryad(currentType)}
+    >
       Loading...
     </GqlContainer>
   );
@@ -83,7 +89,6 @@ export const LiveDoc = ({ url, initial }: LiveDocProps) => {
   return (
     <div>
       <Detail initial={initial} url={url} />
-      <style>{DetailView.css}</style>
     </div>
   );
 };
