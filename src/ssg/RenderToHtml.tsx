@@ -56,7 +56,6 @@ export const RenderToHTML = async ({
       return 'response is null';
     }
     const res = response.data;
-    console.log(ot!);
     return DryadElementPlain({
       withLabels,
       parent: ot!,

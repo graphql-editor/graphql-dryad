@@ -14,7 +14,6 @@ export const DryadBody: FunctionComponent<DryadBodyProps> = ({
     style={{
       flex: 1,
       background: Colors.grey[0],
-      height: '100%',
       boxShadow: `${Colors.grey[10]}11 3px 5px 4px`,
       ...style,
     }}
