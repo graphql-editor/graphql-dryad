@@ -8,7 +8,10 @@ const insertTypeName = (tokens: Token[]): Token[] => {
     // const right = index < filteredTokens.length - 1 ? filteredTokens[index + 1] : undefined;
     const token = filteredTokens[index];
     newTokens.push(token);
-    if (token.value === '{' && (!left || (left.value !== ':' && left.value !== '}'))) {
+    if (
+      token.value === '{' &&
+      (!left || (left.value !== ':' && left.value !== '}'))
+    ) {
       newTokens.push({
         type: TokenType.KEYWORD,
         value: '__typename',

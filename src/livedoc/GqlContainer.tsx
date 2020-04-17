@@ -4,6 +4,7 @@ import { OperationType } from 'graphql-zeus';
 import { Placehold } from '../components';
 import { ParseQuery } from '../dryad/QueryParser';
 import { DryadElementPlain } from '../dryad/DryadPlainHtml';
+import { CssReplace } from './CssReplace';
 
 export const GqlContainer = ({
   children,
@@ -25,7 +26,9 @@ export const GqlContainer = ({
 }) => {
   const [response, setResponse] = useState(undefined);
   const [graphqlInfo, setGraphQLInfo] = useState<GraphQLInfo>();
-  const [operationType, setOperationType] = useState<OperationType>(OperationType.query);
+  const [operationType, setOperationType] = useState<OperationType>(
+    OperationType.query,
+  );
   const [operation, setOperation] = useState<string>();
   const [backendErrors, setBackendErrors] = useState<string[]>([]);
 
@@ -113,7 +116,7 @@ export const GqlContainer = ({
           }),
         }}
       />
-      <style>{css.replace(/.Query\{/g, `.${operation}{`)}</style>
+      <style>{CssReplace(css, operation)}</style>
     </>
   );
 };

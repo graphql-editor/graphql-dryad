@@ -1,5 +1,10 @@
 const determineType = (type) => {
-  return type.name || type.ofType.name || type.ofType.ofType.name || type.ofType.ofType.ofType.name;
+  return (
+    type.name ||
+    type.ofType.name ||
+    type.ofType.ofType.name ||
+    type.ofType.ofType.ofType.name
+  );
 };
 const returnFieldKinds = (type, params = []) => {
   if (type.kind) {
@@ -24,17 +29,26 @@ const realType = (kinds, type) => {
   return rt;
 };
 let isStatic = false;
-const renderLinking = (to) => (isStatic ? `href="${to}.html"` : `onclick="route('${to}')"`);
+const renderLinking = (to) =>
+  isStatic ? `href="${to}.html"` : `onclick="route('${to}')"`;
 const typeLinks = (types, title, activeType) => {
   return `
   <div class="MenuTypes">
       <h4>${title}</h4>
-      ${types.map((t) => `<a ${renderLinking(t)} class="Link ${t === activeType ? 'Active' : ''}" >${t}</a>`).join('')}
+      ${types
+        .map(
+          (t) =>
+            `<a ${renderLinking(t)} class="Link ${
+              t === activeType ? 'Active' : ''
+            }" >${t}</a>`,
+        )
+        .join('')}
   </div>
   `;
 };
 
-const LinksForKind = (kind) => (types, title, activeType) => typeLinks(types, title, activeType);
+const LinksForKind = (kind) => (types, title, activeType) =>
+  typeLinks(types, title, activeType);
 const MenuCategory = (kind) => (types, title, activeType) => {
   const filteredTypes = types.filter((t) => t.kind === kind).map((t) => t.name);
   if (filteredTypes.length === 0) {
@@ -47,19 +61,30 @@ const MenuCategory = (kind) => (types, title, activeType) => {
   `;
 };
 
+window.scrollDocs = (name) => {
+  const element = document.getElementById(name);
+  document.getElementById('__Type').scrollTo({
+    behavior: 'smooth',
+    top: element.offsetTop,
+  });
+};
+
 const RenderFieldTOC = (field) => {
   const rt = realType(returnFieldKinds(field.type), determineType(field.type));
   const argsRender =
     field.args && field.args.length > 0
       ? `(${field.args
           .map((a) => {
-            const rtt = realType(returnFieldKinds(a.type), determineType(a.type));
+            const rtt = realType(
+              returnFieldKinds(a.type),
+              determineType(a.type),
+            );
             return `<span class="ArgumentName">${a.name}:</span><span class="FieldType">${rtt}</span>`;
           })
           .join(', ')})`
       : '';
   return `
-     <a class="TableOfContentsLink" href="#${field.name}"><span class="FieldName">${field.name}:</span> <span class="FieldArgs">${argsRender}</span> <span class="FieldType">${rt}</span></a>
+     <a class="TableOfContentsLink" onclick="scrollDocs('${field.name}')"><span class="FieldName">${field.name}:</span> <span class="FieldArgs">${argsRender}</span> <span class="FieldType">${rt}</span></a>
   `;
 };
 
@@ -68,7 +93,10 @@ const RenderField = (field) => {
     field.args && field.args.length > 0
       ? `(${field.args
           .map((a) => {
-            const rtt = realType(returnFieldKinds(a.type), determineType(a.type));
+            const rtt = realType(
+              returnFieldKinds(a.type),
+              determineType(a.type),
+            );
             return `<span class="ArgumentName">${a.name}:</span><span class="FieldType">${rtt}</span>`;
           })
           .join(', ')})`
@@ -76,8 +104,12 @@ const RenderField = (field) => {
   return `
   <div class="Field">
       <div class="FieldParams">
-          <div id="${field.name}" class="FieldName FieldName--field">${field.name}${argsRender}</div>
-          <a href="${determineType(field.type)}.html" class="FieldType">${realType(
+          <div id="${field.name}" class="FieldName FieldName--field">${
+    field.name
+  }${argsRender}</div>
+          <a ${renderLinking(
+            determineType(field.type),
+          )} class="FieldType">${realType(
     returnFieldKinds(field.type),
     determineType(field.type),
   )}</a>
@@ -94,7 +126,9 @@ const RenderPossibleTypes = (types) => `
         ${types
           .map((field) => {
             return `
-            <a href="${field.name}.html" class="FieldName FieldName--unionType">${field.name}</a>
+            <a ${renderLinking(
+              field.name,
+            )} class="FieldName FieldName--unionType">${field.name}</a>
             `;
           })
           .join('')}
@@ -145,12 +179,16 @@ export const dryad = (type) => (queryType) => ({
         return ``;
       }
       const { queryType, mutationType, subscriptionType } = v.value;
-      const schemaTypes = [queryType, mutationType, subscriptionType].filter((t) => !!t).map((t) => t.name);
+      const schemaTypes = [queryType, mutationType, subscriptionType]
+        .filter((t) => !!t)
+        .map((t) => t.name);
       const types = v.value.types.filter((t) => !schemaTypes.includes(t.name));
-      types.sort((a, b) => (a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1));
+      types.sort((a, b) =>
+        a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1,
+      );
       const mainTypes = types.filter((t) => t.name.indexOf('__') === -1);
       return `
-            <div class="Menu">
+            <div class="Menu" id="Menu">
                 <div class="MenuHeader">
                     <img class="Logo" src="https://graphqleditor.com/static/logoText-4ce01b90dc0eba15154a66bdee8f67d6.png" />
                 </div>
@@ -168,12 +206,22 @@ export const dryad = (type) => (queryType) => ({
     },
     __type: (v) => {
       isStatic = v.isStatic;
-      const { fields, enumValues, inputFields, possibleTypes, description, name, kind } = v.value;
+      const {
+        fields,
+        enumValues,
+        inputFields,
+        possibleTypes,
+        description,
+        name,
+        kind,
+      } = v.value;
       return `
-        <div class="__Type">
+        <div class="__Type" id="__Type">
           <div class="__Type-name">${name}</div>
           <div class="__Type-kind">${kind}</div>
-          <div class="__Type-description">${description ? v.md.render(description) : ''}</div>
+          <div class="__Type-description">${
+            description ? v.md.render(description) : ''
+          }</div>
           ${fields ? RenderFields(fields) : ''} 
           ${inputFields ? RenderFields(inputFields) : ''} 
           ${enumValues ? RenderEnums(enumValues) : ''} 

@@ -62,6 +62,7 @@ export const RenderToHTML = async ({
       parent: ot!,
       o: res,
       dryad,
+      isStatic: true,
     });
   } catch (error) {
     console.log(error);

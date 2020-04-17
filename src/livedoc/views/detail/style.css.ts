@@ -82,15 +82,31 @@ export const css = `@import url('https://fonts.googleapis.com/css2?family=Roboto
         font-weight: var(--normal);
         line-height: 1.5;
         color: var(--grey100);
+        max-height:100%;
     }
     .Menu{
         min-width: 12.5rem;
         width:100%;
+        max-height:100%;
         order:0;
         background: var(--grey0);
         word-break: break-all;
         padding-bottom: 2rem;
         box-shadow: 0.25rem 0.25rem 1rem rgba(0, 0, 0, 0.25);
+        overflow:auto;
+    }
+
+    .Menu, .Query{
+        scrollbar-color: var(--grey20) var(--grey10);
+    }
+    .Menu::-webkit-scrollbar, .Query::-webkit-scrollbar{
+      background: var(--grey10);
+    }
+    .Menu::-webkit-scrollbar-track, .Query::-webkit-scrollbar-track{
+      background: var(--grey10);
+    }
+    .Menu::-webkit-scrollbar-thumb, .Query::-webkit-scrollbar-thumb{
+      background: var(--grey0);
     }
     .Menu .MenuHeader{
         padding: 1.25rem;

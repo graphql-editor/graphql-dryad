@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import DetailView from './views/detail';
 import zip from 'jszip';
-import { RenderToHTML, HtmlSkeletonStatic } from '../ssg';
+import { RenderToHTML } from '../ssg';
 import { saveAs } from 'file-saver';
 import { GqlContainer } from './GqlContainer';
+import { CssReplace } from './CssReplace';
+import { DocSkeletonStatic } from './DocSkeleton';
 export interface LiveDocProps {
   url: string;
   initial: string;
 }
-const Detail = ({ url, initial }: LiveDocProps) => {
+export const LiveDoc = ({ url, initial }: LiveDocProps) => {
   const [currentType, setCurrentType] = useState(initial);
   useEffect(() => {
     //@ts-ignore
@@ -28,12 +30,21 @@ const Detail = ({ url, initial }: LiveDocProps) => {
     </GqlContainer>
   );
 };
-const returnTypeNames = async (url: string, headers = {}): Promise<string[]> => {
+const returnTypeNames = async (url: string, headers = {}) => {
   const parsedGql = `
   {
     __schema{
       types{
         name
+      }
+      queryType{
+          name
+      }
+      mutationType{
+          name
+      }
+      subscriptionType{
+          name
       }
     }
   }
@@ -51,44 +62,35 @@ const returnTypeNames = async (url: string, headers = {}): Promise<string[]> => 
   const qualifiedPageTypes = response.data.__schema.types
     .filter((t: any) => t.name.indexOf('__') === -1)
     .map((t: any) => t.name);
-  return qualifiedPageTypes;
+  return {
+    types: qualifiedPageTypes,
+    query: response.data.__schema.queryType,
+    mutation: response.data.__schema.mutationType,
+    subscription: response.data.__schema.subscriptionType,
+  };
 };
 export const LiveDocHtml = async ({ url }: LiveDocProps) => {
   const allTypes = await returnTypeNames(url);
   const z = new zip();
   const types = z.folder('types');
-  for (const at of allTypes) {
+  const mainType =
+    allTypes.query?.name ||
+    allTypes.mutation?.name ||
+    allTypes.subscription?.name ||
+    'Query';
+  for (const at of allTypes.types) {
     const html = await RenderToHTML({
-      dryad: { render: DetailView.dryad(at) },
+      dryad: { render: DetailView.dryad(at)(mainType) },
       gql: DetailView.gql(at),
       url,
       headers: {},
     })!;
-    const all = HtmlSkeletonStatic({
+    const all = DocSkeletonStatic({
       body: html!,
-      style: DetailView.css,
+      style: CssReplace(DetailView.css, mainType),
     });
     await types.file(`${at}.html`, all!);
   }
-  console.log('Zipping');
   const zipFile = await z.generateAsync({ type: 'blob' });
   saveAs(zipFile, 'livedoc.zip');
-};
-
-export const LiveDoc = ({ url, initial }: LiveDocProps) => {
-  // Make introspection
-  // Get all type names
-  // Iterate to generate type pages
-  // MENU
-  // Render Menu with
-  // Types - including all the types
-  // in all pages with active
-  // PLAY
-  // Add the possibility to execute query on faker/live schema
-  // if schema is live add place to add headers to query in settings Pane
-  return (
-    <div>
-      <Detail initial={initial} url={url} />
-    </div>
-  );
 };

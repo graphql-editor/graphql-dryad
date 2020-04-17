@@ -48,7 +48,12 @@ export const HalfCode = ({
     settings: useRef<HTMLDivElement>(null),
   };
 
-  const allEditors = [Editors.graphql, Editors.css, Editors.js, Editors.settings].filter((e) => !disabled.includes(e));
+  const allEditors = [
+    Editors.graphql,
+    Editors.css,
+    Editors.js,
+    Editors.settings,
+  ].filter((e) => !disabled.includes(e));
 
   const [editor, setEditor] = useState<Editors>(Editors.graphql);
   const [schemaString, setSchema] = useState('');
@@ -70,8 +75,12 @@ export const HalfCode = ({
   const [providerJS, setProviderJS] = useState<monaco.IDisposable>();
   const [gqlRefresher, setGqlRefresher] = useState('');
 
-  const [monacoInstance, setMonacoInstance] = useState<monaco.editor.IStandaloneCodeEditor>();
-  const [monacoSubscription, setMonacoSubscription] = useState<monaco.IDisposable>();
+  const [monacoInstance, setMonacoInstance] = useState<
+    monaco.editor.IStandaloneCodeEditor
+  >();
+  const [monacoSubscription, setMonacoSubscription] = useState<
+    monaco.IDisposable
+  >();
 
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -123,39 +132,49 @@ export const HalfCode = ({
       );
       setProviderGql((p) => {
         p?.dispose();
-        return monaco.languages.registerCompletionItemProvider('gqlSpecial', GqlSuggestions(schemaString));
+        return monaco.languages.registerCompletionItemProvider(
+          'gqlSpecial',
+          GqlSuggestions(schemaString),
+        );
       });
       setProviderCSS((p) => {
         p?.dispose();
-        return monaco.languages.registerCompletionItemProvider('css', CSSSuggestions(fields));
+        return monaco.languages.registerCompletionItemProvider(
+          'css',
+          CSSSuggestions(fields),
+        );
       });
       setProviderJS((p) => {
         p?.dispose();
-        return monaco.languages.typescript.javascriptDefaults.addExtraLib(typings);
+        return monaco.languages.typescript.javascriptDefaults.addExtraLib(
+          typings,
+        );
       });
     }
   }, [schemaString]);
 
   useEffect(() => {
-    if (currentInitialValue !== initialValues[editor]) {
-      setValue((value) => ({
-        ...value,
-        [editor]: currentInitialValue,
-      }));
+    if (currentInitialValue !== currentValue) {
+      monacoInstance?.setValue(currentInitialValue);
     }
   }, [currentInitialValue]);
 
   useEffect(() => {
     Utils.getFromUrl(
       passedSettings.url,
-      Object.keys(passedSettings.headers).map((k) => `${k}: ${passedSettings.headers[k]}`),
+      Object.keys(passedSettings.headers).map(
+        (k) => `${k}: ${passedSettings.headers[k]}`,
+      ),
     ).then((fetchedSchema) => {
       setSchema(fetchedSchema);
     });
   }, [passedSettings.url]);
 
   useEffect(() => {
-    const m = monaco.editor.create(currentRef.current!, { ...currentConfig.options, value: currentValue });
+    const m = monaco.editor.create(currentRef.current!, {
+      ...currentConfig.options,
+      value: currentValue,
+    });
     if (editorOptions) {
       m.updateOptions(editorOptions);
       monaco.editor.remeasureFonts();
@@ -185,7 +204,9 @@ export const HalfCode = ({
           throw new Error("Cannot find 'dryad = {'");
         }
         const dryadPart = js.replace(/(dryad\s?=\s?{)/, 'const $1');
-        const dryadFunction = new Function([dryadPart, `return dryad`].join('\n'));
+        const dryadFunction = new Function(
+          [dryadPart, `return dryad`].join('\n'),
+        );
         const dryadResult = dryadFunction();
         setDryad({
           render: dryadResult,
@@ -242,7 +263,8 @@ export const HalfCode = ({
               categories={[
                 {
                   name: 'Export Static Website',
-                  description: 'Export your GraphQL query together with CSS as static website with prefetched data',
+                  description:
+                    'Export your GraphQL query together with CSS as static website with prefetched data',
                   onClick: async () => {
                     const body = await RenderToHTML({
                       headers: currentSettings.headers,
@@ -273,7 +295,11 @@ export const HalfCode = ({
               );
             })}
             {exportEnabled && (
-              <Tab style={{ marginLeft: 'auto' }} active={menuOpen} onClick={() => setMenuOpen(!menuOpen)}>
+              <Tab
+                style={{ marginLeft: 'auto' }}
+                active={menuOpen}
+                onClick={() => setMenuOpen(!menuOpen)}
+              >
                 <icons.More size={12} />
               </Tab>
             )}
@@ -281,7 +307,10 @@ export const HalfCode = ({
           {allEditors.map((e) => (
             <div
               key={e}
-              style={{ height: `calc(100% - 30px)`, display: editor === e ? 'block' : 'none' }}
+              style={{
+                height: `calc(100% - 30px)`,
+                display: editor === e ? 'block' : 'none',
+              }}
               ref={refs[e]}
             ></div>
           ))}
@@ -312,7 +341,12 @@ export const HalfCode = ({
             }}
           />
           <DryadBody>
-            <DryadGQL headers={passedSettings.headers} dryad={dryad} url={passedSettings.url} gql={graphQLCall || ''}>
+            <DryadGQL
+              headers={passedSettings.headers}
+              dryad={dryad}
+              url={passedSettings.url}
+              gql={graphQLCall || ''}
+            >
               Type Gql Query to see data here
             </DryadGQL>
           </DryadBody>

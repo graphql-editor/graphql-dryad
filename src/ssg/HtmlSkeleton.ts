@@ -1,14 +1,28 @@
-export const HtmlSkeletonStatic = ({ body, style }: { body: string; style: string }) => `
+export const HtmlSkeletonStatic = ({
+  body,
+  style,
+}: {
+  body: string;
+  style: string;
+}) => `
 <html>
     <head>
-        <style>${style}</style>
+        <style>
+            ${style}
+        </style>
     </head>
     <body>
         ${body}
     </body>
 </html>
 `;
-export const HtmlSkeletonDynamic = ({ body, style }: { body: string; style: string }) => `
+export const HtmlSkeletonDynamic = ({
+  body,
+  style,
+}: {
+  body: string;
+  style: string;
+}) => `
 <html>
     <head>
         <style>${style}</style>

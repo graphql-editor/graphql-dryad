@@ -24,7 +24,9 @@ export const DryadGQL = ({
   const [response, setResponse] = useState(undefined);
   const [isFetching, setIsFetching] = useState<boolean>(false);
   const [graphqlInfo, setGraphQLInfo] = useState<GraphQLInfo>();
-  const [operationType, setOperationType] = useState<OperationType>(OperationType.query);
+  const [operationType, setOperationType] = useState<OperationType>(
+    OperationType.query,
+  );
   const [operation, setOperation] = useState<string>();
   const [backendErrors, setBackendErrors] = useState<string[]>([]);
 
