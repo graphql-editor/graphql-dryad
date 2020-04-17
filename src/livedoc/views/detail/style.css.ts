@@ -82,7 +82,7 @@ export const css = `@import url('https://fonts.googleapis.com/css2?family=Roboto
         font-weight: var(--normal);
         line-height: 1.5;
         color: var(--grey100);
-        max-height:100%;
+        height:100%;
     }
     .Menu{
         min-width: 12.5rem;
