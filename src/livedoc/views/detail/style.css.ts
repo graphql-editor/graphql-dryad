@@ -248,27 +248,8 @@ export const css = `@import url('https://fonts.googleapis.com/css2?family=Roboto
         margin-bottom: 0.5rem;
         margin-left: 0.875rem;
     }
-    .TableOfContentsLink::before{
-        content: '';
-        position: absolute;
-        top: 0.625rem;
-        left: -0.75rem;
-        display: flex;
-        flex-shrink: 0;
-        width: 0.3125rem;
-        height: 0.3125rem;
-        border-radius: 100%;
-        background: currentColor;
-    }
-    .TableOfContentsLink .FieldName {
-        background-image: linear-gradient(currentColor, currentColor);
-        background-position: 0% 100%;
-        background-repeat: no-repeat;
-        background-size: 0% 0.0625rem;
-        transition: background-size .3s;
-    }
     .TableOfContentsLink:hover .FieldName {
-        background-size: 100% 0.0625rem;
+        text-decoration: underline;
     }
     @media (min-width: 768px){
         .Query{
