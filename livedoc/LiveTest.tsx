@@ -45,6 +45,11 @@ export const Main = () => {
             js: pasted.default,
           }}
         />
+        <style>{`
+        .Query{
+          max-height: calc(100vh - 60px);
+        }
+        `}</style>
       </div>
     </>
   );
