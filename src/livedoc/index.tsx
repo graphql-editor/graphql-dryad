@@ -10,6 +10,10 @@ export interface LiveDocProps {
   url: string;
   initial: string;
 }
+export interface LiveDocExportProps {
+  url: string;
+  name?: string;
+}
 export const LiveDoc = ({ url, initial }: LiveDocProps) => {
   const [currentType, setCurrentType] = useState(initial);
   useEffect(() => {
@@ -69,10 +73,13 @@ const returnTypeNames = async (url: string, headers = {}) => {
     subscription: response.data.__schema.subscriptionType,
   };
 };
-export const LiveDocHtml = async ({ url }: LiveDocProps) => {
+export const LiveDocHtml = async ({
+  url,
+  name = 'graphql-editor',
+}: LiveDocExportProps) => {
   const allTypes = await returnTypeNames(url);
   const z = new zip();
-  const types = z.folder('types');
+  const types = z.folder('docs');
   const mainType =
     allTypes.query?.name ||
     allTypes.mutation?.name ||
@@ -92,5 +99,5 @@ export const LiveDocHtml = async ({ url }: LiveDocProps) => {
     await types.file(`${at}.html`, all!);
   }
   const zipFile = await z.generateAsync({ type: 'blob' });
-  saveAs(zipFile, 'livedoc.zip');
+  saveAs(zipFile, `${name}.zip`);
 };
