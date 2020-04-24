@@ -68,6 +68,15 @@ window.scrollDocs = (name) => {
     top: element.offsetTop,
   });
 };
+window.toggleMenu = () => {
+  const menuElement = document.getElementById('Menu');
+  const nextToggle = menuElement.classList.contains('ShowToggle');
+  if (nextToggle) {
+    menuElement.classList.remove('ShowToggle');
+  } else {
+    menuElement.classList.add('ShowToggle');
+  }
+};
 
 const RenderFieldTOC = (field) => {
   const rt = realType(returnFieldKinds(field.type), determineType(field.type));
@@ -202,6 +211,11 @@ export const dryad = (type) => (queryType) => ({
                 ${MenuCategory('ENUM')(mainTypes, 'Enums', type)}
                 ${MenuCategory('SCALAR')(mainTypes, 'Scalars', type)}
             </div>
+            <burger-menu onClick="toggleMenu()">
+              <burger-bar></burger-bar>
+              <burger-bar></burger-bar>
+              <burger-bar></burger-bar>
+            </burger-menu>
             `;
     },
     __type: (v) => {
