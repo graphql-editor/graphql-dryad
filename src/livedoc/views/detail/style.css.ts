@@ -94,6 +94,13 @@ export const css = `@import url('https://fonts.googleapis.com/css2?family=Roboto
         padding-bottom: 2rem;
         box-shadow: 0.25rem 0.25rem 1rem rgba(0, 0, 0, 0.25);
         overflow:auto;
+        margin-left:-100%;
+        transition: margin-left 0.25s;
+        position:absolute;
+        z-index:1
+    }
+    .Menu.ShowToggle{
+        margin-left:0
     }
 
     .Menu, .Query{
@@ -251,19 +258,43 @@ export const css = `@import url('https://fonts.googleapis.com/css2?family=Roboto
     .TableOfContentsLink:hover .FieldName {
         text-decoration: underline;
     }
+    burger-menu{
+        position: relative;
+        width: 20px;
+        height: 20px;
+        top:10px;
+        left:10px;
+        display: flex;
+        flex-flow: column nowrap;
+        justify-content: space-between;
+        z-index:2;
+    
+    }
+    burger-bar{
+        display: block;
+        width: 100%;
+        height: 3px;
+        background: #fff;
+    }
     @media (min-width: 768px){
         .Query{
             flex-direction: row;
             flex-wrap: nowrap;
         }
         .Menu{
+            margin-left:0;
             max-width: 13.75rem;
+            position:relative;
+            transition: none;
         }
         .Menu .Logo{
             margin: auto;
         }
         .TableOfContents {
             margin-bottom: 2.875rem;
+        }
+        burger-menu{
+            display: none;
         }
     }
     @media (min-width: 1050px){

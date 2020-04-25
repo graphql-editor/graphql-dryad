@@ -22,7 +22,6 @@ export const Main = () => {
             LiveDocHtml({
               url:
                 'https://faker.graphqleditor.com/a-team/finance-manager/graphql',
-              initial: 'Company',
             });
           }}
         >
@@ -45,6 +44,11 @@ export const Main = () => {
             js: pasted.default,
           }}
         />
+        <style>{`
+        .Query{
+          max-height: calc(100vh - 60px);
+        }
+        `}</style>
       </div>
     </>
   );

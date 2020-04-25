@@ -154,12 +154,6 @@ export const HalfCode = ({
   }, [schemaString]);
 
   useEffect(() => {
-    if (currentInitialValue !== currentValue) {
-      monacoInstance?.setValue(currentInitialValue);
-    }
-  }, [currentInitialValue]);
-
-  useEffect(() => {
     Utils.getFromUrl(
       passedSettings.url,
       Object.keys(passedSettings.headers).map(
@@ -185,7 +179,10 @@ export const HalfCode = ({
     const subscription = m.onDidChangeModelContent(() => {
       const model = m.getModel();
       if (model) {
-        setValue((value) => ({ ...value, [editor]: model.getValue() }));
+        const modelValue = model.getValue();
+        if (modelValue) {
+          setValue((value) => ({ ...value, [editor]: modelValue }));
+        }
       }
     });
     setMonacoInstance(m);

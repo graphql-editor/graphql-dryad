@@ -24,6 +24,15 @@ export const DocSkeletonStatic = ({
                 top: element.offsetTop,
                 });
             };
+            window.toggleMenu = () => {
+              const menuElement = document.getElementById('Menu');
+              const nextToggle = menuElement.classList.contains('ShowToggle');
+              if (nextToggle) {
+                menuElement.classList.remove('ShowToggle');
+              } else {
+                menuElement.classList.add('ShowToggle');
+              }
+            };
         </script>  
       </head>
       <body>
