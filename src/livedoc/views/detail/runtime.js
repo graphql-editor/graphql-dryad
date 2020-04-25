@@ -69,11 +69,15 @@ window.scrollDocs = (name) => {
   });
 };
 window.toggleMenu = () => {
+  const burgerMenu = document.getElementById('BurgerMenu');
   const menuElement = document.getElementById('Menu');
-  const nextToggle = menuElement.classList.contains('ShowToggle');
-  if (nextToggle) {
+  const burgerNextToggle = burgerMenu.classList.contains('ShowToggle');
+  const menuNextToggle = menuElement.classList.contains('ShowToggle');
+  if (menuNextToggle && burgerNextToggle) {
+    burgerMenu.classList.remove('ShowToggle');
     menuElement.classList.remove('ShowToggle');
   } else {
+    burgerMenu.classList.add('ShowToggle');
     menuElement.classList.add('ShowToggle');
   }
 };
@@ -211,7 +215,7 @@ export const dryad = (type) => (queryType) => ({
                 ${MenuCategory('ENUM')(mainTypes, 'Enums', type)}
                 ${MenuCategory('SCALAR')(mainTypes, 'Scalars', type)}
             </div>
-            <burger-menu onClick="toggleMenu()">
+            <burger-menu id="BurgerMenu" onClick="toggleMenu()">
               <burger-bar></burger-bar>
               <burger-bar></burger-bar>
               <burger-bar></burger-bar>
@@ -231,15 +235,17 @@ export const dryad = (type) => (queryType) => ({
       } = v.value;
       return `
         <div class="__Type" id="__Type">
-          <div class="__Type-name">${name}</div>
-          <div class="__Type-kind">${kind}</div>
-          <div class="__Type-description">${
-            description ? v.md.render(description) : ''
-          }</div>
-          ${fields ? RenderFields(fields) : ''} 
-          ${inputFields ? RenderFields(inputFields) : ''} 
-          ${enumValues ? RenderEnums(enumValues) : ''} 
-          ${possibleTypes ? RenderPossibleTypes(possibleTypes) : ''} 
+          <div class="__Type-inner">
+            <div class="__Type-name">${name}</div>
+            <div class="__Type-kind">${kind}</div>
+            <div class="__Type-description">${
+              description ? v.md.render(description) : ''
+            }</div>
+            ${fields ? RenderFields(fields) : ''} 
+            ${inputFields ? RenderFields(inputFields) : ''} 
+            ${enumValues ? RenderEnums(enumValues) : ''} 
+            ${possibleTypes ? RenderPossibleTypes(possibleTypes) : ''} 
+          </div>
         </div>
       `;
     },
