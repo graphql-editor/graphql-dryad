@@ -36,7 +36,12 @@ const useStyle = createUseStyles({
 export const R: FunctionComponent<RProps> = ({ onClick, variant }) => {
   const { main } = useStyle();
   return (
-    <div title="Run GraphQL Query" className={main} onClick={onClick} about="Run query">
+    <div
+      title="Run GraphQL Query"
+      className={main}
+      onClick={onClick}
+      about="Run query"
+    >
       {variant === 'refresh' && <RefreshCw size={15} />}
       {variant === 'play' && <Play size={15} />}
     </div>

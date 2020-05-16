@@ -5,7 +5,10 @@ export interface PlaceProps {
   style?: React.CSSProperties;
 }
 
-export const Place: FunctionComponent<PlaceProps> = ({ children, style = {} }) => (
+export const Place: FunctionComponent<PlaceProps> = ({
+  children,
+  style = {},
+}) => (
   <div
     className="Place"
     style={{

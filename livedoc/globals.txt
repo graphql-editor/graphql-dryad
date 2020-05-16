@@ -1,3 +1,0 @@
-//Globals for testing
-
-const type = 'Query';

@@ -1,18 +1,18 @@
-export const initialJS = `/* CTRL/CMD + space in dryad
-to write overrides in
-string html templates
-inject function format is:
-
-(v:{
-    name: string
-    value: type of value
-    className: class assigned
+export const initialJS = `/* CTRL/CMD + space after Gql
+to write Graphql query,
+then return result at
+the end of the file.
+for example:
+const response = await Gql.query({
+    drawCard:{
+        name:true
+    }
 })
-    => string containing html
-
-(v) => 
-    \`<div>\${v.value}</div>\` */
-
-dryad = {
-  
-}`;
+const card = response.drawCard
+return \`
+    <div>
+        Hello \${card.name}
+    </div>
+\`
+*/
+`;

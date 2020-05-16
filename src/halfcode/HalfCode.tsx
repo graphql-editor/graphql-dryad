@@ -1,20 +1,16 @@
 import React, { useRef, useEffect, useState } from 'react';
 import * as monaco from 'monaco-editor';
 import { Resizable } from 're-resizable';
-import { Utils, Parser, TypeDefinition } from 'graphql-zeus';
+import { Utils, Parser, TreeToTS } from 'graphql-zeus';
 import { initLanguages } from './languages';
-import { GqlSuggestions, CSSSuggestions } from './suggestions';
-import { DryadGQL } from '../dryad';
 import { R, Tabs, Name, Container, Place, DryadBody, Tab } from '../components';
 import * as initialParameters from './initial';
-import { JSTypings } from './typings';
 import { Values, Editors, Config, Refs } from './Config';
 import { Settings } from '../models';
 import * as icons from './icons';
 import { Menu } from '../components/Menu';
-import { HtmlSkeletonStatic, RenderToHTML } from '../ssg';
+import { HtmlSkeletonStatic } from '../ssg';
 import FileSaver from 'file-saver';
-import { useThrottledState } from '../Throttle';
 
 initLanguages();
 
@@ -43,37 +39,29 @@ export const HalfCode = ({
 }: HalfCodeProps) => {
   const refs: Refs = {
     css: useRef<HTMLDivElement>(null),
-    graphql: useRef<HTMLDivElement>(null),
     js: useRef<HTMLDivElement>(null),
     settings: useRef<HTMLDivElement>(null),
   };
 
-  const allEditors = [
-    Editors.graphql,
-    Editors.css,
-    Editors.js,
-    Editors.settings,
-  ].filter((e) => !disabled.includes(e));
+  const allEditors = [Editors.css, Editors.js, Editors.settings].filter(
+    (e) => !disabled.includes(e),
+  );
 
-  const [editor, setEditor] = useState<Editors>(Editors.graphql);
+  const [editor, setEditor] = useState<Editors>(Editors.js);
   const [schemaString, setSchema] = useState('');
   const [currentSettings, setCurrentSettings] = useState({ ...settings });
   const [passedSettings, setPassedSettings] = useState({ ...settings });
 
   const initialValues: Values = {
     css: initialParameters.initialCss,
-    graphql: initialParameters.initialGql,
     js: initialParameters.initialJS,
     settings: JSON.stringify(settings, null, 4),
     ...initial,
   };
   const [value, setValue] = useState(initialValues);
 
-  const [dryad, setDryad] = useState<any>({});
-  const [providerCSS, setProviderCSS] = useState<monaco.IDisposable>();
-  const [providerGql, setProviderGql] = useState<monaco.IDisposable>();
+  const [dryad, setDryad] = useState<string>('');
   const [providerJS, setProviderJS] = useState<monaco.IDisposable>();
-  const [gqlRefresher, setGqlRefresher] = useState('');
 
   const [monacoInstance, setMonacoInstance] = useState<
     monaco.editor.IStandaloneCodeEditor
@@ -88,16 +76,6 @@ export const HalfCode = ({
   const currentValue = value[editor];
   const currentInitialValue = initialValues[editor];
   const currentConfig = Config[editor];
-  const [graphQLCall, setGraphQLCall] = useState(initialValues.graphql);
-
-  const [dryadJS, setDryadJS] = useThrottledState({
-    value: value[Editors.js],
-    delay: 10000,
-  });
-
-  useEffect(() => {
-    setGraphQLCall(value[Editors.graphql] + gqlRefresher);
-  }, [gqlRefresher]);
 
   useEffect(() => {
     return () => {
@@ -108,11 +86,9 @@ export const HalfCode = ({
 
   useEffect(() => {
     return () => {
-      providerCSS?.dispose();
-      providerGql?.dispose();
       providerJS?.dispose();
     };
-  }, [providerGql, providerCSS, providerJS]);
+  }, [providerJS]);
 
   useEffect(() => {
     if (currentValue !== currentInitialValue && onChange) {
@@ -123,27 +99,10 @@ export const HalfCode = ({
   useEffect(() => {
     if (schemaString) {
       const graphqlTree = Parser.parse(schemaString);
-      const typings = JSTypings(graphqlTree.nodes);
-      const fields = graphqlTree.nodes.filter(
-        (n) =>
-          n.data?.type === TypeDefinition.ObjectTypeDefinition ||
-          n.data?.type === TypeDefinition.ScalarTypeDefinition ||
-          n.data?.type === TypeDefinition.EnumTypeDefinition,
+      const typings = TreeToTS.javascript(graphqlTree).definitions.replace(
+        /export /gm,
+        '',
       );
-      setProviderGql((p) => {
-        p?.dispose();
-        return monaco.languages.registerCompletionItemProvider(
-          'gqlSpecial',
-          GqlSuggestions(schemaString),
-        );
-      });
-      setProviderCSS((p) => {
-        p?.dispose();
-        return monaco.languages.registerCompletionItemProvider(
-          'css',
-          CSSSuggestions(fields),
-        );
-      });
       setProviderJS((p) => {
         p?.dispose();
         return monaco.languages.typescript.javascriptDefaults.addExtraLib(
@@ -192,27 +151,52 @@ export const HalfCode = ({
     }
   }, [editor]);
 
-  useEffect(() => {
+  const getDryadFunctionResult = async () => {
+    const js = value[Editors.js];
+    if (js) {
+      const graphqlTree = Parser.parse(schemaString);
+      const functions = TreeToTS.javascript(
+        graphqlTree,
+        'browser',
+        passedSettings.url,
+      ).javascript.replace(/export /gm, '');
+      const isMatching = js.match(/return/);
+      if (!isMatching) {
+        throw new Error('Cannot find return');
+      }
+      const functionBody = [functions, js].join('\n');
+      console.log(functionBody);
+      const dryadFunction = new Function(
+        `return new Promise((resolve) => {
+        const dryadFunction = async () => {
+          ${functionBody}
+        }
+        dryadFunction().then(resolve)
+      })`,
+      );
+      const result: unknown = await dryadFunction();
+      if (typeof result !== 'string') {
+        throw new Error('Js has to return string');
+      }
+      return result as string;
+    }
+    return;
+  };
+  const executeDryad = () => {
     const js = value[Editors.js];
     if (js) {
       try {
-        const isMatching = js.match(/(dryad\s?=\s?{)/);
-        if (!isMatching) {
-          throw new Error("Cannot find 'dryad = {'");
-        }
-        const dryadPart = js.replace(/(dryad\s?=\s?{)/, 'const $1');
-        const dryadFunction = new Function(
-          [dryadPart, `return dryad`].join('\n'),
-        );
-        const dryadResult = dryadFunction();
-        setDryad({
-          render: dryadResult,
+        getDryadFunctionResult().then((r) => {
+          if (!r) {
+            return;
+          }
+          setDryad(r);
         });
       } catch (error) {
         console.error(error);
       }
     }
-  }, [dryadJS]);
+  };
 
   useEffect(() => {
     const settingsValue = value[Editors.settings];
@@ -263,12 +247,7 @@ export const HalfCode = ({
                   description:
                     'Export your GraphQL query together with CSS as static website with prefetched data',
                   onClick: async () => {
-                    const body = await RenderToHTML({
-                      headers: currentSettings.headers,
-                      dryad,
-                      url: currentSettings.url,
-                      gql: graphQLCall || '',
-                    });
+                    const body = dryad || (await getDryadFunctionResult());
                     if (!body) {
                       throw new Error('Cannot generate html');
                     }
@@ -330,22 +309,17 @@ export const HalfCode = ({
           <R
             variant={'play'}
             onClick={() => {
-              const spaces = Math.floor(Math.random() * 200);
-              const spacestring = new Array(spaces).fill(' ').join('');
-              setDryadJS(value[Editors.js]);
               setPassedSettings({ ...currentSettings });
-              setGqlRefresher(spacestring);
+              executeDryad();
             }}
           />
           <DryadBody>
-            <DryadGQL
-              headers={passedSettings.headers}
-              dryad={dryad}
-              url={passedSettings.url}
-              gql={graphQLCall || ''}
-            >
-              Type Gql Query to see data here
-            </DryadGQL>
+            <div
+              style={{ display: 'contents' }}
+              dangerouslySetInnerHTML={{
+                __html: dryad,
+              }}
+            />
           </DryadBody>
         </Place>
       </Container>

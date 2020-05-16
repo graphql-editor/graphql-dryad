@@ -19,7 +19,28 @@ export const Main = () => {
               fontFamily: `'Fira Mono'`,
             }}
             initial={{
-              graphql: ``,
+              js: `
+const response = await Gql.query({
+    listCards:{
+        name:true,
+        Attack:true,
+        description:true
+    }
+})
+const cards = response.listCards
+return \`
+    <list spacing=xs>
+        \${cards.map(c => \`
+        <hstack spacing=s>
+            <text>\${c.name}</text>
+            <divider></divider>
+            <text>\${c.description}</text>
+            <text>\${c.Attack}</text>
+        </hstack>
+        \`).join('')}
+    </list>
+\``,
+              css: `@import "https://unpkg.com/pyloncss@latest/css/pylon.css"`,
             }}
           />
         )}

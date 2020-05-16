@@ -1,4 +1,5 @@
-export const url = 'https://faker.graphqleditor.com/a-team/finance-manager/graphql';
+export const url =
+  'https://faker.graphqleditor.com/a-team/finance-manager/graphql';
 export const css = `
 .d-object{
     padding: 10px;
@@ -38,18 +39,4 @@ export const css = `
     text-transform: uppercase;
 
 }
-`;
-export const gql = `
-{
-    companies{
-        name
-        incomes{
-            paid
-            amount
-        }
-        expenses{
-            amount
-        }
-    }
-}                                                                                                                                    
 `;

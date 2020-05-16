@@ -4,7 +4,6 @@ import * as icons from './icons';
 import * as themes from './themes';
 export enum Editors {
   css = 'css',
-  graphql = 'graphql',
   js = 'js',
   settings = 'settings',
 }
@@ -13,7 +12,12 @@ export type Values = Record<Editors, string>;
 export type Refs = Record<Editors, React.RefObject<HTMLDivElement>>;
 interface ConfigurationLanguage {
   options: monaco.editor.IStandaloneEditorConstructionOptions &
-    Required<Pick<monaco.editor.IStandaloneEditorConstructionOptions, 'theme' | 'language'>>;
+    Required<
+      Pick<
+        monaco.editor.IStandaloneEditorConstructionOptions,
+        'theme' | 'language'
+      >
+    >;
   icon: keyof typeof icons;
   themeModule: keyof typeof themes;
 }
@@ -46,14 +50,6 @@ export const Config: Record<Editors, ConfigurationLanguage> = {
     },
     themeModule: 'JsTheme',
     icon: 'Js',
-  },
-  graphql: {
-    options: {
-      language: 'gqlSpecial',
-      theme: 'gqlSpecialTheme',
-    },
-    icon: 'GraphQL',
-    themeModule: 'GqlSpecialTheme',
   },
 };
 

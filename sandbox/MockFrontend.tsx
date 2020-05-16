@@ -1,14 +1,3 @@
-export const exampleGQL = `
-{
-  listCards{
-    name
-    Attack
-    Defense
-    skills
-    description
-  }
-}
-`;
 export const exampleCSS = `
 .Main{
   background: #9999ff;

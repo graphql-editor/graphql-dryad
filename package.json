@@ -1,18 +1,15 @@
 {
-  "name": "graphql-dryad",
+  "name": "graphql-dryad-editor",
   "version": "0.4.3",
   "description": "Component from graphql library",
   "main": "lib/index.js",
   "scripts": {
     "start": "webpack-dev-server --config ./sandbox/webpack.config.js --content-base ./sandbox/ --port 1456 --hot --inline --open",
-    "live": "webpack-dev-server --config ./livedoc/webpack.config.js --content-base ./livedoc/ --port 1456 --hot --inline --open",
-    "live-preview": "webpack-dev-server --config ./livedoc/webpack.config.preview.js --content-base ./livedoc/ --port 1456 --hot --inline --open",
-    "build": "tsc --build",
-    "schema": "zeus https://faker.graphqleditor.com/a-team/olympus/graphql ./src/generated/ -g ./ --ts"
+    "build": "tsc --build"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/graphql-editor/graphql-dryad.git"
+    "url": "git+https://github.com/graphql-editor/graphql-dryad-editor.git"
   },
   "keywords": [
     "react",
@@ -21,9 +18,9 @@
   "author": "Aexol <aexol@aexol.com> (http://aexol.com)",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/graphql-editor/graphql-dryad/issues"
+    "url": "https://github.com/graphql-editor/graphql-dryad-editor/issues"
   },
-  "homepage": "https://github.com/graphql-editor/graphql-dryad#readme",
+  "homepage": "https://github.com/graphql-editor/graphql-dryad-editor#readme",
   "dependencies": {
     "file-saver": "^2.0.2",
     "graphql-language-service-interface": "^2.3.3",
@@ -33,7 +30,6 @@
     "npm": "^6.13.6",
     "re-resizable": "^6.1.1",
     "react-feather": "^2.0.3",
-    "react-feather-icons": "0.0.1",
     "react-jss": "^10.0.3",
     "remarkable": "^2.0.0"
   },

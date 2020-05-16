@@ -5,7 +5,11 @@ export interface ContainerProps {
   className?: string;
 }
 
-export const Container: FunctionComponent<ContainerProps> = ({ children, className, style = {} }) => (
+export const Container: FunctionComponent<ContainerProps> = ({
+  children,
+  className,
+  style = {},
+}) => (
   <div
     className={className}
     style={{
