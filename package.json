@@ -1,5 +1,5 @@
 {
-  "name": "graphql-dryad-editor",
+  "name": "graphql-dryad",
   "version": "0.4.3",
   "description": "Component from graphql library",
   "main": "lib/index.js",
@@ -9,7 +9,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/graphql-editor/graphql-dryad-editor.git"
+    "url": "git+https://github.com/graphql-editor/graphql-dryad.git"
   },
   "keywords": [
     "react",
@@ -18,9 +18,9 @@
   "author": "Aexol <aexol@aexol.com> (http://aexol.com)",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/graphql-editor/graphql-dryad-editor/issues"
+    "url": "https://github.com/graphql-editor/graphql-dryad/issues"
   },
-  "homepage": "https://github.com/graphql-editor/graphql-dryad-editor#readme",
+  "homepage": "https://github.com/graphql-editor/graphql-dryad#readme",
   "dependencies": {
     "file-saver": "^2.0.2",
     "graphql-language-service-interface": "^2.3.3",
