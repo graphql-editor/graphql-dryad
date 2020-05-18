@@ -53,8 +53,9 @@ return `
           ></div>
           <text class="title">${p.frontmatter.title}</text>
           <text class="desc">${p.excerpt || ''}</text>
+          <spacer></spacer>
           <hstack class="Footer" spacing=xs>
-              <text>${p.frontmatter.date}</text>
+              <text>Published on <br>${p.frontmatter.date}</text>
               <spacer></spacer>
               <text class="Written">Written by,<br> ${
                 p.frontmatter.author.id
