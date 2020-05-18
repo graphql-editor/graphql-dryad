@@ -1,11 +1,6 @@
 {
-<<<<<<< HEAD
   "name": "graphql-dryad",
   "version": "0.4.3",
-=======
-  "name": "graphql-dryad-editor",
-  "version": "1.0.0",
->>>>>>> 02fff73503e4148423ba6c770b88fa0513d901be
   "description": "Component from graphql library",
   "main": "lib/index.js",
   "scripts": {
