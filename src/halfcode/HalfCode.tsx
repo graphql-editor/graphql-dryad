@@ -165,7 +165,6 @@ export const HalfCode = ({
         throw new Error('Cannot find return');
       }
       const functionBody = [functions, js].join('\n');
-      console.log(functionBody);
       const dryadFunction = new Function(
         `return new Promise((resolve) => {
         const dryadFunction = async () => {
