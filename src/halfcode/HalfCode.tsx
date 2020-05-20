@@ -103,10 +103,13 @@ export const HalfCode = ({
         /export /gm,
         '',
       );
+      console.log(typings);
       setProviderJS((p) => {
         p?.dispose();
         return monaco.languages.typescript.javascriptDefaults.addExtraLib(
-          typings,
+          `
+          declare const useFunction: <T>(fn:T,deps:any[]) => T
+          ${typings}`,
         );
       });
     }
@@ -165,8 +168,19 @@ export const HalfCode = ({
         throw new Error('Cannot find return');
       }
       const functionBody = [functions, js].join('\n');
+      const useFunctionCode = `
+      const useFunction = (fn, deps) => {
+        return function () {
+          return \`"\${\`(() =>{
+            \${deps.map(d => d.toString())}
+            (\${fn.toString()})(\${Object.values(arguments).map(v => JSON.stringify(v)).join(",")})
+        })()\`.replace(/"/gm, \`'\`)}"\`
+        }
+      }
+      `;
       const dryadFunction = new Function(
         `return new Promise((resolve) => {
+          ${useFunctionCode}
         const dryadFunction = async () => {
           ${functionBody}
         }

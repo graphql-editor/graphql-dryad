@@ -21,25 +21,34 @@ export const Main = () => {
             initial={{
               js: `
 const response = await Gql.query({
-    listCards:{
-        name:true,
-        Attack:true,
-        description:true
-    }
+  listCards:{
+      id:true,
+      name:true,
+      Attack:true,
+      description:true
+  }
 })
 const cards = response.listCards
+
+const removeCard = useFunction((id) => {
+  document.getElementById(id).remove()
+},[])
+
 return \`
-    <list spacing=xs>
-        \${cards.map(c => \`
-        <hstack spacing=s>
-            <text>\${c.name}</text>
-            <divider></divider>
-            <text>\${c.description}</text>
-            <text>\${c.Attack}</text>
-        </hstack>
-        \`).join('')}
-    </list>
-\``,
+  <list spacing=xs>
+      \${cards.map(c => \`
+      <hstack id="\${c.id}" spacing=s>
+          <text>\${c.name}</text>
+          <divider></divider>
+          <text>\${c.description}</text>
+          <text>\${c.Attack}</text>
+          <divider></divider>
+          <button onclick=\${removeCard(c.id)}>delete</button>
+      </hstack>
+      \`).join('')}
+  </list>
+\`
+`,
               css: `@import "https://unpkg.com/pyloncss@latest/css/pylon.css"`,
             }}
           />
