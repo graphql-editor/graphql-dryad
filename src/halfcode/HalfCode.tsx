@@ -107,7 +107,7 @@ export const HalfCode = ({
         p?.dispose();
         return monaco.languages.typescript.javascriptDefaults.addExtraLib(
           `
-          declare const useCustomElement: <T>(class:T) => void
+          declare const useCustomElement: <T>(classDefinition:T) => void
           ${typings}`,
         );
       });
