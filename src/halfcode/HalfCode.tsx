@@ -103,7 +103,6 @@ export const HalfCode = ({
         /export /gm,
         '',
       );
-      console.log(typings);
       setProviderJS((p) => {
         p?.dispose();
         return monaco.languages.typescript.javascriptDefaults.addExtraLib(
