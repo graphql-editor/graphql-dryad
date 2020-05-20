@@ -30,9 +30,14 @@ const response = await Gql.query({
 })
 const cards = response.listCards
 
-const removeCard = useFunction((id) => {
-  document.getElementById(id).remove()
-},[])
+class ButtonAdd extends HTMLElement{
+  constructor(){
+    super()
+    this.addEventListener("click",() => console.log("Hello"))
+  }
+}
+
+useCustomElement(ButtonAdd);
 
 return \`
   <list spacing=xs>
@@ -43,7 +48,7 @@ return \`
           <text>\${c.description}</text>
           <text>\${c.Attack}</text>
           <divider></divider>
-          <button onclick=\${removeCard(c.id)}>delete</button>
+          <button-add>add</button-add>
       </hstack>
       \`).join('')}
   </list>

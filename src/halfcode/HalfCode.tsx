@@ -107,7 +107,7 @@ export const HalfCode = ({
         p?.dispose();
         return monaco.languages.typescript.javascriptDefaults.addExtraLib(
           `
-          declare const useFunction: <T>(fn:T,deps:any[]) => T
+          declare const useCustomElement: <T>(class:T) => void
           ${typings}`,
         );
       });
@@ -168,13 +168,38 @@ export const HalfCode = ({
       }
       const functionBody = [functions, js].join('\n');
       const useFunctionCode = `
-      const useFunction = (fn, deps) => {
-        return function () {
-          return \`"\${\`(() =>{
-            \${deps.map(d => d.toString())}
-            (\${fn.toString()})(\${Object.values(arguments).map(v => JSON.stringify(v)).join(",")})
-        })()\`.replace(/"/gm, \`'\`)}"\`
+      const replacedElements = []
+      const makeid = (length) => {
+        var result = '';
+        var characters = 'snowdoglamasheeprainwind';
+        var charactersLength = characters.length;
+        for (var i = 0; i < length; i++) {
+          result += characters.charAt(Math.floor(Math.random() * charactersLength));
         }
+        return result;
+      };
+      function isRegistered(name) {
+        return document.createElement(name).constructor !== HTMLElement
+      }
+      function registerNewName(name) {
+        const newNameTry = name+makeid(6)
+        if(isRegistered(newNameTry)){
+          return registerNewName(name)
+        }
+        return newNameTry
+      }
+      const upperCamelCaseToSnakeCase = (value) => {
+        return (
+          value
+            .replace(/^([A-Z])/, ($1) => $1.toLowerCase())
+            .replace(/([A-Z])/g, ($1) => '-' + $1.toLowerCase())
+        );
+      };
+      const useCustomElement = (elementClass) => {
+        const componentName = upperCamelCaseToSnakeCase(elementClass.name)
+        const customNewName = registerNewName(componentName)
+        replacedElements.push([componentName,customNewName])
+        customElements.define(customNewName,elementClass)
       }
       `;
       const dryadFunction = new Function(
@@ -183,7 +208,15 @@ export const HalfCode = ({
         const dryadFunction = async () => {
           ${functionBody}
         }
-        dryadFunction().then(resolve)
+        dryadFunction().then(b => {
+          let newBody = b
+          if(replacedElements.length > 0){
+            replacedElements.forEach(r =>{
+              newBody = newBody.replaceAll(r[0],r[1])
+            })
+          }
+          resolve(newBody)
+        })
       })`,
       );
       const result: unknown = await dryadFunction();
