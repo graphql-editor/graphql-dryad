@@ -11,9 +11,17 @@ export interface DryadFunctionFunction {
   (): Promise<{
     body: string;
     script?: string;
+    globals: Record<string, any>;
   }>;
 }
-
+export const DryadDeclarations = `
+// Define custom element by passing its class to this function. It will be available in your static site. Remember to make everything used from outside element useDynamic
+declare const useCustomElement: <T>(classDefinition:T) => void
+// Declare variables/functions/objects that will be available dynamically in your static site
+declare const useDynamic: <T>(dynamic:{
+  [P in keyof T]:T[P]
+}) => void
+`;
 export const DryadFunction = ({
   build,
   schema,
@@ -65,9 +73,11 @@ export const DryadFunction = ({
       replacedElements.push([componentName,customNewName])
       customElements.define(customNewName,elementClass)
     }
+    const useDynamic = (e) => {}
     `;
   const useFunctionCodeBuild = `
     const classesAdded = []
+    let dynamicsO = {}
     const upperCamelCaseToSnakeCase = (value) => {
       return (
         value
@@ -75,6 +85,9 @@ export const DryadFunction = ({
           .replace(/([A-Z])/g, ($1) => '-' + $1.toLowerCase())
       );
     };
+    const useDynamic = (e) => {
+      dynamicsO = {...dynamicsO,...e}
+    }
     const useCustomElement = (elementClass) => {
       classesAdded.push(elementClass)
     }`;
@@ -89,14 +102,27 @@ export const DryadFunction = ({
         let newBody = b
         ${
           build
-            ? `if(classesAdded.length > 0){
+            ? `
+            if(classesAdded.length > 0){
               script = classesAdded.map(c => c.toString()).join("\\n")
               classesAdded.forEach(c => {
                 const componentName = upperCamelCaseToSnakeCase(c.name)
-                console.log(componentName)
+                script += "\\n"
                 script += \`\\customElements.define("\${componentName}",\${c.name})\`
               })
-            }`
+            }
+            const strfns = JSON.parse(JSON.stringify(dynamicsO, function(key, val) {
+              if (typeof val === 'function') {
+                return  val + '';
+              }
+              return val
+            }))
+            Object.keys(strfns).forEach( s => {
+              script += "\\n"
+              const value = typeof strfns[s] === 'string' ? strfns[s] : JSON.stringify(strfns[s])
+              script += "const "+s+" = "+value
+            })
+            `
             : `
             if(replacedElements.length > 0){
           replacedElements.forEach(r =>{
@@ -106,7 +132,7 @@ export const DryadFunction = ({
         }
         resolve({
           body:newBody,
-          script
+          script,
         })
       })
     })`,

@@ -9,7 +9,7 @@ import { Values, Editors, Config, Refs } from './Config';
 import { Settings } from '../models';
 import * as icons from './icons';
 import { Menu } from '../components/Menu';
-import { HtmlSkeletonStatic, DryadFunction } from '../ssg';
+import { HtmlSkeletonStatic, DryadFunction, DryadDeclarations } from '../ssg';
 import FileSaver from 'file-saver';
 
 initLanguages();
@@ -110,7 +110,7 @@ export const HalfCode = ({
         p?.dispose();
         return monaco.languages.typescript.javascriptDefaults.addExtraLib(
           `
-          declare const useCustomElement: <T>(classDefinition:T) => void
+          ${DryadDeclarations}
           ${typings}`,
         );
       });
