@@ -9,7 +9,7 @@ import { Values, Editors, Config, Refs } from './Config';
 import { Settings } from '../models';
 import * as icons from './icons';
 import { Menu } from '../components/Menu';
-import { HtmlSkeletonStatic } from '../ssg';
+import { HtmlSkeletonStatic, DryadFunction } from '../ssg';
 import FileSaver from 'file-saver';
 
 initLanguages();
@@ -24,6 +24,7 @@ export interface HalfCodeProps {
   settings: Settings;
   disabled?: Editors[];
   exportEnabled?: boolean;
+  tryToLoadOnFirstRun?: boolean;
 }
 
 export const HalfCode = ({
@@ -36,6 +37,7 @@ export const HalfCode = ({
   style = {},
   disabled = [],
   exportEnabled = false,
+  tryToLoadOnFirstRun,
 }: HalfCodeProps) => {
   const refs: Refs = {
     css: useRef<HTMLDivElement>(null),
@@ -61,6 +63,7 @@ export const HalfCode = ({
   const [value, setValue] = useState(initialValues);
 
   const [dryad, setDryad] = useState<string>('');
+  const [, setScript] = useState<string>();
   const [providerJS, setProviderJS] = useState<monaco.IDisposable>();
 
   const [monacoInstance, setMonacoInstance] = useState<
@@ -153,77 +156,22 @@ export const HalfCode = ({
     }
   }, [editor]);
 
-  const getDryadFunctionResult = async () => {
+  const getDryadFunctionResult = async (build: boolean = false) => {
     const js = value[Editors.js];
     if (js) {
-      const graphqlTree = Parser.parse(schemaString);
-      const functions = TreeToTS.javascript(
-        graphqlTree,
-        'browser',
-        passedSettings.url,
-      ).javascript.replace(/export /gm, '');
-      const isMatching = js.match(/return/);
-      if (!isMatching) {
-        throw new Error('Cannot find return');
-      }
-      const functionBody = [functions, js].join('\n');
-      const useFunctionCode = `
-      const replacedElements = []
-      const makeid = (length) => {
-        var result = '';
-        var characters = 'snowdoglamasheeprainwind';
-        var charactersLength = characters.length;
-        for (var i = 0; i < length; i++) {
-          result += characters.charAt(Math.floor(Math.random() * charactersLength));
-        }
-        return result;
-      };
-      function isRegistered(name) {
-        return document.createElement(name).constructor !== HTMLElement
-      }
-      function registerNewName(name) {
-        const newNameTry = name+makeid(6)
-        if(isRegistered(newNameTry)){
-          return registerNewName(name)
-        }
-        return newNameTry
-      }
-      const upperCamelCaseToSnakeCase = (value) => {
-        return (
-          value
-            .replace(/^([A-Z])/, ($1) => $1.toLowerCase())
-            .replace(/([A-Z])/g, ($1) => '-' + $1.toLowerCase())
-        );
-      };
-      const useCustomElement = (elementClass) => {
-        const componentName = upperCamelCaseToSnakeCase(elementClass.name)
-        const customNewName = registerNewName(componentName)
-        replacedElements.push([componentName,customNewName])
-        customElements.define(customNewName,elementClass)
-      }
-      `;
-      const dryadFunction = new Function(
-        `return new Promise((resolve) => {
-          ${useFunctionCode}
-        const dryadFunction = async () => {
-          ${functionBody}
-        }
-        dryadFunction().then(b => {
-          let newBody = b
-          if(replacedElements.length > 0){
-            replacedElements.forEach(r =>{
-              newBody = newBody.replaceAll(r[0],r[1])
-            })
-          }
-          resolve(newBody)
-        })
-      })`,
-      );
-      const result: unknown = await dryadFunction();
-      if (typeof result !== 'string') {
+      const result: {
+        body: string;
+        script?: string;
+      } = await DryadFunction({
+        js,
+        schema: schemaString,
+        url: passedSettings.url,
+        build,
+      })();
+      if (typeof result.body !== 'string') {
         throw new Error('Js has to return string');
       }
-      return result as string;
+      return result;
     }
     return;
   };
@@ -235,7 +183,8 @@ export const HalfCode = ({
           if (!r) {
             return;
           }
-          setDryad(r);
+          setDryad(r.body);
+          setScript(r.script);
         });
       } catch (error) {
         console.error(error);
@@ -252,6 +201,13 @@ export const HalfCode = ({
       } catch (error) {}
     }
   }, [value[Editors.settings]]);
+
+  useEffect(() => {
+    if (tryToLoadOnFirstRun && !dryad && schemaString) {
+      setPassedSettings({ ...currentSettings });
+      executeDryad();
+    }
+  }, [tryToLoadOnFirstRun, schemaString]);
 
   return (
     <>
@@ -292,13 +248,15 @@ export const HalfCode = ({
                   description:
                     'Export your GraphQL query together with CSS as static website with prefetched data',
                   onClick: async () => {
-                    const body = dryad || (await getDryadFunctionResult());
-                    if (!body) {
+                    const result = await getDryadFunctionResult(true);
+                    if (!result) {
                       throw new Error('Cannot generate html');
                     }
+                    const { body, script } = result;
                     const compiled = HtmlSkeletonStatic({
                       body,
                       style: value[Editors.css],
+                      script,
                     });
                     FileSaver.saveAs(new Blob([compiled]), 'dryad.html');
                   },

@@ -1,15 +1,27 @@
 export const HtmlSkeletonStatic = ({
   body,
   style,
+  script,
+  head = '',
 }: {
   body: string;
   style: string;
+  script?: string;
+  head?: string;
 }) => `
 <html>
     <head>
+        ${head}
         <style>
             ${style}
         </style>
+        ${
+          script
+            ? `<script>
+            ${script}
+        </script>`
+            : ''
+        }
     </head>
     <body>
         ${body}

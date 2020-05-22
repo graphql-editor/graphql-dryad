@@ -15,6 +15,7 @@ export const Main = () => {
               url: 'https://faker.graphqleditor.com/aexol/olympus/graphql',
               headers: {},
             }}
+            tryToLoadOnFirstRun
             editorOptions={{
               fontFamily: `'Fira Mono'`,
             }}
