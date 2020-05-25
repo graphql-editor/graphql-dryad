@@ -11,6 +11,7 @@ import * as icons from './icons';
 import { Menu } from '../components/Menu';
 import { HtmlSkeletonStatic, DryadFunction, DryadDeclarations } from '../ssg';
 import FileSaver from 'file-saver';
+import { EditorRestyle } from './styles/editor';
 
 initLanguages();
 
@@ -159,18 +160,12 @@ export const HalfCode = ({
   const getDryadFunctionResult = async (build: boolean = false) => {
     const js = value[Editors.js];
     if (js) {
-      const result: {
-        body: string;
-        script?: string;
-      } = await DryadFunction({
+      const result = await DryadFunction({
         js,
         schema: schemaString,
         url: passedSettings.url,
         build,
-      })();
-      if (typeof result.body !== 'string') {
-        throw new Error('Js has to return string');
-      }
+      });
       return result;
     }
     return;
@@ -293,18 +288,7 @@ export const HalfCode = ({
               ref={refs[e]}
             ></div>
           ))}
-          <style>
-            {`.editor-widget{
-              position:fixed !important;
-            }
-            .context-view{
-              position:fixed !important;
-            }
-            .monaco-aria-container{
-              bottom: 0;
-            }
-            `}
-          </style>
+          <style>{EditorRestyle}</style>
         </Resizable>
 
         <Place>

@@ -22,7 +22,7 @@ declare const useDynamic: <T>(dynamic:{
   [P in keyof T]:T[P]
 }) => void
 `;
-export const DryadFunction = ({
+export const DryadFunction = async ({
   build,
   schema,
   url,
@@ -91,7 +91,7 @@ export const DryadFunction = ({
     const useCustomElement = (elementClass) => {
       classesAdded.push(elementClass)
     }`;
-  return new Function(
+  const r = new Function(
     `return new Promise((resolve) => {
         ${build ? useFunctionCodeBuild : useFunctionCode}
       const dryadFunction = async () => {
@@ -137,4 +137,9 @@ export const DryadFunction = ({
       })
     })`,
   ) as DryadFunctionFunction;
+  const result = await r();
+  if (typeof result.body !== 'string') {
+    throw new Error('Js has to return string');
+  }
+  return result;
 };
