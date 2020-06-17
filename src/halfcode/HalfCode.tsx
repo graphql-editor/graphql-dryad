@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect, useState, useLayoutEffect } from 'react';
 import * as monaco from 'monaco-editor';
 import { Resizable } from 're-resizable';
 import { Utils, Parser, TreeToTS } from 'graphql-zeus';
@@ -64,7 +64,7 @@ export const HalfCode = ({
   const [value, setValue] = useState(initialValues);
 
   const [dryad, setDryad] = useState<string>('');
-  const [, setScript] = useState<string>();
+  const [script, setScript] = useState<string>();
   const [providerJS, setProviderJS] = useState<monaco.IDisposable>();
 
   const [monacoInstance, setMonacoInstance] = useState<
@@ -99,6 +99,19 @@ export const HalfCode = ({
       onChange(value);
     }
   }, [currentValue]);
+  useEffect(() => {
+    const keyListener = (e: KeyboardEvent) => {
+      if (e.ctrlKey || e.metaKey) {
+        if (e.key === 's') {
+          e.preventDefault();
+          setPassedSettings({ ...currentSettings });
+          executeDryad();
+        }
+      }
+    };
+    document.addEventListener('keydown', keyListener);
+    return () => document.removeEventListener('keydown', keyListener);
+  }, [value[Editors.js], schemaString]);
 
   useEffect(() => {
     if (schemaString) {
@@ -178,8 +191,8 @@ export const HalfCode = ({
           if (!r) {
             return;
           }
-          setDryad(r.body);
           setScript(r.script);
+          setDryad(r.body);
         });
       } catch (error) {
         console.error(error);
@@ -203,7 +216,11 @@ export const HalfCode = ({
       executeDryad();
     }
   }, [tryToLoadOnFirstRun, schemaString]);
-
+  useLayoutEffect(() => {
+    if (script) {
+      new Function(script)();
+    }
+  }, [dryad]);
   return (
     <>
       <Container className={className} style={style}>
@@ -311,6 +328,7 @@ export const HalfCode = ({
         </Place>
       </Container>
       <style>{value[Editors.css]}</style>
+      <script>{script}</script>
     </>
   );
 };

@@ -14,13 +14,24 @@ export interface DryadFunctionFunction {
     globals: Record<string, any>;
   }>;
 }
+function useDynamic<T extends string>(
+  v: Record<T, T extends keyof typeof window ? 'Value is reserved!' : any>,
+) {
+  return v;
+}
+
+useDynamic({
+  loca: '',
+});
+
 export const DryadDeclarations = `
 // Define custom element by passing its class to this function. It will be available in your static site. Remember to make everything used from outside element useDynamic
 declare const useCustomElement: <T>(classDefinition:T) => void
 // Declare variables/functions/objects that will be available dynamically in your static site
-declare const useDynamic: <T>(dynamic:{
+declare const useDynamic: <T extends string>(functions:Record<T, T extends keyof typeof window ? 'Value is reserved!' : any>) => void;
+declare const useAfterRender: <T>(functions:{
   [P in keyof T]:T[P]
-}) => void
+}) => void;
 `;
 export const DryadFunction = async ({
   build,
@@ -73,7 +84,10 @@ export const DryadFunction = async ({
       replacedElements.push([componentName,customNewName])
       customElements.define(customNewName,elementClass)
     }
-    const useDynamic = (e) => {}
+    let dynamicsO = {}
+    const useDynamic = (e) => {
+      dynamicsO = {...dynamicsO,...e}
+    }
     `;
   const useFunctionCodeBuild = `
     const classesAdded = []
@@ -124,6 +138,17 @@ export const DryadFunction = async ({
             })
             `
             : `
+            const strfns = JSON.parse(JSON.stringify(dynamicsO, function(key, val) {
+              if (typeof val === 'function') {
+                return  val + '';
+              }
+              return val
+            }))
+            Object.keys(strfns).forEach( s => {
+              script += "\\n"
+              const value = typeof strfns[s] === 'string' ? strfns[s] : JSON.stringify(strfns[s])
+              script += "window."+s+" = "+value
+            })
             if(replacedElements.length > 0){
           replacedElements.forEach(r =>{
             newBody = newBody.replaceAll(r[0],r[1])
