@@ -7,12 +7,13 @@ export interface DryadFunctionProps {
   build?: boolean;
 }
 
+export interface DryadFunctionResult {
+  body: string;
+  script?: string;
+  globals: Record<string, any>;
+}
 export interface DryadFunctionFunction {
-  (): Promise<{
-    body: string;
-    script?: string;
-    globals: Record<string, any>;
-  }>;
+  (): Promise<DryadFunctionResult>;
 }
 function useDynamic<T extends string>(
   v: Record<T, T extends keyof typeof window ? 'Value is reserved!' : any>,

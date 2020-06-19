@@ -5,7 +5,6 @@ import * as themes from './themes';
 export enum Editors {
   css = 'css',
   js = 'js',
-  settings = 'settings',
 }
 
 export type Values = Record<Editors, string>;
@@ -34,14 +33,6 @@ export const Config: Record<Editors, ConfigurationLanguage> = {
     },
     icon: 'Css',
     themeModule: 'CssTheme',
-  },
-  settings: {
-    options: {
-      language: 'json',
-      theme: 'faker',
-    },
-    icon: 'Settings',
-    themeModule: 'SettingsTheme',
   },
   js: {
     options: {

@@ -1,27 +1,21 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { HalfCode } from '../src';
 
 export const Main = () => {
-  const [hide, setHide] = useState(false);
   return (
-    <>
-      <div style={{ height: `100%` }}>
-        <button onClick={() => setHide((hidden) => !hidden)}>hide</button>
-        {!hide && (
-          <HalfCode
-            name="https://faker.graphqleditor.com/explore-projects/twitter/graphql"
-            exportEnabled={true}
-            settings={{
-              url:
-                'https://faker.graphqleditor.com/explore-projects/twitter/graphql',
-              headers: {},
-            }}
-            tryToLoadOnFirstRun
-            editorOptions={{
-              fontFamily: `'Fira Mono'`,
-            }}
-            initial={{
-              js: `
+    <div style={{ height: `100%` }}>
+      <HalfCode
+        settings={{
+          url:
+            'https://faker.graphqleditor.com/explore-projects/twitter/graphql',
+          headers: {},
+        }}
+        tryToLoadOnFirstRun
+        editorOptions={{
+          fontFamily: `'Fira Mono'`,
+        }}
+        initial={{
+          js: `
 const response = await Gql.query({
   Twits: {
       sentence: true,
@@ -71,22 +65,18 @@ const Post = ({
 </div>
 \`
 
-class AddPost extends HTMLElement {
-    constructor() {
-        super();
-        this.addEventListener('click', async () => {
-            const list = document.getElementById("PostList")
-            const sentence = document.getElementById("Tweet").value
-            list.innerHTML = \`\${Post({
-                avatar: me.avatar,
-                username: me.username,
-                sentence
-            })}\${list.innerHTML}\`
-        });
-    }
+
+const addPost = () =>{
+    const list = document.getElementById("PostList")
+    const sentence = document.getElementById("Tweet").value
+    list.innerHTML = \`\${Post({
+        avatar: me.avatar,
+        username: me.username,
+        sentence
+    })}\${list.innerHTML}\`
 }
-useCustomElement(AddPost);
 useDynamic({
+  addPost,
   me,
   Post
 })
@@ -128,7 +118,9 @@ return \`
                 id="Tweet"
                 placeholder="Tweet something"
             />
-            <add-post class="
+            <add-post 
+            onclick="addPost()"
+            class="
                 bg-pink-500 
                 hover:bg-pink-400 
                 text-white 
@@ -165,11 +157,9 @@ return \`
 </div>
 \`
 `,
-              css: `@import "https://unpkg.com/tailwindcss@^1.0/dist/tailwind.min.css";`,
-            }}
-          />
-        )}
-      </div>
-    </>
+          css: `@import "https://unpkg.com/tailwindcss@^1.0/dist/tailwind.min.css";`,
+        }}
+      />
+    </div>
   );
 };

@@ -5,16 +5,20 @@ export const HtmlSkeletonStatic = ({
   head = '',
 }: {
   body: string;
-  style: string;
+  style?: string;
   script?: string;
   head?: string;
 }) => `
 <html>
     <head>
         ${head}
-        <style>
+        ${
+          style
+            ? `<style>
             ${style}
-        </style>
+        </style>`
+            : ''
+        }
         ${
           script
             ? `<script>
