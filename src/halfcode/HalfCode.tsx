@@ -1,14 +1,15 @@
-import React, { useRef, useEffect, useState, useLayoutEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import * as monaco from 'monaco-editor';
 import { Resizable } from 're-resizable';
-import { Utils, Parser, TreeToTS } from 'graphql-zeus';
+import { Parser, TreeToTS } from 'graphql-zeus';
+import { getParsedSchema } from '../schema';
 import { initLanguages } from './languages';
-import { R, Tabs, Container, Place, DryadBody, Tab } from '../components';
+import { R, Tabs, Container, Place, Tab, Placehold } from '../components';
 import * as initialParameters from './initial';
 import { Values, Editors, Config, Refs } from './Config';
 import { Settings } from '../models';
 import * as icons from './icons';
-import { DryadFunction, DryadDeclarations } from '../ssg';
+import { DryadFunction, DryadDeclarations, HtmlSkeletonStatic } from '../ssg';
 import { EditorRestyle } from './styles/editor';
 
 initLanguages();
@@ -50,7 +51,7 @@ export const HalfCode = ({
   const [value, setValue] = useState(initialValues);
 
   const [dryad, setDryad] = useState<string>('');
-  const [script, setScript] = useState<string>();
+  const [dryadPending, setDryadPending] = useState(false);
   const [providerJS, setProviderJS] = useState<monaco.IDisposable>();
 
   const [monacoInstance, setMonacoInstance] = useState<
@@ -115,10 +116,7 @@ export const HalfCode = ({
   }, [schemaString]);
 
   useEffect(() => {
-    Utils.getFromUrl(
-      settings.url,
-      Object.keys(settings.headers).map((k) => `${k}: ${settings.headers[k]}`),
-    ).then((fetchedSchema) => {
+    getParsedSchema(settings).then((fetchedSchema) => {
       setSchema(fetchedSchema);
     });
   }, [settings.url]);
@@ -148,27 +146,27 @@ export const HalfCode = ({
     setMonacoSubscription(subscription);
   }, [editor]);
 
-  const getDryadFunctionResult = async (build: boolean = false) => {
-    const js = value[Editors.js];
-    const result = await DryadFunction({
-      js,
-      schema: schemaString,
-      url: settings.url,
-      build,
-    });
-    return result;
-  };
-  const executeDryad = () => {
+  const executeDryad = async () => {
     const js = value[Editors.js];
     if (js) {
       try {
-        getDryadFunctionResult().then((r) => {
-          if (!r) {
-            return;
-          }
-          setScript(r.script);
-          setDryad(r.body);
+        setDryadPending(true);
+        const r = await DryadFunction({
+          js,
+          schema: schemaString,
+          url: settings.url,
         });
+        setDryadPending(false);
+        if (!r) {
+          return;
+        }
+        setDryad(
+          HtmlSkeletonStatic({
+            body: r.body,
+            script: r.script,
+            style: value[Editors.css],
+          }),
+        );
       } catch (error) {
         console.error(error);
       }
@@ -180,17 +178,12 @@ export const HalfCode = ({
       executeDryad();
     }
   }, [tryToLoadOnFirstRun, schemaString]);
-  useLayoutEffect(() => {
-    if (script) {
-      new Function(script)();
-    }
-  }, [dryad]);
   return (
     <>
       <Container className={className} style={style}>
         <Resizable
           defaultSize={{
-            width: 400,
+            width: '50vw',
             height: '100%',
           }}
           style={{ background: '#333', color: '#aaa', overflowY: 'hidden' }}
@@ -240,24 +233,15 @@ export const HalfCode = ({
         </Resizable>
 
         <Place>
-          <R
-            variant={'play'}
-            onClick={() => {
-              executeDryad();
-            }}
-          />
-          <DryadBody>
-            <div
-              style={{ display: 'contents' }}
-              dangerouslySetInnerHTML={{
-                __html: dryad,
-              }}
-            />
-          </DryadBody>
+          <R variant={'play'} onClick={executeDryad} />
+          {dryadPending ? (
+            <Placehold>Loading...</Placehold>
+          ) : (
+            <iframe style={{ width: '100%', height: '100%' }} srcDoc={dryad} />
+          )}
         </Place>
       </Container>
       <style>{value[Editors.css]}</style>
-      <script>{script}</script>
     </>
   );
 };
