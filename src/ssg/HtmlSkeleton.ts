@@ -14,7 +14,7 @@ export const HtmlSkeletonStatic = ({
         ${head}
         ${
           style
-            ? `<style>
+            ? `<style id="styleTag">
             ${style}
         </style>`
             : ''

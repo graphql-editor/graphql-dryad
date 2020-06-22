@@ -37,6 +37,7 @@ export const HalfCode = ({
     css: useRef<HTMLDivElement>(null),
     js: useRef<HTMLDivElement>(null),
   };
+  const iframeRef = useRef<HTMLIFrameElement>(null);
 
   const allEditors = [Editors.css, Editors.js];
 
@@ -96,6 +97,16 @@ export const HalfCode = ({
     document.addEventListener('keydown', keyListener);
     return () => document.removeEventListener('keydown', keyListener);
   }, [value[Editors.js], schemaString]);
+  useEffect(() => {
+    if (iframeRef.current) {
+      const style = iframeRef.current.contentWindow?.document.getElementById(
+        'styleTag',
+      );
+      if (style) {
+        style.innerHTML = value[Editors.css];
+      }
+    }
+  }, [value[Editors.css], iframeRef.current]);
 
   useEffect(() => {
     if (schemaString) {
@@ -237,7 +248,11 @@ export const HalfCode = ({
           {dryadPending ? (
             <Placehold>Loading...</Placehold>
           ) : (
-            <iframe style={{ width: '100%', height: '100%' }} srcDoc={dryad} />
+            <iframe
+              ref={iframeRef}
+              style={{ width: '100%', height: '100%' }}
+              srcDoc={dryad}
+            />
           )}
         </Place>
       </Container>
