@@ -1,6 +1,6 @@
 {
   "name": "graphql-dryad",
-  "version": "0.6.3",
+  "version": "0.6.4",
   "description": "Component from graphql library",
   "main": "lib/index.js",
   "scripts": {
