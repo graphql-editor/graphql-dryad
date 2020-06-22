@@ -256,7 +256,6 @@ export const HalfCode = ({
           )}
         </Place>
       </Container>
-      <style>{value[Editors.css]}</style>
     </>
   );
 };
