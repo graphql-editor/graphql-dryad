@@ -4,7 +4,6 @@ export interface DryadFunctionProps {
   schema: string;
   url: string;
   js: string;
-  build?: boolean;
 }
 
 export interface DryadFunctionResult {
@@ -35,7 +34,6 @@ declare const useAfterRender: <T>(functions:{
 }) => void;
 `;
 export const DryadFunction = async ({
-  build,
   schema,
   url,
   js,
@@ -51,45 +49,6 @@ export const DryadFunction = async ({
     throw new Error('Cannot find return');
   }
   const functionBody = [functions, js].join('\n');
-  const useFunctionCode = `
-    const replacedElements = []
-    const makeid = (length) => {
-      var result = '';
-      var characters = 'snowdoglamasheeprainwind';
-      var charactersLength = characters.length;
-      for (var i = 0; i < length; i++) {
-        result += characters.charAt(Math.floor(Math.random() * charactersLength));
-      }
-      return result;
-    };
-    function isRegistered(name) {
-      return document.createElement(name).constructor !== HTMLElement
-    }
-    function registerNewName(name) {
-      const newNameTry = name+makeid(6)
-      if(isRegistered(newNameTry)){
-        return registerNewName(name)
-      }
-      return newNameTry
-    }
-    const upperCamelCaseToSnakeCase = (value) => {
-      return (
-        value
-          .replace(/^([A-Z])/, ($1) => $1.toLowerCase())
-          .replace(/([A-Z])/g, ($1) => '-' + $1.toLowerCase())
-      );
-    };
-    const useCustomElement = (elementClass) => {
-      const componentName = upperCamelCaseToSnakeCase(elementClass.name)
-      const customNewName = registerNewName(componentName)
-      replacedElements.push([componentName,customNewName])
-      customElements.define(customNewName,elementClass)
-    }
-    let dynamicsO = {}
-    const useDynamic = (e) => {
-      dynamicsO = {...dynamicsO,...e}
-    }
-    `;
   const useFunctionCodeBuild = `
     const classesAdded = []
     let dynamicsO = {}
@@ -108,16 +67,14 @@ export const DryadFunction = async ({
     }`;
   const r = new Function(
     `return new Promise((resolve) => {
-        ${build ? useFunctionCodeBuild : useFunctionCode}
+        ${useFunctionCodeBuild}
       const dryadFunction = async () => {
         ${functionBody}
       }
       dryadFunction().then(b => {
         let script
         let newBody = b
-        ${
-          build
-            ? `
+        ${`
             if(classesAdded.length > 0){
               script = classesAdded.map(c => c.toString()).join("\\n")
               classesAdded.forEach(c => {
@@ -137,25 +94,7 @@ export const DryadFunction = async ({
               const value = typeof strfns[s] === 'string' ? strfns[s] : JSON.stringify(strfns[s])
               script += "const "+s+" = "+value
             })
-            `
-            : `
-            const strfns = JSON.parse(JSON.stringify(dynamicsO, function(key, val) {
-              if (typeof val === 'function') {
-                return  val + '';
-              }
-              return val
-            }))
-            Object.keys(strfns).forEach( s => {
-              script += "\\n"
-              const value = typeof strfns[s] === 'string' ? strfns[s] : JSON.stringify(strfns[s])
-              script += "window."+s+" = "+value
-            })
-            if(replacedElements.length > 0){
-          replacedElements.forEach(r =>{
-            newBody = newBody.replaceAll(r[0],r[1])
-          })
-        }`
-        }
+            `}
         resolve({
           body:newBody,
           script,

@@ -20,6 +20,5 @@ export const Place: FunctionComponent<PlaceProps> = ({
     }}
   >
     {children}
-    <div style={{ marginBottom: 30 }}></div>
   </div>
 );
