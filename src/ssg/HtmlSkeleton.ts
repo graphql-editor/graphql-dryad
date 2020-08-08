@@ -21,7 +21,7 @@ export const HtmlSkeletonStatic = ({
         }
         ${
           script
-            ? `<script>
+            ? `<script type="module">
             ${script}
         </script>`
             : ''
