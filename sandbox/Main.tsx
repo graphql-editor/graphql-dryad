@@ -81,6 +81,9 @@ useDynamic({
   Post
 })
 
+useAfterRender(()=>{
+    document.getElementById("AddPost").addEventListener("click", addPost)
+})
 
 return \`
 <div class="bg-gray-100">
@@ -119,7 +122,7 @@ return \`
                 placeholder="Tweet something"
             />
             <add-post 
-            onclick="addPost()"
+            id="AddPost"
             class="
                 bg-pink-500 
                 hover:bg-pink-400 

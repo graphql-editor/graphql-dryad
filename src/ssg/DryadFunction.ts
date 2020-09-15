@@ -29,9 +29,8 @@ export const DryadDeclarations = `
 declare const useCustomElement: <T>(classDefinition:T) => void
 // Declare variables/functions/objects that will be available dynamically in your static site
 declare const useDynamic: <T extends string>(functions:Record<T, T extends keyof typeof window ? 'Value is reserved!' : any>) => void;
-declare const useAfterRender: <T>(functions:{
-  [P in keyof T]:T[P]
-}) => void;
+// Declare function to be called immediately after dom render
+declare const useAfterRender: <T>(fn:Function) => void;
 `;
 export const DryadFunction = async ({
   schema,
@@ -52,6 +51,7 @@ export const DryadFunction = async ({
   const useFunctionCodeBuild = `
     const classesAdded = []
     let dynamicsO = {}
+    let afterRenderO = null
     const upperCamelCaseToSnakeCase = (value) => {
       return (
         value
@@ -61,6 +61,9 @@ export const DryadFunction = async ({
     };
     const useDynamic = (e) => {
       dynamicsO = {...dynamicsO,...e}
+    }
+    const useAfterRender = (e) => {
+      afterRenderO = e
     }
     const useCustomElement = (elementClass) => {
       classesAdded.push(elementClass)
@@ -72,7 +75,7 @@ export const DryadFunction = async ({
         ${functionBody}
       }
       dryadFunction().then(b => {
-        let script
+        let script = ""
         let newBody = b
         ${`
             if(classesAdded.length > 0){
@@ -94,6 +97,12 @@ export const DryadFunction = async ({
               const value = typeof strfns[s] === 'string' ? strfns[s] : JSON.stringify(strfns[s])
               script += "const "+s+" = "+value
             })
+            if(afterRenderO){
+              script += "\\n"
+              script += 'const afterRender = ' + afterRenderO + ';';
+              script += "\\n"
+              script += 'afterRender();'
+            }
             `}
         resolve({
           body:newBody,
