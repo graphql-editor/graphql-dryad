@@ -36,7 +36,7 @@ export const DryadFunction = async ({
   schema,
   url,
   js,
-}: DryadFunctionProps) => {
+}: DryadFunctionProps): Promise<DryadFunctionResult> => {
   const graphqlTree = Parser.parse(schema);
   const functions = TreeToTS.javascript(
     graphqlTree,
@@ -115,5 +115,8 @@ export const DryadFunction = async ({
   if (typeof result.body !== 'string') {
     throw new Error('Js has to return string');
   }
-  return result;
+  return {
+    ...result,
+    script: [functions, result.script].join('\n'),
+  };
 };
