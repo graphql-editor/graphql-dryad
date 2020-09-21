@@ -68,7 +68,6 @@ export const HalfCode = ({
   const currentConfig = Config[editor];
 
   useEffect(() => {
-    console.log('Initial values changed');
     setValue(initialValues);
     monacoInstance?.setValue(initialValues[editor]);
     setDryad('');
@@ -143,7 +142,6 @@ export const HalfCode = ({
   }, [editor]);
 
   const resetEditor = () => {
-    console.log('Resetting editor', currentValue);
     const m = monaco.editor.create(currentRef.current!, {
       ...currentConfig.options,
       value: currentValue,
