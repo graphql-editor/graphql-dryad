@@ -68,6 +68,12 @@ export const HalfCode = ({
   const currentConfig = Config[editor];
 
   useEffect(() => {
+    console.log('Initial values changed');
+    setValue(initialValues);
+    monacoInstance?.setValue(initialValues[editor]);
+    setDryad('');
+  }, [initialValues.css, initialValues.js]);
+  useEffect(() => {
     return () => {
       monacoInstance?.dispose();
       monacoSubscription?.dispose();
@@ -133,6 +139,11 @@ export const HalfCode = ({
   }, [settings.url]);
 
   useEffect(() => {
+    resetEditor();
+  }, [editor]);
+
+  const resetEditor = () => {
+    console.log('Resetting editor', currentValue);
     const m = monaco.editor.create(currentRef.current!, {
       ...currentConfig.options,
       value: currentValue,
@@ -155,8 +166,7 @@ export const HalfCode = ({
     });
     setMonacoInstance(m);
     setMonacoSubscription(subscription);
-  }, [editor]);
-
+  };
   const executeDryad = async () => {
     const js = value[Editors.js];
     if (js) {
