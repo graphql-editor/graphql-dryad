@@ -1,18 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { HalfCode } from '../src';
 import { initialValues } from './initial';
 
 export const Main = () => {
-  const [initial, setInitial] = useState(initialValues);
+  const [initial] = useState(initialValues);
   const [, setValues] = useState(initialValues);
-  useEffect(() => {
-    setTimeout(() => {
-      setInitial({
-        css: '',
-        js: '',
-      });
-    }, 5000);
-  }, []);
+
   return (
     <div style={{ height: `100%` }}>
       <HalfCode
