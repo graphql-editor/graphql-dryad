@@ -1,6 +1,6 @@
 {
   "name": "graphql-dryad",
-  "version": "0.7.7",
+  "version": "0.7.8",
   "description": "Component from graphql library",
   "main": "lib/index.js",
   "scripts": {
@@ -24,7 +24,7 @@
   "dependencies": {
     "file-saver": "^2.0.2",
     "graphql-language-service-interface": "^2.3.3",
-    "graphql-zeus": "^2.8.1",
+    "graphql-zeus": "^2.8.2",
     "install": "^0.13.0",
     "jszip": "^3.3.0",
     "npm": "^6.13.6",
