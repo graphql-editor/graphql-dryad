@@ -70,7 +70,14 @@ export const HalfCode = ({
   useEffect(() => {
     setValue(initialValues);
     monacoInstance?.setValue(initialValues[editor]);
-    setDryad('');
+    if (schemaString && settings.url) {
+      executeDryad(
+        initialValues.js,
+        initialValues.css,
+        schemaString,
+        settings.url,
+      );
+    }
   }, [initialValues.css, initialValues.js]);
   useEffect(() => {
     return () => {
@@ -95,7 +102,7 @@ export const HalfCode = ({
       if (e.ctrlKey || e.metaKey) {
         if (e.key === 's') {
           e.preventDefault();
-          executeDryad();
+          refreshDryad();
         }
       }
     };
@@ -165,36 +172,45 @@ export const HalfCode = ({
     setMonacoInstance(m);
     setMonacoSubscription(subscription);
   };
-  const executeDryad = async () => {
-    const js = value[Editors.js];
-    if (js) {
-      try {
-        setDryadPending(true);
-        const r = await DryadFunction({
-          js,
-          schema: schemaString,
-          url: settings.url,
-        });
-        setDryadPending(false);
-        if (!r) {
-          return;
-        }
-        setDryad(
-          HtmlSkeletonStatic({
-            body: r.body,
-            script: r.script,
-            style: value[Editors.css],
-          }),
-        );
-      } catch (error) {
-        console.error(error);
+  const executeDryad = async (
+    js: string,
+    css: string,
+    schema: string,
+    url: string,
+  ) => {
+    try {
+      setDryadPending(true);
+      const r = await DryadFunction({
+        js,
+        schema,
+        url,
+      });
+      setDryadPending(false);
+      if (!r) {
+        return;
       }
+      setDryad(
+        HtmlSkeletonStatic({
+          body: r.body,
+          script: r.script,
+          style: css,
+        }),
+      );
+    } catch (error) {
+      console.error(error);
+    }
+  };
+  const refreshDryad = async () => {
+    const js = value[Editors.js];
+    const css = value[Editors.css];
+    if (js) {
+      executeDryad(js, css, schemaString, settings.url);
     }
   };
 
   useEffect(() => {
     if (tryToLoadOnFirstRun && !dryad && schemaString) {
-      executeDryad();
+      refreshDryad();
     }
   }, [tryToLoadOnFirstRun, schemaString]);
   return (
@@ -252,7 +268,7 @@ export const HalfCode = ({
         </Resizable>
 
         <Place>
-          <R variant={'play'} onClick={executeDryad} />
+          <R variant={'play'} onClick={refreshDryad} />
           {dryadPending ? (
             <Placehold>Loading...</Placehold>
           ) : (
