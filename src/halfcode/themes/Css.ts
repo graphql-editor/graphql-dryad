@@ -14,5 +14,7 @@ export const CssTheme: editor.IStandaloneThemeData = {
   ],
   colors: {
     'editor.foreground': Colors.grey[0],
+    'editor.background': `#0b050d`,
+    'minimap.background': '#0b050d',
   },
 };

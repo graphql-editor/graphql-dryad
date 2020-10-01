@@ -19,7 +19,7 @@ const useStyle = createUseStyles({
     marginLeft: -60,
     display: 'flex',
     alignItems: 'center',
-    background: Colors.green[6],
+    background: Colors.main[7],
     color: Colors.grey[3],
     borderRadius: `100%`,
     cursor: 'pointer',
@@ -28,7 +28,7 @@ const useStyle = createUseStyles({
     transition: '0.25s all',
     '&:hover': {
       color: Colors.grey[0],
-      background: Colors.green[2],
+      background: Colors.main[2],
     },
   },
 });

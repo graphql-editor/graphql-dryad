@@ -278,7 +278,7 @@ export const HalfCode = ({
           ) : (
             <iframe
               ref={iframeRef}
-              style={{ width: '100%', height: '100%' }}
+              style={{ width: '100%', height: '100%', border: 0 }}
               srcDoc={dryad}
             />
           )}

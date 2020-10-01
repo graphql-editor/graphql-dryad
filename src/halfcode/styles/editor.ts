@@ -1,5 +1,4 @@
 const css = (t: TemplateStringsArray): string => {
-  console.log(t.toString());
   return t.toString();
 };
 export const EditorRestyle = css`

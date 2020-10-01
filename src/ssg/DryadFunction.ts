@@ -55,7 +55,23 @@ export const DryadFunction = async ({
   if (!isMatching) {
     throw new Error('Cannot find return');
   }
-  const functionBody = [functions, js].join('\n');
+  const addonFunctions = `
+  var html = typeof html === "undefined" ? (strings, ...expr) => {
+    let str = '';
+    strings.forEach((string, i) => {
+        str += string + (expr[i] || '');
+    });
+    return str;
+  } : html
+  var css = typeof css === "undefined" ? (strings, ...expr) => {
+    let str = '';
+    strings.forEach((string, i) => {
+        str += string + (expr[i] || '');
+    });
+    return str;
+  } : css
+  `;
+  const functionBody = [functions, addonFunctions, js].join('\n');
   const useFunctionCodeBuild = `
     const classesAdded = []
     let dynamicsO = {}
@@ -67,20 +83,6 @@ export const DryadFunction = async ({
       });
       return remarkableRenderer.render(str);
     } : md
-    var html = typeof html === "undefined" ? (strings, ...expr) => {
-      let str = '';
-      strings.forEach((string, i) => {
-          str += string + (expr[i] || '');
-      });
-      return str;
-    } : html
-    var css = typeof css === "undefined" ? (strings, ...expr) => {
-      let str = '';
-      strings.forEach((string, i) => {
-          str += string + (expr[i] || '');
-      });
-      return str;
-    } : css
     const upperCamelCaseToSnakeCase = (value) => {
       return (
         value
@@ -149,6 +151,6 @@ export const DryadFunction = async ({
   }
   return {
     ...result,
-    script: [functions, result.script].join('\n'),
+    script: [functions, addonFunctions, result.script].join('\n'),
   };
 };

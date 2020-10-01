@@ -13,8 +13,7 @@ export const Place: FunctionComponent<PlaceProps> = ({
     className="Place"
     style={{
       flex: 1,
-      background: Colors.grey[7],
-      padding: 30,
+      background: Colors.main[9],
       overflowY: 'auto',
       ...style,
     }}
