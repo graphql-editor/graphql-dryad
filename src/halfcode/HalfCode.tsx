@@ -6,7 +6,7 @@ import { getParsedSchema } from '../schema';
 import { initLanguages } from './languages';
 import { R, Tabs, Container, Place, Tab, Placehold } from '../components';
 import * as initialParameters from './initial';
-import { Values, Editors, Config, Refs } from './Config';
+import { Values, Editors, Config, Refs, extendJs } from './Config';
 import { Settings } from '../models';
 import * as icons from './icons';
 import { DryadFunction, DryadDeclarations, HtmlSkeletonStatic } from '../ssg';
@@ -149,6 +149,9 @@ export const HalfCode = ({
   }, [editor]);
 
   const resetEditor = () => {
+    if (editor === Editors.js) {
+      extendJs();
+    }
     const m = monaco.editor.create(currentRef.current!, {
       ...currentConfig.options,
       value: currentValue,
@@ -157,6 +160,7 @@ export const HalfCode = ({
       m.updateOptions(editorOptions);
       monaco.editor.remeasureFonts();
     }
+
     monacoSubscription?.dispose();
     monacoInstance?.getModel()?.dispose();
     monacoInstance?.dispose();

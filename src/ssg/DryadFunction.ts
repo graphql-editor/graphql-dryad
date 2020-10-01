@@ -1,4 +1,7 @@
 import { Parser, TreeToTS } from 'graphql-zeus';
+// @ts-ignore
+import { Remarkable } from 'remarkable';
+// @ts-ignore
 
 export interface DryadFunctionProps {
   schema: string;
@@ -12,7 +15,9 @@ export interface DryadFunctionResult {
   globals: Record<string, any>;
 }
 export interface DryadFunctionFunction {
-  (): Promise<DryadFunctionResult>;
+  (remarkableRenderer: (markdownString: string) => string): Promise<
+    DryadFunctionResult
+  >;
 }
 function useDynamic<T extends string>(
   v: Record<T, T extends keyof typeof window ? 'Value is reserved!' : any>,
@@ -31,6 +36,9 @@ declare const useCustomElement: <T>(classDefinition:T) => void
 declare const useDynamic: <T extends string>(functions:Record<T, T extends keyof typeof window ? 'Value is reserved!' : any>) => void;
 // Declare function to be called immediately after dom render
 declare const useAfterRender: <T>(fn:Function) => void;
+declare var html: (strings: TemplateStringsArray, ...expr: string[]) => string
+declare var css: (strings: TemplateStringsArray, ...expr: string[]) => string
+declare var md: (strings: TemplateStringsArray, ...expr: string[]) => string
 `;
 export const DryadFunction = async ({
   schema,
@@ -52,6 +60,27 @@ export const DryadFunction = async ({
     const classesAdded = []
     let dynamicsO = {}
     let afterRenderO = null
+    var md = typeof md === "undefined" ? (strings, ...expr) => {
+      let str = '';
+      strings.forEach((string, i) => {
+          str += string + (expr[i] || '');
+      });
+      return remarkableRenderer.render(str);
+    } : md
+    var html = typeof html === "undefined" ? (strings, ...expr) => {
+      let str = '';
+      strings.forEach((string, i) => {
+          str += string + (expr[i] || '');
+      });
+      return str;
+    } : html
+    var css = typeof css === "undefined" ? (strings, ...expr) => {
+      let str = '';
+      strings.forEach((string, i) => {
+          str += string + (expr[i] || '');
+      });
+      return str;
+    } : css
     const upperCamelCaseToSnakeCase = (value) => {
       return (
         value
@@ -68,8 +97,10 @@ export const DryadFunction = async ({
     const useCustomElement = (elementClass) => {
       classesAdded.push(elementClass)
     }`;
+
   const r = new Function(
-    `return new Promise((resolve) => {
+    'remarkableRenderer',
+    `return new Promise(async (resolve) => {
         ${useFunctionCodeBuild}
       const dryadFunction = async () => {
         ${functionBody}
@@ -111,7 +142,8 @@ export const DryadFunction = async ({
       })
     })`,
   ) as DryadFunctionFunction;
-  const result = await r();
+  const remarkableRenderer = new Remarkable();
+  const result = await r(remarkableRenderer);
   if (typeof result.body !== 'string') {
     throw new Error('Js has to return string');
   }

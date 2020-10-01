@@ -47,3 +47,65 @@ export const Config: Record<Editors, ConfigurationLanguage> = {
 Object.values(Config).forEach((v) => {
   monaco.editor.defineTheme(v.options.theme, themes[v.themeModule]);
 });
+
+export const extendJs = async () => {
+  const extendConf:
+    | monaco.languages.IMonarchLanguage
+    | monaco.Thenable<monaco.languages.IMonarchLanguage> = {
+    tokenizer: {
+      root: [
+        [
+          /html\`/,
+          { token: 'function', next: '@htmlstring', nextEmbedded: 'html' },
+        ],
+        [
+          /css\`/,
+          { token: 'function', next: '@cssstring', nextEmbedded: 'css' },
+        ],
+        [
+          /md\`/,
+          { token: 'function', next: '@mdstring', nextEmbedded: 'markdown' },
+        ],
+      ],
+      htmlstring: [
+        [/\$\{/, { token: 'openJs', nextEmbedded: '@javascript' }],
+        [/`/, { token: 'htmlstring', next: '@pop', nextEmbedded: '@pop' }],
+      ],
+      cssstring: [
+        [/`/, { token: 'cssstring', next: '@pop', nextEmbedded: '@pop' }],
+      ],
+      mdstring: [
+        [/`/, { token: 'mdstring', next: '@pop', nextEmbedded: '@pop' }],
+      ],
+    },
+  };
+  const allLangs = monaco.languages.getLanguages();
+  if (allLangs) {
+    const js = allLangs.find(({ id }) => id === 'javascript');
+    if (js) {
+      const { language: jsLang } = await ((js as any).loader() as Promise<any>);
+      for (const key in extendConf) {
+        const value = (extendConf as any)[key];
+        if (key === 'tokenizer') {
+          for (const category in value) {
+            const tokenDefs = value[category];
+            if (!jsLang.tokenizer.hasOwnProperty(category)) {
+              jsLang.tokenizer[category] = [];
+            }
+            if (Array.isArray(tokenDefs)) {
+              jsLang.tokenizer[category].unshift.apply(
+                jsLang.tokenizer[category],
+                tokenDefs,
+              );
+            }
+          }
+        } else if (Array.isArray(value)) {
+          if (!jsLang.hasOwnProperty(key)) {
+            jsLang[key] = [];
+          }
+          jsLang[key].unshift.apply(jsLang[key], value);
+        }
+      }
+    }
+  }
+};
