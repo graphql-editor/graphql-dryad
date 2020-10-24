@@ -1,49 +1,49 @@
 import React, { FunctionComponent } from 'react';
 import { Colors } from '../Colors';
-import { RefreshCw, Play } from 'react-feather';
-import { createUseStyles } from 'react-jss';
+import { RefreshCw, Play, Eye } from 'react-feather';
+import styled from '@emotion/styled';
+
+const Main = styled.div`
+  color: ${Colors.grey[3]};
+  width: 40px;
+  cursor: pointer;
+  height: 40px;
+  display: flex;
+  transform: rotate(0deg);
+  transition: 0.25s all;
+  align-items: center;
+  justify-content: center;
+  :hover {
+    color: ${Colors.grey[0]};
+  }
+`;
 
 export interface RProps {
   onClick: () => void;
   isRefreshing?: boolean;
-  variant: 'refresh' | 'play';
+  variant: 'refresh' | 'play' | 'eye';
+  title: string;
+  about: string;
+  backgroundColor: string;
 }
 
-const useStyle = createUseStyles({
-  main: {
-    position: 'absolute',
-    top: 'calc(50% - 35px)',
-    height: 40,
-    width: 40,
-    justifyContent: 'center',
-    marginLeft: -60,
-    display: 'flex',
-    alignItems: 'center',
-    background: Colors.main[7],
-    color: Colors.grey[3],
-    borderRadius: `100%`,
-    cursor: 'pointer',
-    zIndex: 2,
-    transform: 'rotate(0deg)',
-    transition: '0.25s all',
-    '&:hover': {
-      color: Colors.grey[0],
-      background: Colors.main[2],
-    },
-  },
-});
-
-export const R: FunctionComponent<RProps> = ({ onClick, variant }) => {
-  const { main } = useStyle();
+export const R: FunctionComponent<RProps> = ({
+  onClick,
+  variant,
+  title,
+  about,
+  backgroundColor,
+}) => {
   return (
-    <div
-      title="Run GraphQL Query"
-      className={main}
+    <Main
+      style={{ backgroundColor }}
+      title={title}
       onClick={onClick}
-      about="Run query"
+      about={about}
     >
       {variant === 'refresh' && <RefreshCw size={15} />}
       {variant === 'play' && <Play size={15} />}
-    </div>
+      {variant === 'eye' && <Eye size={15} />}
+    </Main>
   );
 };

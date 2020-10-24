@@ -1,6 +1,6 @@
 {
   "name": "graphql-dryad",
-  "version": "0.8.1",
+  "version": "0.8.2",
   "description": "Component from graphql library",
   "main": "lib/index.js",
   "scripts": {
@@ -22,11 +22,12 @@
   },
   "homepage": "https://github.com/graphql-editor/graphql-dryad#readme",
   "dependencies": {
+    "@emotion/core": "^10.0.35",
+    "@emotion/styled": "^10.0.27",
     "file-saver": "^2.0.2",
-    "graphql-zeus": "^2.8.2",
+    "graphql-zeus": "^2.8.5",
     "re-resizable": "^6.1.1",
     "react-feather": "^2.0.3",
-    "react-jss": "^10.0.3",
     "remarkable": "^2.0.1"
   },
   "peerDependencies": {
@@ -43,7 +44,6 @@
     "@types/jszip": "^3.1.7",
     "@types/react": "^16.9.14",
     "@types/react-dom": "^16.9.4",
-    "@types/react-jss": "^10.0.0",
     "@types/remarkable": "^1.7.4",
     "@typescript-eslint/eslint-plugin": "^2.12.0",
     "@typescript-eslint/parser": "^2.12.0",

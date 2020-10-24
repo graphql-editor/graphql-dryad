@@ -68,7 +68,6 @@ export const extendJs = async () => {
         ],
       ],
       htmlstring: [
-        [/\$\{/, { token: 'openJs', nextEmbedded: '@javascript' }],
         [/`/, { token: 'htmlstring', next: '@pop', nextEmbedded: '@pop' }],
       ],
       cssstring: [

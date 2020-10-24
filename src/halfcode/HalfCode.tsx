@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect, useState, useLayoutEffect } from 'react';
 import * as monaco from 'monaco-editor';
 import { Resizable } from 're-resizable';
 import { Parser, TreeToTS } from 'graphql-zeus';
@@ -11,6 +11,30 @@ import { Settings } from '../models';
 import * as icons from './icons';
 import { DryadFunction, DryadDeclarations, HtmlSkeletonStatic } from '../ssg';
 import { EditorRestyle } from './styles/editor';
+import styled from '@emotion/styled';
+import { Colors } from '../Colors';
+
+const IconsDiv = styled.div`
+  position: absolute;
+  top: 47px;
+  height: 100px;
+  width: 60px;
+  margin-left: -60px;
+  align-items: end;
+  justify-content: start;
+  display: flex;
+  flex-flow: column nowrap;
+`;
+
+const MainFrame = styled.iframe`
+  width: 100%;
+  height: 100%;
+  border: 0;
+`;
+
+const EditorRef = styled.div`
+  height: calc(100% - 30px);
+`;
 
 initLanguages();
 
@@ -43,6 +67,7 @@ export const HalfCode = ({
 
   const [editor, setEditor] = useState<Editors>(Editors.js);
   const [schemaString, setSchema] = useState('');
+  const [errors, setErrors] = useState<any>();
 
   const initialValues: Values = {
     css: initialParameters.initialCss,
@@ -52,7 +77,9 @@ export const HalfCode = ({
   const [value, setValue] = useState(initialValues);
 
   const [dryad, setDryad] = useState<string>('');
-  const [dryadPending, setDryadPending] = useState(false);
+  const [dryadPending, setDryadPending] = useState<
+    'yes' | 'no' | 'unset' | 'empty'
+  >('unset');
   const [providerJS, setProviderJS] = useState<monaco.IDisposable>();
 
   const [monacoInstance, setMonacoInstance] = useState<
@@ -61,11 +88,24 @@ export const HalfCode = ({
   const [monacoSubscription, setMonacoSubscription] = useState<
     monaco.IDisposable
   >();
+  const [view, setView] = useState<'split' | 'code' | 'display'>('split');
+  const [{ width, height }, setSize] = useState({
+    width: '50%',
+    height: '100%',
+  });
 
   const currentRef = refs[editor];
   const currentValue = value[editor];
   const currentInitialValue = initialValues[editor];
   const currentConfig = Config[editor];
+
+  const openBlob = () => {
+    const url = URL.createObjectURL(
+      new Blob([dryad], { type: 'text/html;charset=utf-8' }),
+    );
+    // eslint-disable-next-line
+    window?.open(url);
+  };
 
   useEffect(() => {
     setValue(initialValues);
@@ -148,6 +188,10 @@ export const HalfCode = ({
     resetEditor();
   }, [editor]);
 
+  useLayoutEffect(() => {
+    monacoInstance?.layout();
+  }, [width]);
+
   const resetEditor = () => {
     if (editor === Editors.js) {
       extendJs();
@@ -183,16 +227,18 @@ export const HalfCode = ({
     url: string,
   ) => {
     try {
-      setDryadPending(true);
+      setDryadPending('yes');
       const r = await DryadFunction({
         js,
         schema,
         url,
       });
-      setDryadPending(false);
-      if (!r) {
+      setErrors(undefined);
+      if (!r || !r.body) {
+        setDryadPending('empty');
         return;
       }
+      setDryadPending('no');
       setDryad(
         HtmlSkeletonStatic({
           body: r.body,
@@ -201,7 +247,7 @@ export const HalfCode = ({
         }),
       );
     } catch (error) {
-      console.error(error);
+      setErrors(error);
     }
   };
   const refreshDryad = async () => {
@@ -226,9 +272,6 @@ export const HalfCode = ({
             height: '100%',
           }}
           style={{ background: '#333', color: '#aaa', overflowY: 'hidden' }}
-          onResize={() => {
-            monacoInstance?.layout();
-          }}
           enable={{
             bottom: false,
             bottomLeft: false,
@@ -239,6 +282,13 @@ export const HalfCode = ({
             topLeft: false,
             topRight: false,
           }}
+          size={{ width, height }}
+          onResizeStop={(e, direction, ref, d) => {
+            setSize({
+              width: width + d.width,
+              height: height + d.height,
+            });
+          }}
           handleStyles={{
             right: {
               width: 5,
@@ -246,9 +296,26 @@ export const HalfCode = ({
             },
           }}
           maxWidth="100%"
-          minWidth="1"
+          minWidth="30%"
         >
-          <Tabs>
+          <Tabs
+            toggled={view === 'code'}
+            toggle={() => {
+              if (view !== 'code') {
+                setSize({
+                  height,
+                  width: '100%',
+                });
+                setView('code');
+                return;
+              }
+              setSize({
+                height,
+                width: '50%',
+              });
+              setView('split');
+            }}
+          >
             {allEditors.map((t) => {
               const Icon = icons[Config[t].icon];
               return (
@@ -259,28 +326,49 @@ export const HalfCode = ({
             })}
           </Tabs>
           {allEditors.map((e) => (
-            <div
+            <EditorRef
               key={e}
               style={{
-                height: `calc(100% - 30px)`,
                 display: editor === e ? 'block' : 'none',
               }}
               ref={refs[e]}
-            ></div>
+            ></EditorRef>
           ))}
           <style>{EditorRestyle}</style>
         </Resizable>
 
         <Place>
-          <R variant={'play'} onClick={refreshDryad} />
-          {dryadPending ? (
-            <Placehold>Loading...</Placehold>
-          ) : (
-            <iframe
-              ref={iframeRef}
-              style={{ width: '100%', height: '100%', border: 0 }}
-              srcDoc={dryad}
+          <IconsDiv>
+            <R
+              title="Run GraphQL Query( Cmd/Ctrl + S )"
+              about="Run Query"
+              variant={'play'}
+              onClick={refreshDryad}
+              backgroundColor={Colors.blue[5]}
             />
+            <R
+              backgroundColor={Colors.main[5]}
+              title="Preview in new tab"
+              about="Preview HTML"
+              variant={'eye'}
+              onClick={openBlob}
+            />
+          </IconsDiv>
+          {errors && <Placehold>{errors.message}</Placehold>}
+          {!errors && (
+            <>
+              {dryadPending === 'unset' ? (
+                <Placehold>
+                  Click <b>play</b> to run the code
+                </Placehold>
+              ) : dryadPending === 'empty' ? (
+                <Placehold>Empty string returne from function</Placehold>
+              ) : dryadPending === 'yes' ? (
+                <Placehold>Loading...</Placehold>
+              ) : (
+                <MainFrame ref={iframeRef} srcDoc={dryad} />
+              )}
+            </>
           )}
         </Place>
       </Container>

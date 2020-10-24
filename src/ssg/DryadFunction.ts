@@ -147,7 +147,9 @@ export const DryadFunction = async ({
   const remarkableRenderer = new Remarkable();
   const result = await r(remarkableRenderer);
   if (typeof result.body !== 'string') {
-    throw new Error('Js has to return string');
+    throw new Error(
+      '.js file should end with return function returning string HTML',
+    );
   }
   return {
     ...result,

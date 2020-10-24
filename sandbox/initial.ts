@@ -129,7 +129,7 @@ return html\`
           duration-200
           "
       >
-          Sweet 🐤
+          \${html\`<span>Sweet 🐤</span>\`}
       </add-post>
   </div>
 </div>
