@@ -18,7 +18,29 @@
     "outDir": "./lib",
     "lib": ["es6", "es7", "esnext", "dom"],
     "rootDir": "./src",
+    "paths": {
+      "@/*": ["./*"]
+    },
+    "plugins": [
+      {
+        "transform": "typescript-transform-paths"
+      },
+      {
+        "transform": "typescript-transform-paths",
+        "afterDeclarations": true
+      }
+    ],
     "baseUrl": "./src/"
   },
-  "exclude": ["lib", "node_modules", "docs", "__tests__", "generated", "examples", "sandbox", "livedoc","commitlint.config.js"]
+  "exclude": [
+    "lib",
+    "node_modules",
+    "docs",
+    "__tests__",
+    "generated",
+    "examples",
+    "sandbox",
+    "livedoc",
+    "commitlint.config.js"
+  ]
 }

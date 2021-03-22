@@ -5,6 +5,8 @@ const sourcePath = path.join(__dirname, './');
 const outPath = path.join(__dirname, './');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MonacoWebpackPlugin = require('monaco-editor-webpack-plugin');
+const TsConfigPathsPlugin = require('tsconfig-paths-webpack-plugin');
+
 module.exports = {
   context: sourcePath,
   entry: {
@@ -20,6 +22,11 @@ module.exports = {
   resolve: {
     extensions: ['.mjs', '.js', '.jsx', '.ts', '.tsx'],
     mainFields: ['module', 'browser', 'main'],
+    plugins: [
+      new TsConfigPathsPlugin({
+        configFile: path.resolve(__dirname, '../tsconfig.json'),
+      }),
+    ],
     alias: {
       app: path.resolve(__dirname, '../src/'),
     },

@@ -1,3 +1,4 @@
+import { darken, toHex } from 'color2k';
 import React, { FunctionComponent } from 'react';
 import { Colors } from '../Colors';
 
@@ -13,7 +14,7 @@ export const Place: FunctionComponent<PlaceProps> = ({
     className="Place"
     style={{
       flex: 1,
-      background: Colors.main[9],
+      background: toHex(darken(Colors.main, 0.66)),
       overflowY: 'auto',
       ...style,
     }}

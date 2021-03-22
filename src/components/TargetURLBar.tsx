@@ -5,7 +5,10 @@ export interface TargetURLBarProps {
   onChange: (url: string) => void;
 }
 
-export const TargetURLBar: FunctionComponent<TargetURLBarProps> = ({ url, onChange }) => {
+export const TargetURLBar: FunctionComponent<TargetURLBarProps> = ({
+  url,
+  onChange,
+}) => {
   return (
     <div style={{ flex: 1, alignSelf: 'stretch' }}>
       <input

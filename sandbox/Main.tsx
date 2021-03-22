@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { HalfCode } from '../src';
+import { GraphQLDryad } from '../src';
 import { initialValues } from './initial';
 
 export const Main = () => {
@@ -8,7 +8,7 @@ export const Main = () => {
 
   return (
     <div style={{ height: `100%` }}>
-      <HalfCode
+      <GraphQLDryad
         settings={{
           url:
             'https://faker.graphqleditor.com/explore-projects/twitter/graphql',

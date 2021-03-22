@@ -1,3 +1,4 @@
+import { darken, toHex } from 'color2k';
 import React from 'react';
 import { Colors } from '../Colors';
 
@@ -16,7 +17,7 @@ export const Tab: React.FC<TabProps> = ({
   return (
     <div
       style={{
-        color: active ? Colors.grey[0] : Colors.grey[3],
+        color: active ? Colors.grey : toHex(darken(Colors.grey, 0.3)),
         opacity: active ? 1.0 : 0.5,
         fontSize: 11,
         padding: 15,
@@ -24,7 +25,7 @@ export const Tab: React.FC<TabProps> = ({
         display: 'flex',
         alignItems: 'center',
         userSelect: 'none',
-        borderBottom: active ? `solid 1px ${Colors.main[0]}` : 0,
+        borderBottom: active ? `solid 1px ${Colors.main}` : 0,
         ...style,
       }}
       onClick={onClick}

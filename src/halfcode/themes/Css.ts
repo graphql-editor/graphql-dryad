@@ -1,20 +1,24 @@
 import { Colors } from '../../Colors';
 import { editor } from 'monaco-editor';
+import { darken, toHex } from 'color2k';
 
 export const CssTheme: editor.IStandaloneThemeData = {
   base: 'vs-dark',
   inherit: true,
   rules: [
-    { token: 'tag.css', foreground: Colors.main[0] },
-    { token: 'comment.css', foreground: Colors.grey[5] },
-    { token: 'attribute.name.css', foreground: Colors.blue[0] },
-    { token: 'attribute.value.number.css', foreground: Colors.green[0] },
-    { token: 'attribute.value.unit.css', foreground: Colors.grey[2] },
-    { token: 'string.css', foreground: Colors.red[0] },
+    { token: 'tag.css', foreground: Colors.main },
+    { token: 'comment.css', foreground: toHex(darken(Colors.grey, 0.5)) },
+    { token: 'attribute.name.css', foreground: Colors.blue },
+    { token: 'attribute.value.number.css', foreground: Colors.green },
+    {
+      token: 'attribute.value.unit.css',
+      foreground: toHex(darken(Colors.grey, 0.2)),
+    },
+    { token: 'string.css', foreground: Colors.red },
   ],
   colors: {
-    'editor.foreground': Colors.grey[0],
-    'editor.background': `#0b050d`,
-    'minimap.background': '#0b050d',
+    'editor.foreground': Colors.grey,
+    'editor.background': toHex(darken(Colors.main, 0.61)),
+    'minimap.background': toHex(darken(Colors.main, 0.62)),
   },
 };

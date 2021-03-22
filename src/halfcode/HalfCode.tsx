@@ -13,6 +13,7 @@ import { DryadFunction, DryadDeclarations, HtmlSkeletonStatic } from '../ssg';
 import { EditorRestyle } from './styles/editor';
 import styled from '@emotion/styled';
 import { Colors } from '../Colors';
+import { darken, toHex } from 'color2k';
 
 const IconsDiv = styled.div`
   position: absolute;
@@ -29,6 +30,7 @@ const IconsDiv = styled.div`
 const MainFrame = styled.iframe`
   width: 100%;
   height: 100%;
+  background: ${toHex(darken(Colors.main, 0.65))};
   border: 0;
 `;
 
@@ -344,10 +346,10 @@ export const HalfCode = ({
               about="Run Query"
               variant={'play'}
               onClick={refreshDryad}
-              backgroundColor={Colors.blue[5]}
+              backgroundColor={toHex(darken(Colors.green, 0.5))}
             />
             <R
-              backgroundColor={Colors.main[5]}
+              backgroundColor={toHex(darken(Colors.main, 0.5))}
               title="Preview in new tab"
               about="Preview HTML"
               variant={'eye'}
