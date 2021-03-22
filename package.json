@@ -5,7 +5,7 @@
   "main": "lib/index.js",
   "scripts": {
     "start": "webpack-dev-server --config ./sandbox/webpack.config.js --content-base ./sandbox/ --port 1456 --hot --inline --open",
-    "build": "ttsc --build tsconfig.build.json",
+    "build": "ttsc --build tsconfig.json",
     "watch": "ttsc --watch"
   },
   "repository": {
