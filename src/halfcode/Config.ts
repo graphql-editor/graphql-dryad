@@ -69,6 +69,14 @@ export const extendJs = async () => {
       ],
       htmlstring: [
         [/`/, { token: 'htmlstring', next: '@pop', nextEmbedded: '@pop' }],
+        [
+          /\$\{/,
+          { token: 'delimiter', next: '@jsstring', nextEmbedded: '@pop' },
+        ],
+      ],
+      jsstring: [
+        [/\}/, { token: 'delimiter', next: '@pop', nextEmbedded: 'html' }],
+        { include: '@root' },
       ],
       cssstring: [
         [/`/, { token: 'cssstring', next: '@pop', nextEmbedded: '@pop' }],
@@ -81,30 +89,37 @@ export const extendJs = async () => {
   const allLangs = monaco.languages.getLanguages();
   if (allLangs) {
     const js = allLangs.find(({ id }) => id === 'javascript');
-    if (js) {
-      const { language: jsLang } = await ((js as any).loader() as Promise<any>);
-      for (const key in extendConf) {
-        const value = (extendConf as any)[key];
-        if (key === 'tokenizer') {
-          for (const category in value) {
-            const tokenDefs = value[category];
-            if (!jsLang.tokenizer.hasOwnProperty(category)) {
-              jsLang.tokenizer[category] = [];
-            }
-            if (Array.isArray(tokenDefs)) {
-              jsLang.tokenizer[category].unshift.apply(
-                jsLang.tokenizer[category],
-                tokenDefs,
-              );
-            }
-          }
-        } else if (Array.isArray(value)) {
-          if (!jsLang.hasOwnProperty(key)) {
-            jsLang[key] = [];
-          }
-          jsLang[key].unshift.apply(jsLang[key], value);
-        }
-      }
-    }
+    await newFunction(js, extendConf);
   }
 };
+async function newFunction(
+  js: monaco.languages.ILanguageExtensionPoint | undefined,
+  extendConf: monaco.languages.IMonarchLanguage,
+) {
+  if (js) {
+    const { language: jsLang } = await ((js as any).loader() as Promise<any>);
+    for (const key in extendConf) {
+      const value = (extendConf as any)[key];
+      if (key === 'tokenizer') {
+        for (const category in value) {
+          const tokenDefs = value[category];
+          if (!jsLang.tokenizer.hasOwnProperty(category)) {
+            jsLang.tokenizer[category] = [];
+          }
+          if (Array.isArray(tokenDefs)) {
+            jsLang.tokenizer[category].unshift.apply(
+              jsLang.tokenizer[category],
+              tokenDefs,
+            );
+          }
+        }
+      } else if (Array.isArray(value)) {
+        if (!jsLang.hasOwnProperty(key)) {
+          jsLang[key] = [];
+        }
+        jsLang[key].unshift.apply(jsLang[key], value);
+      }
+    }
+    console.log(jsLang.tokenizer);
+  }
+}
