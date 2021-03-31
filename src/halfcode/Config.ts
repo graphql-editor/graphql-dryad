@@ -44,10 +44,6 @@ export const Config: Record<Editors, ConfigurationLanguage> = {
   },
 };
 
-Object.values(Config).forEach((v) => {
-  monaco.editor.defineTheme(v.options.theme, themes[v.themeModule]);
-});
-
 export const extendJs = async () => {
   const extendConf:
     | monaco.languages.IMonarchLanguage
@@ -120,6 +116,5 @@ async function newFunction(
         jsLang[key].unshift.apply(jsLang[key], value);
       }
     }
-    console.log(jsLang.tokenizer);
   }
 }

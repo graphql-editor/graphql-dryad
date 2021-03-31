@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState, useLayoutEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import * as monaco from 'monaco-editor';
 import { Resizable } from 're-resizable';
 import { Parser, TreeToTS } from 'graphql-zeus';
@@ -6,14 +6,16 @@ import { getParsedSchema } from '../schema';
 import { initLanguages } from './languages';
 import { R, Tabs, Container, Place, Tab, Placehold } from '../components';
 import * as initialParameters from './initial';
-import { Values, Editors, Config, Refs, extendJs } from './Config';
+import { Values, Editors, Config, extendJs } from './Config';
 import { Settings } from '../models';
 import * as icons from './icons';
 import { DryadFunction, DryadDeclarations, HtmlSkeletonStatic } from '../ssg';
-import { EditorRestyle } from './styles/editor';
 import styled from '@emotion/styled';
 import { Colors } from '../Colors';
 import { darken, toHex } from 'color2k';
+
+import * as themes from './themes';
+import HydraIDE from 'hydra-ide';
 
 const IconsDiv = styled.div`
   position: absolute;
@@ -34,15 +36,10 @@ const MainFrame = styled.iframe`
   border: 0;
 `;
 
-const EditorRef = styled.div`
-  height: calc(100% - 30px);
-`;
-
 initLanguages();
 
 export interface HalfCodeProps {
   className?: string;
-  editorOptions?: monaco.editor.IEditorOptions;
   initial?: Partial<Values>;
   onChange?: (props: Values) => void;
   style?: React.CSSProperties;
@@ -52,17 +49,12 @@ export interface HalfCodeProps {
 
 export const HalfCode = ({
   className = '',
-  editorOptions,
   initial = {},
   onChange,
   settings,
   style = {},
   tryToLoadOnFirstRun,
 }: HalfCodeProps) => {
-  const refs: Refs = {
-    css: useRef<HTMLDivElement>(null),
-    js: useRef<HTMLDivElement>(null),
-  };
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
   const allEditors = [Editors.css, Editors.js];
@@ -84,23 +76,15 @@ export const HalfCode = ({
   >('unset');
   const [providerJS, setProviderJS] = useState<monaco.IDisposable>();
 
-  const [monacoInstance, setMonacoInstance] = useState<
-    monaco.editor.IStandaloneCodeEditor
-  >();
-  const [monacoSubscription, setMonacoSubscription] = useState<
-    monaco.IDisposable
-  >();
   const [view, setView] = useState<'split' | 'code' | 'display'>('split');
   const [{ width, height }, setSize] = useState({
     width: '50%',
     height: '100%',
   });
 
-  const currentRef = refs[editor];
   const currentValue = value[editor];
   const currentInitialValue = initialValues[editor];
   const currentConfig = Config[editor];
-
   const openBlob = () => {
     const url = URL.createObjectURL(
       new Blob([dryad], { type: 'text/html;charset=utf-8' }),
@@ -111,7 +95,6 @@ export const HalfCode = ({
 
   useEffect(() => {
     setValue(initialValues);
-    monacoInstance?.setValue(initialValues[editor]);
     if (schemaString && settings.url) {
       executeDryad(
         initialValues.js,
@@ -121,12 +104,6 @@ export const HalfCode = ({
       );
     }
   }, [initialValues.css, initialValues.js]);
-  useEffect(() => {
-    return () => {
-      monacoInstance?.dispose();
-      monacoSubscription?.dispose();
-    };
-  }, [monacoInstance, monacoSubscription]);
 
   useEffect(() => {
     return () => {
@@ -139,6 +116,7 @@ export const HalfCode = ({
       onChange(value);
     }
   }, [currentValue]);
+
   useEffect(() => {
     const keyListener = (e: KeyboardEvent) => {
       if (e.ctrlKey || e.metaKey) {
@@ -165,7 +143,7 @@ export const HalfCode = ({
   useEffect(() => {
     if (schemaString) {
       const graphqlTree = Parser.parse(schemaString);
-      const typings = TreeToTS.javascript(graphqlTree).definitions.replace(
+      const typings = TreeToTS.javascriptSplit(graphqlTree).definitions.replace(
         /export /gm,
         '',
       );
@@ -190,37 +168,10 @@ export const HalfCode = ({
     resetEditor();
   }, [editor]);
 
-  useLayoutEffect(() => {
-    monacoInstance?.layout();
-  }, [width]);
-
   const resetEditor = () => {
     if (editor === Editors.js) {
       extendJs();
     }
-    const m = monaco.editor.create(currentRef.current!, {
-      ...currentConfig.options,
-      value: currentValue,
-    });
-    if (editorOptions) {
-      m.updateOptions(editorOptions);
-      monaco.editor.remeasureFonts();
-    }
-
-    monacoSubscription?.dispose();
-    monacoInstance?.getModel()?.dispose();
-    monacoInstance?.dispose();
-    const subscription = m.onDidChangeModelContent(() => {
-      const model = m.getModel();
-      if (model) {
-        const modelValue = model.getValue();
-        if (modelValue) {
-          setValue((value) => ({ ...value, [editor]: modelValue }));
-        }
-      }
-    });
-    setMonacoInstance(m);
-    setMonacoSubscription(subscription);
   };
   const executeDryad = async (
     js: string,
@@ -327,16 +278,18 @@ export const HalfCode = ({
               );
             })}
           </Tabs>
-          {allEditors.map((e) => (
-            <EditorRef
-              key={e}
-              style={{
-                display: editor === e ? 'block' : 'none',
-              }}
-              ref={refs[e]}
-            ></EditorRef>
-          ))}
-          <style>{EditorRestyle}</style>
+          <HydraIDE
+            value={currentValue}
+            setValue={(e) =>
+              setValue({
+                ...value,
+                [editor]: e,
+              })
+            }
+            theme={themes[currentConfig.themeModule]}
+            editorOptions={currentConfig.options}
+            depsToObserveForResize={[width]}
+          />
         </Resizable>
 
         <Place>

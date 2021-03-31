@@ -15,9 +15,6 @@ export const Main = () => {
           headers: {},
         }}
         tryToLoadOnFirstRun
-        editorOptions={{
-          fontFamily: `'Fira Mono'`,
-        }}
         initial={initial}
         onChange={setValues}
       />

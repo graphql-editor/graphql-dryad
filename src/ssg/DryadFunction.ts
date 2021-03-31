@@ -20,7 +20,7 @@ export interface DryadFunctionFunction {
   >;
 }
 function useDynamic<T extends string>(
-  v: Record<T, T extends keyof typeof window ? 'Value is reserved!' : any>,
+  v: Record<T, T extends keyof typeof window ? never : any>,
 ) {
   return v;
 }
@@ -46,11 +46,9 @@ export const DryadFunction = async ({
   js,
 }: DryadFunctionProps): Promise<DryadFunctionResult> => {
   const graphqlTree = Parser.parse(schema);
-  const functions = TreeToTS.javascript(
-    graphqlTree,
-    'browser',
-    url,
-  ).javascript.replace(/export /gm, '');
+  const jsSplit = TreeToTS.javascriptSplit(graphqlTree, 'browser', url);
+  const jsString = jsSplit.const.concat('\n').concat(jsSplit.index);
+  const functions = jsString.replace(/export /gm, '');
   const isMatching = js.match(/return/);
   if (!isMatching) {
     throw new Error('Cannot find return');
