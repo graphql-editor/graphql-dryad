@@ -1,6 +1,6 @@
 {
   "name": "graphql-dryad",
-  "version": "0.9.3",
+  "version": "0.9.4",
   "description": "Component from graphql library",
   "main": "lib/index.js",
   "scripts": {
@@ -41,7 +41,7 @@
     "worker-loader": ">=2.0.0",
     "file-loader": ">=5.0.2",
     "css-loader": ">=2.1.1",
-    "hydra-ide": "0.0.5"
+    "hydra-ide": "0.0.6"
   },
   "devDependencies": {
     "@types/file-saver": "^2.0.1",
