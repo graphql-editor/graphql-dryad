@@ -3,6 +3,7 @@ import { Colors } from '../Colors';
 import { ChevronRight, ChevronLeft } from 'react-feather';
 import styled from '@emotion/styled';
 import { darken, toHex } from 'color2k';
+import { tree } from '@/cypressTree';
 
 const Main = styled.div`
   display: flex;
@@ -34,7 +35,7 @@ export const Tabs: React.FC<{
   toggled?: boolean;
 }> = ({ children, toggle, toggled }) => {
   return (
-    <Main>
+    <Main data-cy={tree.tree.main.code.tabs.element}>
       {children}
       <Chevron onClick={() => toggle()}>
         {!toggled && <ChevronRight />}

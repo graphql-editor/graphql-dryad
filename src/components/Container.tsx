@@ -1,26 +1,9 @@
-import React, { FunctionComponent } from 'react';
+import styled from '@emotion/styled';
 
-export interface ContainerProps {
-  style?: React.CSSProperties;
-  className?: string;
-}
-
-export const Container: FunctionComponent<ContainerProps> = ({
-  children,
-  className,
-  style = {},
-}) => (
-  <div
-    className={className}
-    style={{
-      height: `100%`,
-      width: `100%`,
-      display: 'flex',
-      flexFlow: 'row nowrap',
-      alignItems: 'stretch',
-      ...style,
-    }}
-  >
-    {children}
-  </div>
-);
+export const Container = styled.div`
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-flow: row nowrap;
+  align-items: stretch;
+`;

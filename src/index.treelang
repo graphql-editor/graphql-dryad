@@ -1,0 +1,28 @@
+tree{
+    main{
+        element
+        code{
+            element
+            tabs{
+                element
+                css{
+                    element
+                }
+                js{
+                    element
+                }
+            }
+        }
+        execute{
+            play{
+                element
+            }
+            preview{
+                element
+            }
+        }
+        result{
+            element
+        }
+    }
+}

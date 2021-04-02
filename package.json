@@ -5,8 +5,10 @@
   "main": "lib/index.js",
   "scripts": {
     "start": "webpack-dev-server --config ./sandbox/webpack.config.js --content-base ./sandbox/ --port 1456 --hot --inline --open",
-    "build": "ttsc --build tsconfig.json",
-    "watch": "ttsc --watch"
+    "build": "ttsc --build tsconfig.build.json",
+    "watch": "ttsc --watch --project tsconfig.build.json",
+    "domTree": "tree src/index.treelang -f ts > src/cypressTree.ts && eslint --fix src/cypressTree.ts",
+    "test": "cypress open"
   },
   "repository": {
     "type": "git",
@@ -36,12 +38,12 @@
   "peerDependencies": {
     "react": ">=16.12.0",
     "react-dom": ">=16.12.0",
-    "monaco-editor": ">=0.19.1",
-    "monaco-editor-webpack-plugin": ">=1.8.1",
+    "monaco-editor": ">=0.23.0",
+    "monaco-editor-webpack-plugin": ">=3.0.1",
     "worker-loader": ">=2.0.0",
     "file-loader": ">=5.0.2",
     "css-loader": ">=2.1.1",
-    "hydra-ide": "0.0.6"
+    "hydra-ide": ">=0.1.0"
   },
   "devDependencies": {
     "@types/file-saver": "^2.0.1",
@@ -52,6 +54,7 @@
     "@typescript-eslint/eslint-plugin": "^2.12.0",
     "@typescript-eslint/parser": "^2.12.0",
     "css-loader": "^3.3.2",
+    "cypress": "^6.8.0",
     "cz-conventional-changelog": "^2.1.0",
     "eslint": "^6.7.2",
     "eslint-config-prettier": "^6.7.0",
@@ -61,14 +64,16 @@
     "graphql": "^14.5.8",
     "html-loader": "^0.5.5",
     "html-webpack-plugin": "^3.2.0",
-    "hydra-ide": "0.0.6",
-    "monaco-editor": "^0.21.2",
-    "monaco-editor-webpack-plugin": "^2.0.0",
+    "hydra-ide": "^0.1.0",
+    "jest": "^26.6.3",
+    "monaco-editor": "^0.23.0",
+    "monaco-editor-webpack-plugin": "^3.0.1",
     "prettier": "^1.19.1",
     "raw-loader": "^4.0.0",
     "react": "^16.12.0",
     "react-dom": "^16.12.0",
     "style-loader": "^1.0.1",
+    "treelang": "0.0.1",
     "ts-loader": "^6.2.1",
     "tsconfig-paths-webpack-plugin": "^3.5.1",
     "ttypescript": "^1.5.12",

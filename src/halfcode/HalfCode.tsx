@@ -5,7 +5,6 @@ import { Parser, TreeToTS } from 'graphql-zeus';
 import { getParsedSchema } from '../schema';
 import { initLanguages } from './languages';
 import { R, Tabs, Container, Place, Tab, Placehold } from '../components';
-import * as initialParameters from './initial';
 import { Values, Editors, Config, extendJs } from './Config';
 import { Settings } from '../models';
 import * as icons from './icons';
@@ -16,6 +15,7 @@ import { darken, toHex } from 'color2k';
 
 import * as themes from './themes';
 import HydraIDE from 'hydra-ide';
+import { tree } from '@/cypressTree';
 
 const IconsDiv = styled.div`
   position: absolute;
@@ -40,17 +40,18 @@ initLanguages();
 
 export interface HalfCodeProps {
   className?: string;
-  initial?: Partial<Values>;
-  onChange?: (props: Values) => void;
+  value: Values;
+  setValue: (props: Values) => void;
   style?: React.CSSProperties;
   settings: Settings;
   tryToLoadOnFirstRun?: boolean;
 }
+const root = tree.tree.main;
 
 export const HalfCode = ({
   className = '',
-  initial = {},
-  onChange,
+  value,
+  setValue,
   settings,
   style = {},
   tryToLoadOnFirstRun,
@@ -62,13 +63,6 @@ export const HalfCode = ({
   const [editor, setEditor] = useState<Editors>(Editors.js);
   const [schemaString, setSchema] = useState('');
   const [errors, setErrors] = useState<any>();
-
-  const initialValues: Values = {
-    css: initialParameters.initialCss,
-    js: initialParameters.initialJS,
-    ...initial,
-  };
-  const [value, setValue] = useState(initialValues);
 
   const [dryad, setDryad] = useState<string>('');
   const [dryadPending, setDryadPending] = useState<
@@ -82,8 +76,6 @@ export const HalfCode = ({
     height: '100%',
   });
 
-  const currentValue = value[editor];
-  const currentInitialValue = initialValues[editor];
   const currentConfig = Config[editor];
   const openBlob = () => {
     const url = URL.createObjectURL(
@@ -94,28 +86,16 @@ export const HalfCode = ({
   };
 
   useEffect(() => {
-    setValue(initialValues);
     if (schemaString && settings.url) {
-      executeDryad(
-        initialValues.js,
-        initialValues.css,
-        schemaString,
-        settings.url,
-      );
+      executeDryad(value.js, value.css, schemaString, settings.url);
     }
-  }, [initialValues.css, initialValues.js]);
+  }, [value]);
 
   useEffect(() => {
     return () => {
       providerJS?.dispose();
     };
   }, [providerJS]);
-
-  useEffect(() => {
-    if (currentValue !== currentInitialValue && onChange) {
-      onChange(value);
-    }
-  }, [currentValue]);
 
   useEffect(() => {
     const keyListener = (e: KeyboardEvent) => {
@@ -218,12 +198,13 @@ export const HalfCode = ({
   }, [tryToLoadOnFirstRun, schemaString]);
   return (
     <>
-      <Container className={className} style={style}>
+      <Container data-cy={root.element} className={className} style={style}>
         <Resizable
           defaultSize={{
             width: '50vw',
             height: '100%',
           }}
+          data-cy={root.code.element}
           style={{ background: '#333', color: '#aaa', overflowY: 'hidden' }}
           enable={{
             bottom: false,
@@ -272,20 +253,25 @@ export const HalfCode = ({
             {allEditors.map((t) => {
               const Icon = icons[Config[t].icon];
               return (
-                <Tab active={editor === t} onClick={() => setEditor(t)} key={t}>
+                <Tab
+                  data-cy={root.code.tabs[t].element}
+                  active={editor === t}
+                  onClick={() => setEditor(t)}
+                  key={t}
+                >
                   <Icon size={12} />.{t}
                 </Tab>
               );
             })}
           </Tabs>
           <HydraIDE
-            value={currentValue}
-            setValue={(e) =>
+            value={value[editor]}
+            setValue={(e) => {
               setValue({
                 ...value,
                 [editor]: e,
-              })
-            }
+              });
+            }}
             theme={themes[currentConfig.themeModule]}
             editorOptions={currentConfig.options}
             depsToObserveForResize={[width]}

@@ -1,10 +1,8 @@
 import React, { useState } from 'react';
 import { GraphQLDryad } from '../src';
-import { initialValues } from './initial';
 
 export const Main = () => {
-  const [initial] = useState(initialValues);
-  const [, setValues] = useState(initialValues);
+  const [value, setValue] = useState({ js: '', css: '' });
 
   return (
     <div style={{ height: `100%` }}>
@@ -15,8 +13,8 @@ export const Main = () => {
           headers: {},
         }}
         tryToLoadOnFirstRun
-        initial={initial}
-        onChange={setValues}
+        value={value}
+        setValue={setValue}
       />
     </div>
   );
