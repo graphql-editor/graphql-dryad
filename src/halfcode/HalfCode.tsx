@@ -300,10 +300,10 @@ export const HalfCode = ({
             <>
               {dryadPending === 'unset' ? (
                 <Placehold>
-                  Click <b>play</b> to run the code
+                  Click play to run the code and eye to preview in new tab
                 </Placehold>
               ) : dryadPending === 'empty' ? (
-                <Placehold>Empty string returne from function</Placehold>
+                <Placehold>Empty string returned from function</Placehold>
               ) : dryadPending === 'yes' ? (
                 <Placehold>Loading...</Placehold>
               ) : (

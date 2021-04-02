@@ -14,15 +14,18 @@ context('Test GraphQL dryad', () => {
   it('Inputs data to css and js and doesnt brake on tab switching', () => {
     cy.get(selector(tree.tree.main.code.tabs.js.element)).click();
     codeElement().type(jsInput, { force: true });
+    cy.wait(100);
     cy.get(selector(tree.tree.main.code.tabs.css.element)).click();
     codeElement().type(cssInput, {
       force: true,
       parseSpecialCharSequences: false,
     });
+    cy.wait(100);
     cy.get(selector(tree.tree.main.code.tabs.js.element)).click();
     codeElement()
       .invoke('val')
       .should('eq', jsInput);
+    cy.wait(100);
     cy.get(selector(tree.tree.main.code.tabs.css.element)).click();
     codeElement()
       .invoke('val')
