@@ -12,3 +12,4 @@ lib
 .tscache
 package-lock.json
 *.tsbuildinfo*
+yarn.lock
