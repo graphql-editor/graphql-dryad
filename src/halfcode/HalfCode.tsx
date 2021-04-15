@@ -45,6 +45,7 @@ export interface HalfCodeProps {
   style?: React.CSSProperties;
   settings: Settings;
   tryToLoadOnFirstRun?: boolean;
+  onTabChange?: (e: Editors) => void;
 }
 const root = tree.tree.main;
 
@@ -55,6 +56,7 @@ export const HalfCode = ({
   settings,
   style = {},
   tryToLoadOnFirstRun,
+  onTabChange,
 }: HalfCodeProps) => {
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
@@ -256,7 +258,10 @@ export const HalfCode = ({
                 <Tab
                   data-cy={root.code.tabs[t].element}
                   active={editor === t}
-                  onClick={() => setEditor(t)}
+                  onClick={() => {
+                    onTabChange?.(t);
+                    setEditor(t);
+                  }}
                   key={t}
                 >
                   <Icon size={12} />.{t}

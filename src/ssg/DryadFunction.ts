@@ -19,15 +19,6 @@ export interface DryadFunctionFunction {
     DryadFunctionResult
   >;
 }
-function useDynamic<T extends string>(
-  v: Record<T, T extends keyof typeof window ? never : any>,
-) {
-  return v;
-}
-
-useDynamic({
-  loca: '',
-});
 
 export const DryadDeclarations = `
 // Define custom element by passing its class to this function. It will be available in your static site. Remember to make everything used from outside element useDynamic
