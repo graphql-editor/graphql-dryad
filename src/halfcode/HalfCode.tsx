@@ -96,9 +96,7 @@ export const HalfCode = ({
   }, [value]);
 
   useEffect(() => {
-    if (fileName) {
-      refreshDryad();
-    }
+    refreshDryad();
   }, [fileName]);
 
   useEffect(() => {
