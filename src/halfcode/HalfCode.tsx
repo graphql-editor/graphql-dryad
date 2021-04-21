@@ -46,6 +46,7 @@ export interface HalfCodeProps {
   settings: Settings;
   tryToLoadOnFirstRun?: boolean;
   onTabChange?: (e: Editors) => void;
+  fileName?: string;
 }
 const root = tree.tree.main;
 
@@ -57,6 +58,7 @@ export const HalfCode = ({
   style = {},
   tryToLoadOnFirstRun,
   onTabChange,
+  fileName,
 }: HalfCodeProps) => {
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
@@ -92,6 +94,12 @@ export const HalfCode = ({
       executeDryad(value.js, value.css, schemaString, settings.url);
     }
   }, [value]);
+
+  useEffect(() => {
+    if (fileName) {
+      refreshDryad();
+    }
+  }, [fileName]);
 
   useEffect(() => {
     return () => {
