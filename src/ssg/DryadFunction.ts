@@ -91,7 +91,7 @@ export const DryadFunction = async ({
 
   const r = new Function(
     'remarkableRenderer',
-    `return new Promise(async (resolve) => {
+    `return new Promise(async (resolve, reject) => {
         ${useFunctionCodeBuild}
       const dryadFunction = async () => {
         ${functionBody}
@@ -127,9 +127,12 @@ export const DryadFunction = async ({
             }
             `}
         resolve({
+
           body:newBody,
           script,
         })
+      }).catch(e => {
+        reject(e)
       })
     })`,
   ) as DryadFunctionFunction;

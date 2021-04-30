@@ -4,7 +4,15 @@ import { Resizable } from 're-resizable';
 import { Parser, TreeToTS } from 'graphql-zeus';
 import { getParsedSchema } from '../schema';
 import { initLanguages } from './languages';
-import { R, Tabs, Container, Place, Tab, Placehold } from '../components';
+import {
+  R,
+  Tabs,
+  Container,
+  Place,
+  Tab,
+  Placehold,
+  LoadingDots,
+} from '../components';
 import { Values, Editors, Config, extendJs } from './Config';
 import { Settings } from '../models';
 import * as icons from './icons';
@@ -12,10 +20,10 @@ import { DryadFunction, DryadDeclarations, HtmlSkeletonStatic } from '../ssg';
 import styled from '@emotion/styled';
 import { Colors } from '../Colors';
 import { darken, toHex } from 'color2k';
-
 import * as themes from './themes';
 import HydraIDE from 'hydra-ide';
 import { tree } from '@/cypressTree';
+import { ErrorIcon } from './icons';
 
 const IconsDiv = styled.div`
   position: absolute;
@@ -27,6 +35,26 @@ const IconsDiv = styled.div`
   justify-content: start;
   display: flex;
   flex-flow: column nowrap;
+`;
+
+const ErrorWithIcon = styled.div`
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  padding-top: 3rem;
+`;
+
+const ErrorText = styled.div<{ color?: string }>`
+  flex: 1;
+  align-self: stretch;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+  display: flex;
+  padding: 2rem 3rem;
+  white-space: pre-line;
+  text-align: center;
+  color: ${({ color }) => toHex(darken(color ? color : Colors.grey, 0.2))};
 `;
 
 const MainFrame = styled.iframe`
@@ -46,7 +74,7 @@ export interface HalfCodeProps {
   settings: Settings;
   tryToLoadOnFirstRun?: boolean;
   onTabChange?: (e: Editors) => void;
-  fileName?: string;
+  reloadDryad?: boolean;
 }
 const root = tree.tree.main;
 
@@ -58,7 +86,7 @@ export const HalfCode = ({
   style = {},
   tryToLoadOnFirstRun,
   onTabChange,
-  fileName,
+  reloadDryad,
 }: HalfCodeProps) => {
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
@@ -90,14 +118,8 @@ export const HalfCode = ({
   };
 
   useEffect(() => {
-    if (schemaString && settings.url) {
-      executeDryad(value.js, value.css, schemaString, settings.url);
-    }
-  }, [value]);
-
-  useEffect(() => {
     refreshDryad();
-  }, [fileName]);
+  }, [reloadDryad]);
 
   useEffect(() => {
     return () => {
@@ -306,17 +328,30 @@ export const HalfCode = ({
               onClick={openBlob}
             />
           </IconsDiv>
-          {errors && <Placehold>{errors.message}</Placehold>}
+          {errors && (
+            <ErrorWithIcon>
+              <ErrorIcon iconColor={toHex(darken(Colors.red, 0.2))} size={4} />
+              <ErrorText color={Colors.red}>{errors.message}</ErrorText>
+            </ErrorWithIcon>
+          )}
           {!errors && (
             <>
               {dryadPending === 'unset' ? (
                 <Placehold>
-                  Click play to run the code and eye to preview in new tab
+                  Click play to run the code. {'\n'} Click eye to preview in new
+                  tab.
                 </Placehold>
               ) : dryadPending === 'empty' ? (
                 <Placehold>Empty string returned from function</Placehold>
               ) : dryadPending === 'yes' ? (
-                <Placehold>Loading...</Placehold>
+                <Placehold>
+                  Loading{' '}
+                  <LoadingDots
+                    color={toHex(darken(Colors.grey, 0.2))}
+                    dotSizeInPx={5}
+                    heightOfBounce={4}
+                  />
+                </Placehold>
               ) : (
                 <MainFrame ref={iframeRef} srcDoc={dryad} />
               )}
