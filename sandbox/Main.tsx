@@ -2,7 +2,12 @@ import React, { useState } from 'react';
 import { GraphQLDryad } from '../src';
 
 export const Main = () => {
-  const [value, setValue] = useState({ js: '', css: '' });
+  const [value, setValue] = useState({
+    js: `const render = () => {
+    return html\`<div style="background: #fff;">Hello world</div>\`
+}`,
+    css: '',
+  });
 
   return (
     <div style={{ height: `100%` }}>

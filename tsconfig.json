@@ -32,11 +32,5 @@
     ],
     "baseUrl": "./src/"
   },
-  "exclude": [
-    "lib",
-    "node_modules",
-    "__tests__",
-    "sandbox",
-    "commitlint.config.js"
-  ]
+  "exclude": ["lib", "node_modules", "commitlint.config.js"]
 }

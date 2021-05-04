@@ -3,6 +3,7 @@
 const path = require('path');
 const sourcePath = path.join(__dirname, './');
 const outPath = path.join(__dirname, './');
+const webpack = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MonacoWebpackPlugin = require('monaco-editor-webpack-plugin');
 const TsConfigPathsPlugin = require('tsconfig-paths-webpack-plugin');
@@ -22,21 +23,13 @@ module.exports = {
   resolve: {
     extensions: ['.mjs', '.js', '.jsx', '.ts', '.tsx'],
     mainFields: ['module', 'browser', 'main'],
-    plugins: [
-      new TsConfigPathsPlugin({
-        configFile: path.resolve(__dirname, '../tsconfig.json'),
-      }),
-    ],
-    alias: {
-      app: path.resolve(__dirname, '../src/'),
-    },
+    plugins: [new TsConfigPathsPlugin({})],
   },
   module: {
     rules: [
       {
         test: /\.tsx?$/,
         loader: 'ts-loader',
-        options: { configFile: 'sandbox/tsconfig.json' },
       },
       { test: /\.(png|svg)$/, use: 'url-loader?limit=10000' },
       { test: /\.(jpg|gif|graphql|gql|ttf)$/, use: 'file-loader' },
@@ -52,6 +45,10 @@ module.exports = {
     }),
     new HtmlWebpackPlugin({
       template: 'assets/index.html',
+    }),
+    new webpack.IgnorePlugin({
+      resourceRegExp: /^blob.*/,
+      contextRegExp: /^blob.*/,
     }),
   ],
 };
