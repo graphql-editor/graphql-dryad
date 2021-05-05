@@ -1,11 +1,10 @@
+import { simpleExample } from '@/../sandbox/simpleExample';
 import React, { useState } from 'react';
 import { GraphQLDryad } from '../src';
 
 export const Main = () => {
   const [value, setValue] = useState({
-    js: `const render = () => {
-    return html\`<div style="background: #fff;">Hello world</div>\`
-}`,
+    js: '',
     css: '',
   });
 
@@ -13,8 +12,7 @@ export const Main = () => {
     <div style={{ height: `100%` }}>
       <GraphQLDryad
         settings={{
-          url:
-            'https://faker.graphqleditor.com/explore-projects/twitter/graphql',
+          url: simpleExample.schemaUrl,
           headers: {},
         }}
         tryToLoadOnFirstRun

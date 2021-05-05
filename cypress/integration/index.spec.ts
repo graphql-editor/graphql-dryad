@@ -2,7 +2,7 @@
 
 import { tree } from '@/cypressTree';
 
-const jsInput = 'return "<div>Hello world</div>"';
+const jsInput = 'export default () => "<div>Hello world</div>"';
 const cssInput = `body{ background:red; }`;
 const selector = (s: string) => `[data-cy="${s}"]`;
 const codeElement = () =>
@@ -11,7 +11,7 @@ context('Test GraphQL dryad', () => {
   beforeEach(() => {
     cy.visit('http://localhost:1456');
   });
-  it('Inputs data to css and js and doesnt brake on tab switching', () => {
+  it('Inputs data to css and js and doesnt break on tab switching', () => {
     cy.get(selector(tree.tree.main.code.tabs.js.element)).click();
     codeElement().type(jsInput, { force: true });
     cy.wait(100);
@@ -30,5 +30,6 @@ context('Test GraphQL dryad', () => {
     codeElement()
       .invoke('val')
       .should('eq', cssInput);
+    cy.get(selector(tree.tree.main.execute.play.element)).click();
   });
 });

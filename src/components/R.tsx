@@ -28,6 +28,7 @@ export interface RProps {
   title: string;
   about: string;
   backgroundColor: string;
+  cypressName: string;
 }
 
 export const R: FunctionComponent<RProps> = ({
@@ -36,6 +37,7 @@ export const R: FunctionComponent<RProps> = ({
   title,
   about,
   backgroundColor,
+  cypressName,
 }) => {
   return (
     <Main
@@ -43,6 +45,7 @@ export const R: FunctionComponent<RProps> = ({
       title={title}
       onClick={onClick}
       about={about}
+      data-cy={cypressName}
     >
       {variant === 'refresh' && <RefreshCw size={15} />}
       {variant === 'play' && <Play size={15} />}

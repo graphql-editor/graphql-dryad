@@ -107,6 +107,7 @@ export const HalfCode = ({
     width: '50%',
     height: '100%',
   });
+  const [windowWidth, setWindowWidth] = useState(0);
 
   const currentConfig = Config[editor];
   const openBlob = () => {
@@ -138,7 +139,7 @@ export const HalfCode = ({
     };
     document.addEventListener('keydown', keyListener);
     return () => document.removeEventListener('keydown', keyListener);
-  }, [value[Editors.js], schemaString]);
+  }, [schemaString, value]);
   useEffect(() => {
     if (iframeRef.current) {
       const style = iframeRef.current.contentWindow?.document.getElementById(
@@ -216,7 +217,7 @@ export const HalfCode = ({
   const refreshDryad = async () => {
     const js = value[Editors.js];
     const css = value[Editors.css];
-    if (js) {
+    if (js && schemaString && settings.url) {
       executeDryad(js, css, schemaString, settings.url);
     }
   };
@@ -226,6 +227,15 @@ export const HalfCode = ({
       refreshDryad();
     }
   }, [tryToLoadOnFirstRun, schemaString]);
+
+  useEffect(() => {
+    const f = () => {
+      setWindowWidth(window.innerWidth);
+    };
+    window.addEventListener('resize', f);
+    return () => window.removeEventListener('resize', f);
+  }, []);
+
   return (
     <>
       <Container data-cy={root.element} className={className} style={style}>
@@ -247,7 +257,7 @@ export const HalfCode = ({
             topRight: false,
           }}
           size={{ width, height }}
-          onResizeStop={(e, direction, ref, d) => {
+          onResize={(e, direction, ref, d) => {
             setSize({
               width: width + d.width,
               height: height + d.height,
@@ -307,7 +317,7 @@ export const HalfCode = ({
             }}
             theme={themes[currentConfig.themeModule]}
             editorOptions={currentConfig.options}
-            depsToObserveForResize={[width]}
+            depsToObserveForResize={[width, windowWidth]}
           />
         </Resizable>
 
@@ -319,12 +329,14 @@ export const HalfCode = ({
               variant={'play'}
               onClick={refreshDryad}
               backgroundColor={toHex(darken(Colors.green, 0.5))}
+              cypressName={tree.tree.main.execute.play.element}
             />
             <R
               backgroundColor={toHex(darken(Colors.main, 0.5))}
               title="Preview in new tab"
               about="Preview HTML"
               variant={'eye'}
+              cypressName={tree.tree.main.execute.preview.element}
               onClick={openBlob}
             />
           </IconsDiv>
