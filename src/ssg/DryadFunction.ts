@@ -56,11 +56,11 @@ export const DryadFunction = async ({
     strings.forEach((string, i) => {
         str += string + (expr[i] || '');
     });
-    return remarkableRenderer.render(str);
+    return new Remarkable().render(str);
   } : md
   `;
 
-  const functionBody = [functions, addonFunctions, js].join('\n');
+  const functionBody = [addonFunctions, functions, js].join('\n');
   const esmUrl = URL.createObjectURL(
     new Blob([functionBody], { type: 'text/javascript' }),
   );
