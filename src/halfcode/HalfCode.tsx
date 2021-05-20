@@ -205,6 +205,7 @@ export const HalfCode = ({
       setDryadPending('no');
       setDryad(
         HtmlSkeletonStatic({
+          head: r.head,
           body: r.body,
           script: r.script,
           style: css,

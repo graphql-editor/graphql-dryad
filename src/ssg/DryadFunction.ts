@@ -11,6 +11,7 @@ export interface DryadFunctionProps {
 
 export interface DryadFunctionResult {
   body: string;
+  head?: string;
   script: string;
 }
 export interface DryadFunctionFunction {
@@ -21,7 +22,6 @@ export interface DryadFunctionFunction {
 
 export const DryadDeclarations = `
 // Return html string from this function fo ssg;
-declare const render: <T>(fn:Function) => void;
 declare var html: (strings: TemplateStringsArray, ...expr: string[]) => string
 declare var css: (strings: TemplateStringsArray, ...expr: string[]) => string
 declare var md: (strings: TemplateStringsArray, ...expr: string[]) => string
@@ -66,8 +66,10 @@ export const DryadFunction = async ({
   );
   const imported = await eval(`import("${esmUrl}")`);
   const body = imported.default;
+  const head = imported.head ? await imported.head() : undefined;
   return {
     body: await body(),
     script: functionBody,
+    head,
   };
 };

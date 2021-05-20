@@ -47,8 +47,7 @@ const initialValues = {
 };
 
 export const Main = () => {
-  const [initial] = useState(initialValues);
-  const [, setValues] = useState(initialValues);
+  const [v, setValue] = useState(initialValues);
 
   return (
     <div style={{ height: `100%` }}>
@@ -58,11 +57,34 @@ export const Main = () => {
             'https://faker.graphqleditor.com/explore-projects/twitter/graphql',
           headers: {},
         }}
-        tryToLoadOnFirstRun
-        initial={initial}
-        onChange={setValues}
+        value={value}
+        setValue={setValue}
       />
     </div>
   );
+};
+```
+
+## How to write in dryad editor
+
+You are writing regular esmodule which default part is used during static site generation.
+
+```js
+// You can use esmodules imports
+export const head = () => {
+  return html`
+    <title>My website title</title>
+  `;
+};
+
+export default async () => {
+  const someMarkdown = md`
+# hello world
+  `;
+  return html`
+    <div class="container">
+      ${someMarkdown}
+    </div>
+  `;
 };
 ```
