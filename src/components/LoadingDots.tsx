@@ -1,5 +1,5 @@
 import { Colors } from '@/Colors';
-import { keyframes } from '@emotion/core';
+import { keyframes } from '@emotion/react';
 import styled from '@emotion/styled';
 import React from 'react';
 

@@ -11,14 +11,8 @@ npm i graphql-dryad
 Install peer dependencies
 
 ```sh
-npm i react react-dom monaco-editor hydra-ide
+npm i react react-dom monaco-editor @monaco-editor/react
 ```
-
-```sh
-npm i -D webpack monaco-editor-webpack-plugin worker-loader file-loader css-loader
-```
-
-add monaco plugin to webpack.
 
 ```js
 const MonacoWebpackPlugin = require('monaco-editor-webpack-plugin');
@@ -53,8 +47,7 @@ export const Main = () => {
     <div style={{ height: `100%` }}>
       <GraphQLDryad
         settings={{
-          url:
-            'https://faker.graphqleditor.com/explore-projects/twitter/graphql',
+          url: 'https://faker.graphqleditor.com/explore-projects/twitter/graphql',
           headers: {},
         }}
         value={value}
@@ -72,19 +65,13 @@ You are writing regular esmodule which default part is used during static site g
 ```js
 // You can use esmodules imports
 export const head = () => {
-  return html`
-    <title>My website title</title>
-  `;
+  return html` <title>My website title</title> `;
 };
 
 export default async () => {
   const someMarkdown = md`
 # hello world
   `;
-  return html`
-    <div class="container">
-      ${someMarkdown}
-    </div>
-  `;
+  return html` <div class="container">${someMarkdown}</div> `;
 };
 ```
