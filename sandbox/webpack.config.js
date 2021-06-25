@@ -5,7 +5,6 @@ const sourcePath = path.join(__dirname, './');
 const outPath = path.join(__dirname, './');
 const webpack = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
-const MonacoWebpackPlugin = require('monaco-editor-webpack-plugin');
 const TsConfigPathsPlugin = require('tsconfig-paths-webpack-plugin');
 
 module.exports = {
@@ -40,9 +39,6 @@ module.exports = {
     ],
   },
   plugins: [
-    new MonacoWebpackPlugin({
-      languages: ['css', 'graphql', 'javascript', 'typescript', 'json', 'html'],
-    }),
     new HtmlWebpackPlugin({
       template: 'assets/index.html',
     }),

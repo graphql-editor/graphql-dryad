@@ -1,5 +1,5 @@
 import React from 'react';
-import * as monaco from 'monaco-editor';
+import type * as monaco from 'monaco-editor';
 import * as icons from './icons';
 import * as themes from './themes';
 export enum Editors {
@@ -44,7 +44,7 @@ export const Config: Record<Editors, ConfigurationLanguage> = {
   },
 };
 
-export const extendJs = async () => {
+export const extendJs = async (m:typeof monaco) => {
   const extendConf:
     | monaco.languages.IMonarchLanguage
     | monaco.Thenable<monaco.languages.IMonarchLanguage> = {
@@ -82,7 +82,7 @@ export const extendJs = async () => {
       ],
     },
   };
-  const allLangs = monaco.languages.getLanguages();
+  const allLangs = m.languages.getLanguages();
   if (allLangs) {
     const js = allLangs.find(({ id }) => id === 'javascript');
     await newFunction(js, extendConf);
