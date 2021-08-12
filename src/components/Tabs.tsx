@@ -1,15 +1,19 @@
 import React from 'react';
-import { Colors } from '../Colors';
 import { ChevronRight, ChevronLeft } from 'react-feather';
 import styled from '@emotion/styled';
-import { darken, toHex } from 'color2k';
 import { tree } from '@/cypressTree';
 
 const Main = styled.div`
   display: flex;
   justify-content: flex-start;
   align-items: center;
-  background: ${toHex(darken(Colors.main, 0.64))};
+  background: ${({
+    theme: {
+      colors: {
+        background: { mainFar },
+      },
+    },
+  }) => mainFar};
 `;
 
 const Chevron = styled.div`
@@ -20,12 +24,20 @@ const Chevron = styled.div`
   cursor: pointer;
   padding: 0 8px;
   svg {
-    stroke: ${toHex(darken(Colors.grey, 0.2))};
+    stroke: ${({
+      theme: {
+        colors: { disabled },
+      },
+    }) => disabled};
     transition: stroke 0.25s ease-in-out;
   }
   :hover {
     svg {
-      stroke: ${Colors.pink};
+      stroke: ${({
+        theme: {
+          colors: { hover },
+        },
+      }) => hover};
     }
   }
 `;

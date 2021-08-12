@@ -1,4 +1,4 @@
-import { Colors } from '@/Colors';
+import { useTheme } from '@/hooks/useTheme';
 import { keyframes } from '@emotion/react';
 import styled from '@emotion/styled';
 import React from 'react';
@@ -34,7 +34,13 @@ export const LoadingDots: React.FC<{
   color?: string;
   dotSizeInPx?: number;
   heightOfBounce?: number;
-}> = ({ color = Colors.grey, dotSizeInPx = 10, heightOfBounce = 15 }) => {
+}> = ({ color: c, dotSizeInPx = 10, heightOfBounce = 15 }) => {
+  const {
+    theme: {
+      colors: { text },
+    },
+  } = useTheme();
+  const color = c || text;
   return (
     <DotWrapper>
       <Dot

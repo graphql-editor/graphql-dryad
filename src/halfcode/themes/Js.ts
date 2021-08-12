@@ -1,24 +1,32 @@
-import { Colors } from '../../Colors';
 import { editor } from 'monaco-editor';
-import { darken, toHex } from 'color2k';
-
-export const JsTheme: editor.IStandaloneThemeData = {
-  base: 'vs-dark',
-  inherit: true,
-  rules: [
-    { token: 'comment.js', foreground: toHex(darken(Colors.grey, 0.5)) },
-    { token: 'keyword.js', foreground: Colors.main },
-    { token: 'number.js', foreground: Colors.green },
-    { token: 'string.js', foreground: Colors.red },
-    { token: 'indentifier.js', foreground: toHex(darken(Colors.grey, 0.1)) },
-    {
-      token: 'type.indentifier.js',
-      foreground: toHex(darken(Colors.grey, 0.1)),
-    },
-  ],
+import { EditorTheme } from '@/Theming/DarkTheme';
+export const JsTheme = ({
   colors: {
-    'editor.foreground': Colors.grey,
-    'editor.background': toHex(darken(Colors.main, 0.63)),
-    'minimap.background': toHex(darken(Colors.main, 0.64)),
+    disabled,
+    info,
+    success,
+    hover,
+    text,
+    background: { mainFurthest, mainFurther },
   },
-};
+}: EditorTheme) =>
+  ({
+    base: 'vs-dark',
+    inherit: true,
+    rules: [
+      { token: 'comment.js', foreground: disabled },
+      { token: 'keyword.js', foreground: info },
+      { token: 'number.js', foreground: success },
+      { token: 'string.js', foreground: hover },
+      { token: 'indentifier.js', foreground: text },
+      {
+        token: 'type.indentifier.js',
+        foreground: text,
+      },
+    ],
+    colors: {
+      'editor.foreground': text,
+      'editor.background': mainFurthest,
+      'minimap.background': mainFurther,
+    },
+  } as editor.IStandaloneThemeData);

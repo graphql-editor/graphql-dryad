@@ -17,13 +17,11 @@ import { Settings } from '../models';
 import * as icons from './icons';
 import { DryadFunction, DryadDeclarations, HtmlSkeletonStatic } from '../ssg';
 import styled from '@emotion/styled';
-import { Colors } from '../Colors';
-import { darken, toHex } from 'color2k';
 import * as themes from './themes';
 import { tree } from '@/cypressTree';
 import { ErrorIcon } from './icons';
 import Editor from '@monaco-editor/react';
-
+import { useTheme } from '@/hooks/useTheme';
 
 const IconsDiv = styled.div`
   position: absolute;
@@ -54,16 +52,26 @@ const ErrorText = styled.div<{ color?: string }>`
   padding: 2rem 3rem;
   white-space: pre-line;
   text-align: center;
-  color: ${({ color }) => toHex(darken(color ? color : Colors.grey, 0.2))};
+  color: ${({
+    color,
+    theme: {
+      colors: { text },
+    },
+  }) => color || text};
 `;
 
 const MainFrame = styled.iframe`
   width: 100%;
   height: 100%;
-  background: ${toHex(darken(Colors.main, 0.65))};
+  background: ${({
+    theme: {
+      colors: {
+        background: { mainFar },
+      },
+    },
+  }) => mainFar};
   border: 0;
 `;
-
 
 export interface HalfCodeProps {
   className?: string;
@@ -100,13 +108,15 @@ export const HalfCode = ({
     'yes' | 'no' | 'unset' | 'empty'
   >('unset');
   const [providerJS, setProviderJS] = useState<monaco.IDisposable>();
-  const [currentMonacoInstance,setCurrentMonacoInstance] = useState<typeof monaco>()
+  const [currentMonacoInstance, setCurrentMonacoInstance] =
+    useState<typeof monaco>();
 
   const [view, setView] = useState<'split' | 'code' | 'display'>('split');
   const [{ width, height }, setSize] = useState({
     width: '50%',
     height: '100%',
   });
+  const { theme: editorTheme } = useTheme();
 
   const currentConfig = Config[editor];
   const openBlob = () => {
@@ -119,9 +129,9 @@ export const HalfCode = ({
 
   useEffect(() => {
     return () => {
-      setCurrentMonacoInstance(undefined)
-    }
-  },[])
+      setCurrentMonacoInstance(undefined);
+    };
+  }, []);
 
   useEffect(() => {
     refreshDryad();
@@ -147,9 +157,8 @@ export const HalfCode = ({
   }, [schemaString, value]);
   useEffect(() => {
     if (iframeRef.current) {
-      const style = iframeRef.current.contentWindow?.document.getElementById(
-        'styleTag',
-      );
+      const style =
+        iframeRef.current.contentWindow?.document.getElementById('styleTag');
       if (style) {
         style.innerHTML = value[Editors.css];
       }
@@ -172,7 +181,7 @@ export const HalfCode = ({
         );
       });
     }
-  }, [schemaString,currentMonacoInstance]);
+  }, [schemaString, currentMonacoInstance]);
 
   useEffect(() => {
     getParsedSchema(settings).then((fetchedSchema) => {
@@ -184,7 +193,7 @@ export const HalfCode = ({
     if (editor === Editors.js && currentMonacoInstance) {
       extendJs(currentMonacoInstance);
     }
-  }, [editor,currentMonacoInstance]);
+  }, [editor, currentMonacoInstance]);
 
   const executeDryad = async (
     js: string,
@@ -311,10 +320,15 @@ export const HalfCode = ({
           <Editor
             value={value[editor]}
             beforeMount={(monaco) => {
-              monaco.languages.typescript.typescriptDefaults.setEagerModelSync(true);
-              monaco.editor.defineTheme('CssTheme', themes.CssTheme);
-              monaco.editor.defineTheme('JsTheme', themes.JsTheme);
-              setCurrentMonacoInstance(monaco)
+              monaco.languages.typescript.typescriptDefaults.setEagerModelSync(
+                true,
+              );
+              monaco.editor.defineTheme(
+                'CssTheme',
+                themes.CssTheme(editorTheme),
+              );
+              monaco.editor.defineTheme('JsTheme', themes.JsTheme(editorTheme));
+              setCurrentMonacoInstance(monaco);
             }}
             path={editor}
             onChange={(e) => {
@@ -336,11 +350,9 @@ export const HalfCode = ({
               about="Run Query"
               variant={'play'}
               onClick={refreshDryad}
-              backgroundColor={toHex(darken(Colors.green, 0.5))}
               cypressName={tree.tree.main.execute.play.element}
             />
             <R
-              backgroundColor={toHex(darken(Colors.main, 0.5))}
               title="Preview in new tab"
               about="Preview HTML"
               variant={'eye'}
@@ -350,8 +362,10 @@ export const HalfCode = ({
           </IconsDiv>
           {errors && (
             <ErrorWithIcon>
-              <ErrorIcon iconColor={toHex(darken(Colors.red, 0.2))} size={4} />
-              <ErrorText color={Colors.red}>{errors.message}</ErrorText>
+              <ErrorIcon iconColor={editorTheme.colors.error} size={4} />
+              <ErrorText color={editorTheme.colors.error}>
+                {errors.message}
+              </ErrorText>
             </ErrorWithIcon>
           )}
           {!errors && (
@@ -367,7 +381,7 @@ export const HalfCode = ({
                 <Placehold>
                   Loading{' '}
                   <LoadingDots
-                    color={toHex(darken(Colors.grey, 0.2))}
+                    color={editorTheme.colors.text}
                     dotSizeInPx={5}
                     heightOfBounce={4}
                   />

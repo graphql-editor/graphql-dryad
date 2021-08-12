@@ -1,12 +1,21 @@
 import React, { FunctionComponent } from 'react';
-import { Colors } from '../Colors';
 import { RefreshCw, Play, Eye } from 'react-feather';
 import styled from '@emotion/styled';
-import { darken, toHex } from 'color2k';
 
 const Main = styled.div`
-  color: ${toHex(darken(Colors.grey, 0.15))};
+  color: ${({
+    theme: {
+      colors: { backgroundedText },
+    },
+  }) => backgroundedText};
   width: 40px;
+  background: ${({
+    theme: {
+      colors: {
+        background: { mainClose },
+      },
+    },
+  }) => mainClose};
   cursor: pointer;
   height: 40px;
   border-radius: 10px;
@@ -17,7 +26,13 @@ const Main = styled.div`
   align-items: center;
   justify-content: center;
   :hover {
-    color: ${Colors.grey};
+    background: ${({
+      theme: {
+        colors: {
+          background: { mainClosest },
+        },
+      },
+    }) => mainClosest};
   }
 `;
 
@@ -27,7 +42,6 @@ export interface RProps {
   variant: 'refresh' | 'play' | 'eye';
   title: string;
   about: string;
-  backgroundColor: string;
   cypressName: string;
 }
 
@@ -36,17 +50,10 @@ export const R: FunctionComponent<RProps> = ({
   variant,
   title,
   about,
-  backgroundColor,
   cypressName,
 }) => {
   return (
-    <Main
-      style={{ backgroundColor }}
-      title={title}
-      onClick={onClick}
-      about={about}
-      data-cy={cypressName}
-    >
+    <Main title={title} onClick={onClick} about={about} data-cy={cypressName}>
       {variant === 'refresh' && <RefreshCw size={15} />}
       {variant === 'play' && <Play size={15} />}
       {variant === 'eye' && <Eye size={15} />}
