@@ -10,5 +10,5 @@ export const Placehold = styled.div<{ color?: string }>`
   padding: 3rem;
   white-space: pre-line;
   text-align: center;
-  color: ${({ color, theme }) => color || theme.colors.grey.greyClosest};
+  color: ${({ color, theme }) => color || theme.colors.inactive};
 `;
