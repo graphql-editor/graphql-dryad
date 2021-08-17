@@ -1,4 +1,5 @@
-import { Parser, TreeToTS } from 'graphql-zeus';
+import { TreeToTS } from 'graphql-zeus';
+import { Parser } from 'graphql-js-tree';
 // @ts-ignore
 import { Remarkable } from 'remarkable';
 // @ts-ignore
@@ -15,9 +16,9 @@ export interface DryadFunctionResult {
   script: string;
 }
 export interface DryadFunctionFunction {
-  (remarkableRenderer: (markdownString: string) => string): Promise<
-    DryadFunctionResult
-  >;
+  (
+    remarkableRenderer: (markdownString: string) => string,
+  ): Promise<DryadFunctionResult>;
 }
 
 export const DryadDeclarations = `

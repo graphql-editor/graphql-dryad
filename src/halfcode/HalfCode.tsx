@@ -1,7 +1,8 @@
 import React, { useRef, useEffect, useState } from 'react';
 import type * as monaco from 'monaco-editor';
 import { Resizable } from 're-resizable';
-import { Parser, TreeToTS } from 'graphql-zeus';
+import { TreeToTS } from 'graphql-zeus';
+import { Parser } from 'graphql-js-tree';
 import { getParsedSchema } from '../schema';
 import {
   R,
