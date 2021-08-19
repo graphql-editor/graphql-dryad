@@ -9,9 +9,7 @@ const Main = styled.div`
   align-items: center;
   background: ${({
     theme: {
-      colors: {
-        background: { mainFar },
-      },
+      background: { mainFar },
     },
   }) => mainFar};
 `;
@@ -24,20 +22,12 @@ const Chevron = styled.div`
   cursor: pointer;
   padding: 0 8px;
   svg {
-    stroke: ${({
-      theme: {
-        colors: { disabled },
-      },
-    }) => disabled};
+    stroke: ${({ theme: { disabled } }) => disabled};
     transition: stroke 0.25s ease-in-out;
   }
   :hover {
     svg {
-      stroke: ${({
-        theme: {
-          colors: { hover },
-        },
-      }) => hover};
+      stroke: ${({ theme: { hover } }) => hover};
     }
   }
 `;

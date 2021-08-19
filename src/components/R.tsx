@@ -3,17 +3,11 @@ import { RefreshCw, Play, Eye } from 'react-feather';
 import styled from '@emotion/styled';
 
 const Main = styled.div`
-  color: ${({
-    theme: {
-      colors: { backgroundedText },
-    },
-  }) => backgroundedText};
+  color: ${({ theme: { backgroundedText } }) => backgroundedText};
   width: 40px;
   background: ${({
     theme: {
-      colors: {
-        background: { mainClose },
-      },
+      background: { mainClose },
     },
   }) => mainClose};
   cursor: pointer;
@@ -28,9 +22,7 @@ const Main = styled.div`
   :hover {
     background: ${({
       theme: {
-        colors: {
-          background: { mainClosest },
-        },
+        background: { mainClosest },
       },
     }) => mainClosest};
   }

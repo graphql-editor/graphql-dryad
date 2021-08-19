@@ -2,14 +2,12 @@ import { editor } from 'monaco-editor';
 import { EditorTheme } from '@/Theming/DarkTheme';
 
 export const CssTheme = ({
-  colors: {
-    disabled,
-    info,
-    success,
-    hover,
-    text,
-    background: { mainFurthest, mainFurther, mainClosest },
-  },
+  disabled,
+  info,
+  success,
+  hover,
+  text,
+  background: { mainFurthest, mainFurther, mainClosest },
 }: EditorTheme) =>
   ({
     base: 'vs-dark',

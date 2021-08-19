@@ -36,9 +36,7 @@ export const LoadingDots: React.FC<{
   heightOfBounce?: number;
 }> = ({ color: c, dotSizeInPx = 10, heightOfBounce = 15 }) => {
   const {
-    theme: {
-      colors: { text },
-    },
+    theme: { text },
   } = useTheme();
   const color = c || text;
   return (

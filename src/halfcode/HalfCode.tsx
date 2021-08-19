@@ -54,12 +54,7 @@ const ErrorText = styled.div<{ color?: string }>`
   padding: 2rem 3rem;
   white-space: pre-line;
   text-align: center;
-  color: ${({
-    color,
-    theme: {
-      colors: { text },
-    },
-  }) => color || text};
+  color: ${({ color, theme: { text } }) => color || text};
 `;
 
 const MainFrame = styled.iframe`
@@ -67,9 +62,7 @@ const MainFrame = styled.iframe`
   height: 100%;
   background: ${({
     theme: {
-      colors: {
-        background: { mainFar },
-      },
+      background: { mainFar },
     },
   }) => mainFar};
   border: 0;
@@ -365,10 +358,8 @@ export const HalfCode = ({
           </IconsDiv>
           {errors && (
             <ErrorWithIcon>
-              <ErrorIcon iconColor={editorTheme.colors.error} size={4} />
-              <ErrorText color={editorTheme.colors.error}>
-                {errors.message}
-              </ErrorText>
+              <ErrorIcon iconColor={editorTheme.error} size={4} />
+              <ErrorText color={editorTheme.error}>{errors.message}</ErrorText>
             </ErrorWithIcon>
           )}
           {!errors && (
@@ -384,7 +375,7 @@ export const HalfCode = ({
                 <Placehold>
                   Loading{' '}
                   <LoadingDots
-                    color={editorTheme.colors.text}
+                    color={editorTheme.text}
                     dotSizeInPx={5}
                     heightOfBounce={4}
                   />
