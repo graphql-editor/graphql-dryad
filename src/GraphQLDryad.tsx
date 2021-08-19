@@ -12,9 +12,9 @@ const GraphQLDryadEmotionInject = (props: HalfCodeProps) => {
   );
 };
 
-export const GraphQLDryad = (props: HalfCodeProps) => {
+export const GraphQLDryad = ({ theme, ...props }: HalfCodeProps) => {
   return (
-    <ThemeProvider>
+    <ThemeProvider initialState={theme}>
       <GraphQLDryadEmotionInject {...props} />
     </ThemeProvider>
   );

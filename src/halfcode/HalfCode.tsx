@@ -23,6 +23,7 @@ import { tree } from '@/cypressTree';
 import { ErrorIcon } from './icons';
 import Editor from '@monaco-editor/react';
 import { useTheme } from '@/hooks/useTheme';
+import { EditorTheme } from '@/Theming/DarkTheme';
 
 const IconsDiv = styled.div`
   position: absolute;
@@ -83,6 +84,7 @@ export interface HalfCodeProps {
   tryToLoadOnFirstRun?: boolean;
   onTabChange?: (e: Editors) => void;
   reloadDryad?: boolean;
+  theme?: EditorTheme;
 }
 const root = tree.tree.main;
 

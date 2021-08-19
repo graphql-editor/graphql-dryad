@@ -1,10 +1,8 @@
-import { darken, toHex } from 'color2k';
-import { Colors } from '../Colors';
 import type * as monaco from 'monaco-editor';
 
 const BaseTheme = {
   base: 'vs-dark' as monaco.editor.IStandaloneThemeData['base'],
-  shadow: `${toHex(darken(Colors.grey, 0.95))} 2px 2px 10px`,
+  shadow: `#eeeeee 2px 2px 10px`,
   colors: {
     shadow: `#000000 88 2px 2px 10px, #F3F3F4 11 0 0 30px`,
     backgroundedText: '#F3F3F4',
