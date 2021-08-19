@@ -242,6 +242,19 @@ export const HalfCode = ({
     return () => window.removeEventListener('resize', f);
   }, []);
 
+  useEffect(() => {
+    if (currentMonacoInstance && editorTheme) {
+      currentMonacoInstance.editor.defineTheme(
+        'CssTheme',
+        themes.CssTheme(editorTheme),
+      );
+      currentMonacoInstance.editor.defineTheme(
+        'JsTheme',
+        themes.JsTheme(editorTheme),
+      );
+    }
+  }, [currentMonacoInstance, editorTheme]);
+
   return (
     <>
       <Container data-cy={root.element} className={className} style={style}>
