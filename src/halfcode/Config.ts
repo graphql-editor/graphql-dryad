@@ -44,7 +44,7 @@ export const Config: Record<Editors, ConfigurationLanguage> = {
   },
 };
 
-export const extendJs = async (m:typeof monaco) => {
+export const extendJs = async (m: typeof monaco) => {
   const extendConf:
     | monaco.languages.IMonarchLanguage
     | monaco.Thenable<monaco.languages.IMonarchLanguage> = {

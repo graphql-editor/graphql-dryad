@@ -24,6 +24,7 @@ import { ErrorIcon } from './icons';
 import Editor from '@monaco-editor/react';
 import { useTheme } from '@/hooks/useTheme';
 import { EditorTheme } from '@/Theming/DarkTheme';
+import { transform, initialize } from 'esbuild-wasm';
 
 const IconsDiv = styled.div`
   position: absolute;
@@ -123,6 +124,15 @@ export const HalfCode = ({
     window?.open(url);
   };
 
+  const startService = async () => {
+    await initialize({
+      worker: true,
+      wasmURL: 'https://unpkg.com/esbuild-wasm@0.12.21/esbuild.wasm',
+    });
+  };
+  useEffect(() => {
+    startService();
+  }, []);
   useEffect(() => {
     return () => {
       setCurrentMonacoInstance(undefined);
@@ -199,11 +209,18 @@ export const HalfCode = ({
   ) => {
     try {
       setDryadPending('yes');
+      const transpiled = await transform(js, {
+        target:
+          'esnext' /* Specify ECMAScript target version: 'ES3' (default), 'ES5', 'ES2015', 'ES2016', 'ES2017', 'ES2018', 'ES2019', 'ES2020', or 'ESNEXT'. */,
+        loader: 'tsx',
+      });
+      console.log(transpiled);
       const r = await DryadFunction({
-        js,
+        js: transpiled.code,
         schema,
         url,
       });
+      console.log(r.body);
       setErrors(undefined);
       if (!r || !r.body) {
         setDryadPending('empty');
@@ -331,6 +348,11 @@ export const HalfCode = ({
             beforeMount={(monaco) => {
               monaco.languages.typescript.typescriptDefaults.setEagerModelSync(
                 true,
+              );
+              monaco.languages.typescript.typescriptDefaults.setCompilerOptions(
+                {
+                  jsx: monaco.languages.typescript.JsxEmit.ReactJSX,
+                },
               );
               monaco.editor.defineTheme(
                 'CssTheme',
