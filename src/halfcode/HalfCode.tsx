@@ -81,7 +81,13 @@ export interface HalfCodeProps {
   theme?: EditorTheme;
 }
 const root = tree.tree.main;
-
+let WASM_INITIALIZED = false;
+const startService = async () => {
+  await initialize({
+    worker: true,
+    wasmURL: 'https://unpkg.com/esbuild-wasm@0.13.3/esbuild.wasm',
+  });
+};
 export const HalfCode = ({
   className = '',
   value,
@@ -124,14 +130,11 @@ export const HalfCode = ({
     window?.open(url);
   };
 
-  const startService = async () => {
-    await initialize({
-      worker: true,
-      wasmURL: 'https://unpkg.com/esbuild-wasm@0.12.21/esbuild.wasm',
-    });
-  };
   useEffect(() => {
-    startService();
+    if (!WASM_INITIALIZED) {
+      WASM_INITIALIZED = true;
+      startService();
+    }
   }, []);
   useEffect(() => {
     return () => {
