@@ -31,7 +31,6 @@ module.exports = {
         loader: 'ts-loader',
       },
       { test: /\.(png|svg)$/, use: 'url-loader?limit=10000' },
-      { test: /\.(jpg|gif|graphql|gql|ttf)$/, use: 'file-loader' },
       {
         test: /\.css$/i,
         use: ['style-loader', 'css-loader'],

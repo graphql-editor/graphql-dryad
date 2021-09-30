@@ -127,7 +127,7 @@ export const HalfCode = ({
   const startService = async () => {
     await initialize({
       worker: true,
-      wasmURL: 'https://unpkg.com/esbuild-wasm@0.12.21/esbuild.wasm',
+      wasmURL: 'https://unpkg.com/esbuild-wasm@0.12.29/esbuild.wasm',
     });
   };
   useEffect(() => {
