@@ -25,6 +25,7 @@ import Editor from '@monaco-editor/react';
 import { useTheme } from '@/hooks/useTheme';
 import { EditorTheme } from '@/Theming/DarkTheme';
 import { transform, initialize } from 'esbuild-wasm';
+import { useTypings } from '@/hooks/useTypings';
 
 const IconsDiv = styled.div`
   position: absolute;
@@ -120,6 +121,7 @@ export const HalfCode = ({
     height: '100%',
   });
   const { theme: editorTheme } = useTheme();
+  const { downloadTypings } = useTypings();
 
   const currentConfig = Config[editor];
   const openBlob = () => {
@@ -217,13 +219,11 @@ export const HalfCode = ({
           'esnext' /* Specify ECMAScript target version: 'ES3' (default), 'ES5', 'ES2015', 'ES2016', 'ES2017', 'ES2018', 'ES2019', 'ES2020', or 'ESNEXT'. */,
         loader: 'tsx',
       });
-      console.log(transpiled);
       const r = await DryadFunction({
         js: transpiled.code,
         schema,
         url,
       });
-      console.log(r.body);
       setErrors(undefined);
       if (!r || !r.body) {
         setDryadPending('empty');
@@ -261,6 +261,48 @@ export const HalfCode = ({
     window.addEventListener('resize', f);
     return () => window.removeEventListener('resize', f);
   }, []);
+
+  useEffect(() => {
+    downloadTypings({ filesContent: [value[Editors.js]] }).then((types) => {
+      if (Object.keys(types).length) {
+        if (currentMonacoInstance) {
+          const extralibs = Object.entries(types).map(([filePath, content]) => {
+            return {
+              filePath: `file:///typings/${filePath}/index.d.ts`,
+              content: content.typings,
+            };
+          });
+          const reactLib = extralibs.find(
+            (e) => e.filePath === 'file:///typings/react/index.d.ts',
+          );
+          if (reactLib) {
+            extralibs.push({
+              filePath: 'file:///node_modules/react/jsx-runtime.d.ts',
+              content: `import "https://cdn.skypack.dev/react";`,
+            });
+          }
+          currentMonacoInstance.languages.typescript.typescriptDefaults.setExtraLibs(
+            extralibs,
+          );
+          const constructPaths = Object.fromEntries(
+            Object.entries(types).map(([filePath, content]) => [
+              `${content.url}/${filePath}`,
+              [`file:///typings/${filePath}/index.d.ts`],
+            ]),
+          );
+          currentMonacoInstance.languages.typescript.typescriptDefaults.setCompilerOptions(
+            {
+              baseUrl: './',
+              paths: constructPaths,
+              rootDir: './',
+              jsx: currentMonacoInstance.languages.typescript.JsxEmit.ReactJSX,
+              esModuleInterop: true,
+            },
+          );
+        }
+      }
+    });
+  }, [value[Editors.js]]);
 
   useEffect(() => {
     if (currentMonacoInstance && editorTheme) {
@@ -364,7 +406,9 @@ export const HalfCode = ({
               monaco.editor.defineTheme('JsTheme', themes.JsTheme(editorTheme));
               setCurrentMonacoInstance(monaco);
             }}
-            path={editor}
+            path={
+              editor === Editors.js ? `file:///index.tsx` : `file:///index.css`
+            }
             onChange={(e) => {
               setValue({
                 ...value,

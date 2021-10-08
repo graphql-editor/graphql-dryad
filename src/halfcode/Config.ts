@@ -36,7 +36,7 @@ export const Config: Record<Editors, ConfigurationLanguage> = {
   },
   js: {
     options: {
-      language: 'javascript',
+      language: 'typescript',
       theme: 'js',
     },
     themeModule: 'JsTheme',
