@@ -16,7 +16,7 @@ import {
 import { Values, Editors, Config, extendJs } from './Config';
 import { Settings } from '../models';
 import * as icons from './icons';
-import { DryadFunction, DryadDeclarations, HtmlSkeletonStatic } from '../ssg';
+import { DryadFunction, HtmlSkeletonStatic } from '../ssg';
 import styled from '@emotion/styled';
 import * as themes from './themes';
 import { tree } from '@/cypressTree';
@@ -83,10 +83,11 @@ export interface HalfCodeProps {
 }
 const root = tree.tree.main;
 let WASM_INITIALIZED = false;
+let extraGqlLib = '';
 const startService = async () => {
   await initialize({
     worker: true,
-    wasmURL: 'https://unpkg.com/esbuild-wasm@0.13.3/esbuild.wasm',
+    wasmURL: 'https://unpkg.com/esbuild-wasm@0.13.5/esbuild.wasm',
   });
 };
 export const HalfCode = ({
@@ -179,16 +180,14 @@ export const HalfCode = ({
   useEffect(() => {
     if (schemaString) {
       const graphqlTree = Parser.parse(schemaString);
-      const typings = TreeToTS.javascriptSplit(graphqlTree).definitions.replace(
-        /export /gm,
-        '',
-      );
+      const typings = TreeToTS.javascriptSplit({
+        tree: graphqlTree,
+      }).definitions.replace(/export /gm, '');
+      extraGqlLib = typings;
       setProviderJS((p) => {
         p?.dispose();
         return currentMonacoInstance?.languages.typescript.javascriptDefaults.addExtraLib(
-          `
-          ${DryadDeclarations}
-          ${typings}`,
+          typings,
         );
       });
     }
@@ -268,35 +267,44 @@ export const HalfCode = ({
         if (currentMonacoInstance) {
           const extralibs = Object.entries(types).map(([filePath, content]) => {
             return {
-              filePath: `file:///typings/${filePath}/index.d.ts`,
-              content: content.typings,
+              filePath: `file:///${filePath}`,
+              content: content.content,
             };
           });
-          const reactLib = extralibs.find(
-            (e) => e.filePath === 'file:///typings/react/index.d.ts',
+          const reactLib = Object.entries(types).find(
+            ([, value]) => value.name === 'react',
           );
           if (reactLib) {
             extralibs.push({
               filePath: 'file:///node_modules/react/jsx-runtime.d.ts',
-              content: `import "https://cdn.skypack.dev/react";`,
+              content: `import "${reactLib[1].url}";`,
             });
           }
           currentMonacoInstance.languages.typescript.typescriptDefaults.setExtraLibs(
             extralibs,
           );
-          const constructPaths = Object.fromEntries(
-            Object.entries(types).map(([filePath, content]) => [
-              `${content.url}/${filePath}`,
-              [`file:///typings/${filePath}/index.d.ts`],
-            ]),
+          currentMonacoInstance.languages.typescript.javascriptDefaults.addExtraLib(
+            extraGqlLib,
+          );
+          const constructPaths = Object.entries(types);
+          const paths = Object.fromEntries(
+            constructPaths
+              .filter((c, i) => i === constructPaths.indexOf(c))
+              .map(([k, v]) => [
+                v.url,
+                constructPaths
+                  .filter(([c, p]) => p.url === v.url)
+                  .map((p) => `file:///${p[1].path}`),
+              ]),
           );
           currentMonacoInstance.languages.typescript.typescriptDefaults.setCompilerOptions(
             {
               baseUrl: './',
-              paths: constructPaths,
+              paths,
               rootDir: './',
               jsx: currentMonacoInstance.languages.typescript.JsxEmit.ReactJSX,
               esModuleInterop: true,
+              allowSyntheticDefaultImports: true,
             },
           );
         }

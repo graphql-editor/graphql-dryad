@@ -1,6 +1,6 @@
 export const reactExample = {
-  js: `import React from 'http://esm.sh/react@17.0.2'
-  import ReactDOM from 'http://esm.sh/react-dom@17.0.2'
+  js: `import React from 'https://cdn.skypack.dev/react@17.0.2'
+  import ReactDOM from 'https://cdn.skypack.dev/react-dom@17.0.2'
   
   const Post = ({
       avatar,

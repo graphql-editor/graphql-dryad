@@ -16,52 +16,24 @@ export interface DryadFunctionResult {
   script: string;
 }
 export interface DryadFunctionFunction {
-  (
-    remarkableRenderer: (markdownString: string) => string,
-  ): Promise<DryadFunctionResult>;
+  (): Promise<DryadFunctionResult>;
 }
 
-export const DryadDeclarations = `
-// Return html string from this function fo ssg;
-declare var html: (strings: TemplateStringsArray, ...expr: string[]) => string
-declare var css: (strings: TemplateStringsArray, ...expr: string[]) => string
-declare var md: (strings: TemplateStringsArray, ...expr: string[]) => string
-`;
 export const DryadFunction = async ({
   schema,
   url,
   js,
 }: DryadFunctionProps): Promise<DryadFunctionResult> => {
   const graphqlTree = Parser.parse(schema);
-  const jsSplit = TreeToTS.javascriptSplit(graphqlTree, 'browser', url);
+  const jsSplit = TreeToTS.javascriptSplit({
+    tree: graphqlTree,
+    env: 'browser',
+    host: url,
+  });
   const jsString = jsSplit.const.concat('\n').concat(jsSplit.index);
   const functions = jsString.replace(/export /gm, '');
-  const addonFunctions = `
-  import {Remarkable} from 'https://cdn.skypack.dev/remarkable';
-  var html = typeof html === "undefined" ? (strings, ...expr) => {
-    let str = '';
-    strings.forEach((string, i) => {
-        str += string + (expr[i] || '');
-    });
-    return str;
-  } : html
-  var css = typeof css === "undefined" ? (strings, ...expr) => {
-    let str = '';
-    strings.forEach((string, i) => {
-        str += string + (expr[i] || '');
-    });
-    return str;
-  } : css
-  var md = typeof md === "undefined" ? (strings, ...expr) => {
-    let str = '';
-    strings.forEach((string, i) => {
-        str += string + (expr[i] || '');
-    });
-    return new Remarkable().render(str);
-  } : md
-  `;
 
-  const functionBody = [addonFunctions, functions, js].join('\n');
+  const functionBody = [functions, js].join('\n');
   const esmUrl = URL.createObjectURL(
     new Blob([functionBody], { type: 'text/javascript' }),
   );

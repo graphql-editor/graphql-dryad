@@ -1,3 +1,7 @@
+import { Chain } from '@/bundle-typings-types/zeus';
+//@ts-ignore
+import path from 'path-browserify';
+
 const URL_REGEX = new RegExp(/import.*(https:\/\/.*)\/(.*)['|"]/gm);
 
 interface PackageDetails {
@@ -18,34 +22,6 @@ const parseDocumentToFindPackages = (content: string) => {
     }));
 };
 
-const constructTypingsDefsUrl = ({
-  packageName,
-  baseUrl,
-}: {
-  packageName: string;
-  baseUrl: string;
-}) => `${baseUrl}/@types/${packageName}/index.d.ts`;
-
-const constructTypingsUrl = ({
-  packageName,
-  baseUrl,
-  typingsPath,
-}: {
-  packageName: string;
-  baseUrl: string;
-  typingsPath: string;
-}) => `${baseUrl}/${packageName}/${typingsPath}`;
-
-const fetchTypingsForUrl = async (url: string) => {
-  const module = await fetch(url).then((r) => {
-    if (r.status === 404) {
-      return;
-    }
-    return r.text();
-  });
-  return module;
-};
-
 const mergePackages = (filesContent: string[]) => {
   return filesContent
     .map(parseDocumentToFindPackages)
@@ -63,70 +39,51 @@ const mergePackages = (filesContent: string[]) => {
     }, []);
 };
 
-const fetchTypings = async (packages: PackageDetails[]) => {
-  if (packages.length === 0) {
-    return [];
+let packageCache: Record<
+  string,
+  {
+    content: string;
+    path: string;
+    url: string;
+    name: string;
+    packageName: string;
   }
-  message(
-    'Starting streaming types for packages: ' +
-      packages.map((p) => p.packageName).join(', '),
-    'blueBright',
-  );
-  const packagesWithTypings = await Promise.all(
-    packages.map(async (p) => {
-      let lookForTypings = await fetchTypingsForUrl(
-        constructTypingsUrl({
-          baseUrl: p.url,
-          packageName: p.packageName,
-          typingsPath: 'types/index.d.ts',
-        }),
-      );
-      lookForTypings =
-        lookForTypings ||
-        (await fetchTypingsForUrl(
-          constructTypingsDefsUrl({
-            baseUrl: p.url,
-            packageName: p.packageName,
-          }),
-        ));
-      if (!lookForTypings) {
-        message(
-          `Can't find typings on "${p.packageName}" Package will remain untyped`,
-          'redBright',
-        );
-      }
-      return {
-        p,
-        typings: lookForTypings,
-      };
-    }),
-  );
-  message('Successfully fetched the types', 'greenBright');
-  return packagesWithTypings.filter((p) => p.typings) as Array<{
-    p: PackageDetails;
-    typings: string;
-  }>;
-};
+> = {};
 
-let packageCache: Record<string, { typings: string; url: string }> = {};
+const packageNameSplit = (pName: string): { name: string; version: string } => {
+  const splitted = pName.split('@').filter((p) => !!p);
+  if (splitted.length === 1) {
+    return { name: pName, version: 'latest' };
+  }
+  return {
+    name: splitted[0],
+    version: splitted[1],
+  };
+};
 
 const downloadTypings = async ({
   filesContent,
 }: {
   filesContent: string[];
 }) => {
-  const packages = mergePackages(filesContent).filter(
-    (p) => !packageCache[`${p.packageName}`],
+  const packages = mergePackages(filesContent)
+    .filter((p) => !packageCache[`${p.packageName}`])
+    .map((p) => ({
+      ...p,
+      ...packageNameSplit(p.packageName),
+      url: `${p.url}/${p.packageName}`,
+    }));
+  const ts = await fetchTypingsFromBundleTypings({ packages });
+  const paths: typeof packageCache = {};
+  console.log(
+    ts.map((t) => ({
+      path: t.path,
+    })),
   );
-  const ts = await fetchTypings(packages);
-  const paths: Record<string, { typings: string; url: string }> = {};
   ts.forEach((t) => {
     // const typingsPath = [t.p.packageName, 'index.d.ts'].join('/');
-    message(`Installing typings for "${t.p.packageName}"`, 'yellowBright');
-    paths[`${t.p.packageName}`] = {
-      typings: t.typings,
-      url: t.p.url,
-    };
+    message(`Installing typings for "${t.name}"`, 'yellowBright');
+    paths[`${t.path}`] = t;
   });
   packageCache = { ...packageCache, ...paths };
   return packageCache;
@@ -136,4 +93,73 @@ export const useTypings = () => {
   return {
     downloadTypings,
   };
+};
+
+const bundledTypingsURL =
+  'https://project-615bfeca92e6cf66d7683a66.azurewebsites.net/graphql';
+
+const fetchTypingsFromBundleTypings = async ({
+  packages,
+}: {
+  packages: Array<{
+    name: string;
+    version: string;
+    url: string;
+    packageName: string;
+  }>;
+}) => {
+  const chain = Chain(bundledTypingsURL);
+  const typingsFiles: Array<{
+    content: string;
+    path: string;
+    url: string;
+    name: string;
+    packageName: string;
+  }> = [];
+  const deps: string[] = [];
+  await Promise.all(
+    packages.map(async (p) => {
+      const response = await chain.query({
+        bundle: [{ filter: p }, { jsonUrl: true }],
+      });
+      let jsonURL = response.bundle?.jsonUrl;
+      if (!jsonURL) {
+        const response = await chain.query({
+          bundle: [
+            {
+              filter: {
+                ...p,
+                name: `@types/${p.name}`,
+              },
+            },
+            { jsonUrl: true },
+          ],
+        });
+        jsonURL = response.bundle?.jsonUrl;
+      }
+      if (jsonURL) {
+        const jsonContent = await fetch(jsonURL).then((r) => r.text());
+        const jsonDefinitions = JSON.parse(jsonContent) as {
+          name: string;
+          version: string;
+          dependencies: string[];
+          typings: Array<{ content: string; path: string }>;
+        };
+        typingsFiles.push(
+          ...jsonDefinitions.typings.map((t) => ({
+            ...t,
+            path: t.path.replace(`@${jsonDefinitions.version}`, ''),
+            url: p.url,
+            name: p.name,
+            packageName: p.packageName,
+          })),
+        );
+        deps.push(...jsonDefinitions.dependencies);
+      }
+    }),
+  );
+  if (packages.length === 0) {
+    return [];
+  }
+  return typingsFiles;
 };
