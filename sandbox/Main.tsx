@@ -15,7 +15,6 @@ export const Main = () => {
           url: simpleExample.schemaUrl,
           headers: {},
         }}
-        tryToLoadOnFirstRun
         value={value}
         setValue={setValue}
       />

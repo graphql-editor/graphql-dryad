@@ -76,7 +76,6 @@ export interface HalfCodeProps {
   setValue: (props: Values) => void;
   style?: React.CSSProperties;
   settings: Settings;
-  tryToLoadOnFirstRun?: boolean;
   onTabChange?: (e: Editors) => void;
   theme?: EditorTheme;
   path?: string;
@@ -84,6 +83,8 @@ export interface HalfCodeProps {
 const root = tree.tree.main;
 let WASM_INITIALIZED = false;
 let extraGqlLib = '';
+let pathInitialized = '';
+
 const startService = async () => {
   await initialize({
     worker: true,
@@ -96,7 +97,6 @@ export const HalfCode = ({
   setValue,
   settings,
   style = {},
-  tryToLoadOnFirstRun,
   onTabChange,
   path,
 }: HalfCodeProps) => {
@@ -254,10 +254,11 @@ export const HalfCode = ({
   };
 
   useEffect(() => {
-    if (tryToLoadOnFirstRun && !dryad && schemaString && wasmStarted) {
+    if (schemaString && wasmStarted && path && path !== pathInitialized) {
+      pathInitialized = path;
       refreshDryad();
     }
-  }, [tryToLoadOnFirstRun, schemaString, wasmStarted, path]);
+  }, [schemaString, wasmStarted, path]);
 
   useEffect(() => {
     const f = () => {};
