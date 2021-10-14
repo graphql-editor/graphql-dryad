@@ -79,6 +79,7 @@ export interface HalfCodeProps {
   tryToLoadOnFirstRun?: boolean;
   onTabChange?: (e: Editors) => void;
   theme?: EditorTheme;
+  path?: string;
 }
 const root = tree.tree.main;
 let WASM_INITIALIZED = false;
@@ -97,6 +98,7 @@ export const HalfCode = ({
   style = {},
   tryToLoadOnFirstRun,
   onTabChange,
+  path,
 }: HalfCodeProps) => {
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
@@ -255,7 +257,7 @@ export const HalfCode = ({
     if (tryToLoadOnFirstRun && !dryad && schemaString && wasmStarted) {
       refreshDryad();
     }
-  }, [tryToLoadOnFirstRun, schemaString, wasmStarted]);
+  }, [tryToLoadOnFirstRun, schemaString, wasmStarted, path]);
 
   useEffect(() => {
     const f = () => {};
