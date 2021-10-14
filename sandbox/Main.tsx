@@ -1,18 +1,18 @@
-import { reactExample } from '@/../sandbox/reactExample';
+import { simpleExample } from '@/../sandbox/simpleExample';
 import React, { useState } from 'react';
 import { GraphQLDryad } from '../src';
 
 export const Main = () => {
   const [value, setValue] = useState({
-    js: reactExample.js,
-    css: reactExample.css,
+    js: '',
+    css: '',
   });
 
   return (
     <div style={{ height: `100%` }}>
       <GraphQLDryad
         settings={{
-          url: reactExample.schemaUrl,
+          url: simpleExample.schemaUrl,
           headers: {},
         }}
         tryToLoadOnFirstRun
