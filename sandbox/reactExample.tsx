@@ -49,5 +49,5 @@ export const reactExample = {
       return renderBody.innerHTML;
   }`,
   css: `@import 'http://esm.sh/tailwindcss/dist/tailwind.min.css'`,
-  schemaUrl: `api.graphql.jobs`,
+  schemaUrl: 'https://faker.graphqleditor.com/explore-projects/twitter/graphql',
 };

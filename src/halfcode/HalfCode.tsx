@@ -78,7 +78,6 @@ export interface HalfCodeProps {
   settings: Settings;
   tryToLoadOnFirstRun?: boolean;
   onTabChange?: (e: Editors) => void;
-  reloadDryad?: boolean;
   theme?: EditorTheme;
 }
 const root = tree.tree.main;
@@ -98,7 +97,6 @@ export const HalfCode = ({
   style = {},
   tryToLoadOnFirstRun,
   onTabChange,
-  reloadDryad,
 }: HalfCodeProps) => {
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
@@ -107,14 +105,18 @@ export const HalfCode = ({
   const [editor, setEditor] = useState<Editors>(Editors.js);
   const [schemaString, setSchema] = useState('');
   const [errors, setErrors] = useState<any>();
+  const [wasmStarted, setWasmStarted] = useState(false);
 
   const [dryad, setDryad] = useState<string>('');
   const [dryadPending, setDryadPending] = useState<
     'yes' | 'no' | 'unset' | 'empty'
   >('unset');
-  const [providerJS, setProviderJS] = useState<monaco.IDisposable>();
   const [currentMonacoInstance, setCurrentMonacoInstance] =
     useState<typeof monaco>();
+  const [currentTsConfig, setCurrentTsConfig] =
+    useState<monaco.languages.typescript.CompilerOptions>({});
+  const [currentLibraries, setCurrentLibraries] =
+    useState<Array<{ filePath?: string; content: string }>>();
 
   const [view, setView] = useState<'split' | 'code' | 'display'>('split');
   const [{ width, height }, setSize] = useState({
@@ -134,9 +136,25 @@ export const HalfCode = ({
   };
 
   useEffect(() => {
+    if (currentTsConfig && currentMonacoInstance) {
+      currentMonacoInstance.languages.typescript.typescriptDefaults.setCompilerOptions(
+        currentTsConfig,
+      );
+    }
+  }, [currentTsConfig, currentMonacoInstance]);
+
+  useEffect(() => {
+    if (currentMonacoInstance && currentLibraries) {
+      currentMonacoInstance.languages.typescript.typescriptDefaults.setExtraLibs(
+        currentLibraries,
+      );
+    }
+  }, [currentMonacoInstance, currentLibraries]);
+
+  useEffect(() => {
     if (!WASM_INITIALIZED) {
       WASM_INITIALIZED = true;
-      startService();
+      startService().then(() => setWasmStarted(true));
     }
   }, []);
   useEffect(() => {
@@ -144,16 +162,6 @@ export const HalfCode = ({
       setCurrentMonacoInstance(undefined);
     };
   }, []);
-
-  useEffect(() => {
-    refreshDryad();
-  }, [reloadDryad]);
-
-  useEffect(() => {
-    return () => {
-      providerJS?.dispose();
-    };
-  }, [providerJS]);
 
   useEffect(() => {
     const keyListener = (e: KeyboardEvent) => {
@@ -184,12 +192,6 @@ export const HalfCode = ({
         tree: graphqlTree,
       }).definitions.replace(/export /gm, '');
       extraGqlLib = typings;
-      setProviderJS((p) => {
-        p?.dispose();
-        return currentMonacoInstance?.languages.typescript.javascriptDefaults.addExtraLib(
-          typings,
-        );
-      });
     }
   }, [schemaString, currentMonacoInstance]);
 
@@ -250,10 +252,10 @@ export const HalfCode = ({
   };
 
   useEffect(() => {
-    if (tryToLoadOnFirstRun && !dryad && schemaString) {
+    if (tryToLoadOnFirstRun && !dryad && schemaString && wasmStarted) {
       refreshDryad();
     }
-  }, [tryToLoadOnFirstRun, schemaString]);
+  }, [tryToLoadOnFirstRun, schemaString, wasmStarted]);
 
   useEffect(() => {
     const f = () => {};
@@ -265,52 +267,50 @@ export const HalfCode = ({
     downloadTypings({ filesContent: [value[Editors.js]] }).then((types) => {
       if (Object.keys(types).length) {
         if (currentMonacoInstance) {
-          const extralibs = Object.entries(types).map(([filePath, content]) => {
-            return {
-              filePath: `file:///${filePath}`,
-              content: content.content,
-            };
+          const extralibs: typeof currentLibraries = [];
+          const mergedLibs = Object.entries(types).flatMap(([, content]) => {
+            return content.map((c) => {
+              return {
+                filePath: `file:///${c.path}`,
+                ...c,
+              };
+            });
           });
-          const reactLib = Object.entries(types).find(
-            ([, value]) => value.name === 'react',
-          );
+          const reactLib = mergedLibs.find(({ name }) => name === 'react');
           if (reactLib) {
             extralibs.push({
               filePath: 'file:///node_modules/react/jsx-runtime.d.ts',
-              content: `import "${reactLib[1].url}";`,
+              content: `import "${reactLib.url}";`,
             });
           }
-          currentMonacoInstance.languages.typescript.typescriptDefaults.setExtraLibs(
-            extralibs,
-          );
-          currentMonacoInstance.languages.typescript.javascriptDefaults.addExtraLib(
-            extraGqlLib,
-          );
-          const constructPaths = Object.entries(types);
-          const paths = Object.fromEntries(
-            constructPaths
-              .filter((c, i) => i === constructPaths.indexOf(c))
-              .map(([k, v]) => [
-                v.url,
-                constructPaths
-                  .filter(([c, p]) => p.url === v.url)
-                  .map((p) => `file:///${p[1].path}`),
-              ]),
-          );
-          currentMonacoInstance.languages.typescript.typescriptDefaults.setCompilerOptions(
+          setCurrentLibraries([
+            ...mergedLibs,
+            ...extralibs,
             {
-              baseUrl: './',
-              paths,
-              rootDir: './',
-              jsx: currentMonacoInstance.languages.typescript.JsxEmit.ReactJSX,
-              esModuleInterop: true,
-              allowSyntheticDefaultImports: true,
+              content: extraGqlLib,
+              filePath: 'file:///node_modules/@types/typings-zeus/index.d.ts',
             },
-          );
+          ]);
+
+          const paths = mergedLibs.reduce<Record<string, string[]>>((a, b) => {
+            a[b.url] ||= [];
+            a[b.url].push(`file:///${b.path}`);
+            return a;
+          }, {});
+          setCurrentTsConfig((tsconfig) => ({
+            ...tsconfig,
+            baseUrl: './',
+            paths,
+            types: ['typings-zeus'],
+            rootDir: './',
+            jsx: currentMonacoInstance.languages.typescript.JsxEmit.ReactJSX,
+            esModuleInterop: true,
+            allowSyntheticDefaultImports: true,
+          }));
         }
       }
     });
-  }, [value[Editors.js]]);
+  }, [value[Editors.js], currentMonacoInstance]);
 
   useEffect(() => {
     if (currentMonacoInstance && editorTheme) {
@@ -402,11 +402,10 @@ export const HalfCode = ({
               monaco.languages.typescript.typescriptDefaults.setEagerModelSync(
                 true,
               );
-              monaco.languages.typescript.typescriptDefaults.setCompilerOptions(
-                {
-                  jsx: monaco.languages.typescript.JsxEmit.ReactJSX,
-                },
-              );
+              setCurrentTsConfig((tsconfig) => ({
+                ...tsconfig,
+                jsx: monaco.languages.typescript.JsxEmit.ReactJSX,
+              }));
               monaco.editor.defineTheme(
                 'CssTheme',
                 themes.CssTheme(editorTheme),

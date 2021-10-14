@@ -39,16 +39,15 @@ const mergePackages = (filesContent: string[]) => {
     }, []);
 };
 
-let packageCache: Record<
-  string,
-  {
+let packageCache: {
+  [packageName: string]: {
     content: string;
     path: string;
     url: string;
     name: string;
     packageName: string;
-  }
-> = {};
+  }[];
+} = {};
 
 const packageNameSplit = (pName: string): { name: string; version: string } => {
   const splitted = pName.split('@').filter((p) => !!p);
@@ -75,15 +74,11 @@ const downloadTypings = async ({
     }));
   const ts = await fetchTypingsFromBundleTypings({ packages });
   const paths: typeof packageCache = {};
-  console.log(
-    ts.map((t) => ({
-      path: t.path,
-    })),
-  );
   ts.forEach((t) => {
     // const typingsPath = [t.p.packageName, 'index.d.ts'].join('/');
     message(`Installing typings for "${t.name}"`, 'yellowBright');
-    paths[`${t.path}`] = t;
+    paths[`${t.packageName}`] ||= [];
+    paths[`${t.packageName}`].push(t);
   });
   packageCache = { ...packageCache, ...paths };
   return packageCache;
