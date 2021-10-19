@@ -1,6 +1,6 @@
 {
   "name": "graphql-dryad",
-  "version": "1.1.8",
+  "version": "1.1.9",
   "description": "Component from graphql library",
   "main": "lib/index.js",
   "scripts": {
@@ -32,12 +32,11 @@
     "color2k": "^1.2.4",
     "esbuild-wasm": "0.13.5",
     "file-saver": "^2.0.5",
-    "graphql-js-tree": "0.0.1",
-    "graphql-zeus": "^3.2.6",
+    "graphql-js-tree": "0.0.2",
+    "graphql-zeus": "^3.2.7",
     "path-browserify": "^1.0.1",
     "re-resizable": "^6.9.0",
     "react-feather": "^2.0.9",
-    "remarkable": "^2.0.1",
     "unstated-next": "^1.1.0"
   },
   "peerDependencies": {

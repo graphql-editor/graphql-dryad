@@ -1,8 +1,5 @@
 import { TreeToTS } from 'graphql-zeus';
 import { Parser } from 'graphql-js-tree';
-// @ts-ignore
-import { Remarkable } from 'remarkable';
-// @ts-ignore
 
 export interface DryadFunctionProps {
   schema: string;
