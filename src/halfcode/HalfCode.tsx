@@ -79,6 +79,7 @@ export interface HalfCodeProps {
   onTabChange?: (e: Editors) => void;
   theme?: EditorTheme;
   path?: string;
+  libs?: Array<{ content: string; filePath: string }>;
 }
 const root = tree.tree.main;
 let WASM_INITIALIZED = false;
@@ -98,6 +99,7 @@ export const HalfCode = ({
   settings,
   style = {},
   onTabChange,
+  libs = [],
   path,
 }: HalfCodeProps) => {
   const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -226,6 +228,17 @@ export const HalfCode = ({
         js: transpiled.code,
         schema,
         url,
+        libs: await Promise.all(
+          libs.map(async (l) => ({
+            filePath: l.filePath
+              .replace(/^file\:\/\/\//, '')
+              .replace(/\.(\w+)$/, ''),
+            content: await transform(l.content, {
+              target: 'esnext',
+              loader: 'tsx',
+            }).then((t) => t.code),
+          })),
+        ),
       });
       setErrors(undefined);
       if (!r || !r.body) {
@@ -289,6 +302,7 @@ export const HalfCode = ({
           setCurrentLibraries([
             ...mergedLibs,
             ...extralibs,
+            ...libs,
             {
               content: extraGqlLib,
               filePath: 'file:///node_modules/@types/typings-zeus/index.d.ts',
@@ -313,7 +327,7 @@ export const HalfCode = ({
         }
       }
     });
-  }, [value[Editors.js], currentMonacoInstance]);
+  }, [value[Editors.js], currentMonacoInstance, libs]);
 
   useEffect(() => {
     if (currentMonacoInstance && editorTheme) {
