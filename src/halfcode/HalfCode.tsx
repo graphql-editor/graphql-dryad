@@ -99,7 +99,7 @@ export const HalfCode = ({
   settings,
   style = {},
   onTabChange,
-  libs = [],
+  libs,
   path,
 }: HalfCodeProps) => {
   const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -228,17 +228,19 @@ export const HalfCode = ({
         js: transpiled.code,
         schema,
         url,
-        libs: await Promise.all(
-          libs.map(async (l) => ({
-            filePath: l.filePath
-              .replace(/^file\:\/\/\//, '')
-              .replace(/\.(\w+)$/, ''),
-            content: await transform(l.content, {
-              target: 'esnext',
-              loader: 'tsx',
-            }).then((t) => t.code),
-          })),
-        ),
+        libs: libs
+          ? await Promise.all(
+              libs.map(async (l) => ({
+                filePath: l.filePath
+                  .replace(/^file\:\/\/\//, '')
+                  .replace(/\.(\w+)$/, ''),
+                content: await transform(l.content, {
+                  target: 'esnext',
+                  loader: 'tsx',
+                }).then((t) => t.code),
+              })),
+            )
+          : [],
       });
       setErrors(undefined);
       if (!r || !r.body) {
@@ -302,7 +304,7 @@ export const HalfCode = ({
           setCurrentLibraries([
             ...mergedLibs,
             ...extralibs,
-            ...libs,
+            ...(libs || []),
             {
               content: extraGqlLib,
               filePath: 'file:///node_modules/@types/typings-zeus/index.d.ts',
