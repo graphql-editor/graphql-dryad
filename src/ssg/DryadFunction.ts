@@ -40,15 +40,11 @@ const blobelizeWithLibs = (
       const packageToImportKey = (
         path.join(filePath, args[1]) as string
       ).replace(/\.\w+$/, '');
-      console.log(packageToImportKey);
       const keyFromCache = blobCache[packageToImportKey];
-      console.log(keyFromCache);
       if (!keyFromCache) {
-        console.log(packageToImportKey);
         const findLibraryKey = libs?.find(
           (l) => l.filePath === packageToImportKey,
         );
-        console.log(findLibraryKey);
         if (!findLibraryKey) {
           throw new Error(
             `Invalid import path in file ${filePath}. Cant find ${keyFromCache}`,
@@ -82,7 +78,6 @@ export const DryadFunction = async ({
   js,
   libs,
 }: DryadFunctionProps): Promise<DryadFunctionResult> => {
-  console.log(libs);
   const graphqlTree = Parser.parse(schema);
   const jsSplit = TreeToTS.javascriptSplit({
     tree: graphqlTree,
@@ -98,12 +93,13 @@ export const DryadFunction = async ({
   const esmUrl = URL.createObjectURL(
     new Blob([replacedJS.content], { type: 'text/javascript' }),
   );
-  console.log(esmUrl);
+
   const imported = await eval(`import("${esmUrl}")`);
-  const body = imported.default;
+  const body = imported.default ? await imported.default() : '';
   const head = imported.head ? await imported.head() : undefined;
+
   return {
-    body: await body(),
+    body,
     script: functionBody,
     head,
   };
