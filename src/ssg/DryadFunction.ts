@@ -2,6 +2,7 @@ import { TreeToTS } from 'graphql-zeus';
 import { Parser } from 'graphql-js-tree';
 // @ts-ignore
 import path from 'path-browserify';
+import { transform } from 'esbuild-wasm';
 
 export interface DryadFunctionProps {
   schema: string;
@@ -76,8 +77,22 @@ export const DryadFunction = async ({
   schema,
   url,
   js,
-  libs,
+  libs = [],
 }: DryadFunctionProps): Promise<DryadFunctionResult> => {
+  const transpiled = await transform(js, {
+    target:
+      'esnext' /* Specify ECMAScript target version: 'ES3' (default), 'ES5', 'ES2015', 'ES2016', 'ES2017', 'ES2018', 'ES2019', 'ES2020', or 'ESNEXT'. */,
+    loader: 'tsx',
+  });
+  const libsTransformed = await Promise.all(
+    libs.map(async (l) => ({
+      filePath: l.filePath.replace(/^file\:\/\/\//, '').replace(/\.(\w+)$/, ''),
+      content: await transform(l.content, {
+        target: 'esnext',
+        loader: 'tsx',
+      }).then((t) => t.code),
+    })),
+  );
   const graphqlTree = Parser.parse(schema);
   const jsSplit = TreeToTS.javascriptSplit({
     tree: graphqlTree,
@@ -86,14 +101,11 @@ export const DryadFunction = async ({
   });
   const jsString = jsSplit.const.concat('\n').concat(jsSplit.index);
   const functions = jsString.replace(/export /gm, '');
-  const functionBody = [functions, js].join('\n');
-
-  const replacedJS = blobelizeWithLibs('', functionBody, libs);
-
+  const functionBody = [functions, transpiled.code].join('\n');
+  const replacedJS = blobelizeWithLibs('', functionBody, libsTransformed);
   const esmUrl = URL.createObjectURL(
     new Blob([replacedJS.content], { type: 'text/javascript' }),
   );
-
   const imported = await eval(`import("${esmUrl}")`);
   const body = imported.default ? await imported.default() : '';
   const head = imported.head ? await imported.head() : undefined;

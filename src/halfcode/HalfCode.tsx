@@ -24,7 +24,7 @@ import { ErrorIcon } from './icons';
 import Editor from '@monaco-editor/react';
 import { useTheme } from '@/hooks/useTheme';
 import { EditorTheme } from '@/Theming/DarkTheme';
-import { transform, initialize } from 'esbuild-wasm';
+import { initialize } from 'esbuild-wasm';
 import { useTypings } from '@/hooks/useTypings';
 
 const IconsDiv = styled.div`
@@ -219,28 +219,11 @@ export const HalfCode = ({
   ) => {
     try {
       setDryadPending('yes');
-      const transpiled = await transform(js, {
-        target:
-          'esnext' /* Specify ECMAScript target version: 'ES3' (default), 'ES5', 'ES2015', 'ES2016', 'ES2017', 'ES2018', 'ES2019', 'ES2020', or 'ESNEXT'. */,
-        loader: 'tsx',
-      });
       const r = await DryadFunction({
-        js: transpiled.code,
+        js,
         schema,
         url,
-        libs: libs
-          ? await Promise.all(
-              libs.map(async (l) => ({
-                filePath: l.filePath
-                  .replace(/^file\:\/\/\//, '')
-                  .replace(/\.(\w+)$/, ''),
-                content: await transform(l.content, {
-                  target: 'esnext',
-                  loader: 'tsx',
-                }).then((t) => t.code),
-              })),
-            )
-          : [],
+        libs,
       });
       setErrors(undefined);
       if (!r || !r.body) {
