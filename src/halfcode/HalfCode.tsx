@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect, useState, useMemo } from 'react';
 import type * as monaco from 'monaco-editor';
 import { Resizable } from 're-resizable';
 import { TreeToTS } from 'graphql-zeus';
@@ -79,6 +79,7 @@ export interface HalfCodeProps {
   onTabChange?: (e: Editors) => void;
   theme?: EditorTheme;
   path?: string;
+  readOnly?: boolean;
   libs?: Array<{ content: string; filePath: string }>;
 }
 const root = tree.tree.main;
@@ -101,6 +102,7 @@ export const HalfCode = ({
   onTabChange,
   libs,
   path,
+  readOnly,
 }: HalfCodeProps) => {
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
@@ -118,7 +120,9 @@ export const HalfCode = ({
   const [currentMonacoInstance, setCurrentMonacoInstance] =
     useState<typeof monaco>();
   const [currentTsConfig, setCurrentTsConfig] =
-    useState<monaco.languages.typescript.CompilerOptions>({});
+    useState<monaco.languages.typescript.CompilerOptions>({
+      jsx: 4,
+    });
   const [currentLibraries, setCurrentLibraries] =
     useState<Array<{ filePath?: string; content: string }>>();
 
@@ -130,7 +134,6 @@ export const HalfCode = ({
   const { theme: editorTheme } = useTheme();
   const { downloadTypings } = useTypings();
 
-  const currentConfig = Config[editor];
   const openBlob = () => {
     const url = URL.createObjectURL(
       new Blob([dryad], { type: 'text/html;charset=utf-8' }),
@@ -161,6 +164,7 @@ export const HalfCode = ({
       startService().then(() => setWasmStarted(true));
     }
   }, []);
+
   useEffect(() => {
     return () => {
       setCurrentMonacoInstance(undefined);
@@ -327,6 +331,18 @@ export const HalfCode = ({
     }
   }, [currentMonacoInstance, editorTheme]);
 
+  const currentConfig = useMemo(() => {
+    return {
+      theme: Config[editor].themeModule,
+      options: {
+        ...Config[editor].options,
+        readOnly: readOnly,
+        theme: Config[editor].themeModule,
+      },
+      language: Config[editor].options.language,
+    };
+  }, [editor, readOnly]);
+
   return (
     <>
       <Container data-cy={root.element} className={className} style={style}>
@@ -404,10 +420,6 @@ export const HalfCode = ({
               monaco.languages.typescript.typescriptDefaults.setEagerModelSync(
                 true,
               );
-              setCurrentTsConfig((tsconfig) => ({
-                ...tsconfig,
-                jsx: monaco.languages.typescript.JsxEmit.ReactJSX,
-              }));
               monaco.editor.defineTheme(
                 'CssTheme',
                 themes.CssTheme(editorTheme),
@@ -424,9 +436,7 @@ export const HalfCode = ({
                 [editor]: e,
               });
             }}
-            theme={currentConfig.themeModule}
-            options={currentConfig.options}
-            language={currentConfig.options.language}
+            {...currentConfig}
           />
         </Resizable>
 

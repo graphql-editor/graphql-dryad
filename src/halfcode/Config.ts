@@ -9,7 +9,7 @@ export enum Editors {
 
 export type Values = Record<Editors, string>;
 export type Refs = Record<Editors, React.RefObject<HTMLDivElement>>;
-interface ConfigurationLanguage {
+export interface ConfigurationLanguage {
   options: monaco.editor.IStandaloneEditorConstructionOptions &
     Required<
       Pick<
