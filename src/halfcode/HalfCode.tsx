@@ -239,7 +239,7 @@ export const HalfCode = ({
         HtmlSkeletonStatic({
           head: r.head,
           body: r.body,
-          script: r.script,
+          script: r.localScript,
           style: css,
         }),
       );

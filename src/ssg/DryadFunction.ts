@@ -15,6 +15,7 @@ export interface DryadFunctionResult {
   body: string;
   head?: string;
   script: string;
+  localScript: string;
 }
 export interface DryadFunctionFunction {
   (): Promise<DryadFunctionResult>;
@@ -113,6 +114,7 @@ export const DryadFunction = async ({
   return {
     body,
     script: functionBody,
+    localScript: replacedJS.content,
     head,
   };
 };
