@@ -22,8 +22,10 @@ export const delayedReadonly = () => {
           url: reactExample.schemaUrl,
           headers: {},
         }}
-        value={value}
-        setValue={setValue}
+        value={value.js}
+        css={value.css}
+        onDryad={(d) => console.log(d)}
+        onZeus={(d) => console.log(d)}
       />
     </div>
   );
