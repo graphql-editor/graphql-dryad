@@ -3,6 +3,7 @@ import { Parser } from 'graphql-js-tree';
 // @ts-ignore
 import path from 'path-browserify';
 import { transform } from 'esbuild-wasm';
+import ReactDOM from 'react-dom';
 
 export interface DryadFunctionProps {
   schema: string;
@@ -80,6 +81,17 @@ export const DryadFunction = async ({
   js,
   libs = [],
 }: DryadFunctionProps): Promise<DryadFunctionResult> => {
+  const graphqlTree = Parser.parse(schema);
+  const jsSplit = TreeToTS.resolveTree({
+    tree: graphqlTree,
+    env: 'browser',
+    host: url,
+  });
+  const transpiledZeus = await transform(jsSplit, {
+    target:
+      'esnext' /* Specify ECMAScript target version: 'ES3' (default), 'ES5', 'ES2015', 'ES2016', 'ES2017', 'ES2018', 'ES2019', 'ES2020', or 'ESNEXT'. */,
+    loader: 'ts',
+  });
   const transpiled = await transform(js, {
     target:
       'esnext' /* Specify ECMAScript target version: 'ES3' (default), 'ES5', 'ES2015', 'ES2016', 'ES2017', 'ES2018', 'ES2019', 'ES2020', or 'ESNEXT'. */,
@@ -94,27 +106,28 @@ export const DryadFunction = async ({
       }).then((t) => t.code),
     })),
   );
-  const graphqlTree = Parser.parse(schema);
-  const jsSplit = TreeToTS.javascriptSplit({
-    tree: graphqlTree,
-    env: 'browser',
-    host: url,
-  });
-  const jsString = jsSplit.const.concat('\n').concat(jsSplit.index);
-  const functions = jsString.replace(/export /gm, '');
-  const functionBody = [functions, transpiled.code].join('\n');
+  const functionBody = [transpiledZeus.code, transpiled.code].join('\n');
   const replacedJS = blobelizeWithLibs('', functionBody, libsTransformed);
   const esmUrl = URL.createObjectURL(
     new Blob([replacedJS.content], { type: 'text/javascript' }),
   );
   const imported = await eval(`import("${esmUrl}")`);
   const body = imported.default ? await imported.default() : '';
+  console.log(body);
   const head = imported.head ? await imported.head() : undefined;
 
   return {
-    body,
+    body: typeof body === 'object' ? await renderReactSSG(body) : body,
     script: functionBody,
     localScript: replacedJS.content,
     head,
   };
+};
+
+const renderReactSSG = async (
+  component: React.DOMElement<React.DOMAttributes<Element>, Element>,
+) => {
+  const renderBody = document.createElement('div');
+  ReactDOM.render(component, renderBody);
+  return renderBody.innerHTML;
 };
