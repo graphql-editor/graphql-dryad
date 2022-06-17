@@ -81,19 +81,18 @@ export const DryadFunction = async ({
     host: url,
     headers,
   });
-
-  console.log(jsSplit);
   const transpiledZeus = await transform(jsSplit, {
     target:
       'esnext' /* Specify ECMAScript target version: 'ES3' (default), 'ES5', 'ES2015', 'ES2016', 'ES2017', 'ES2018', 'ES2019', 'ES2020', or 'ESNEXT'. */,
     loader: 'ts',
   });
-  console.log(transpiledZeus);
+  console.log('ZEUS OK');
   const transpiled = await transform(js, {
     target:
       'esnext' /* Specify ECMAScript target version: 'ES3' (default), 'ES5', 'ES2015', 'ES2016', 'ES2017', 'ES2018', 'ES2019', 'ES2020', or 'ESNEXT'. */,
     loader: 'tsx',
   });
+  console.log('CODE OK');
   const libsTransformed = await Promise.all(
     libs.map(async (l) => ({
       filePath: l.filePath.replace(/^file\:\/\/\//, '').replace(/\.(\w+)$/, ''),
@@ -103,15 +102,18 @@ export const DryadFunction = async ({
       }).then((t) => t.code),
     })),
   );
+  console.log('LIBS OK');
   const functionBody = [transpiledZeus.code, transpiled.code].join('\n');
   const replacedJS = blobelizeWithLibs('', functionBody, libsTransformed);
+  console.log('Blobelize ok');
   const esmUrl = URL.createObjectURL(
     new Blob([replacedJS.content], { type: 'text/javascript' }),
   );
   const imported = await eval(`import("${esmUrl}")`);
+  console.log('import ok');
   const body = imported.default ? await imported.default() : '';
   const head = imported.head ? await imported.head() : undefined;
-
+  console.log(typeof body, typeof head);
   return {
     body:
       typeof body === 'object' ? await renderReactSSG(body) : (body as string),
@@ -119,7 +121,9 @@ export const DryadFunction = async ({
     localScript: replacedJS.content,
     esmUrl,
     head:
-      typeof head === 'object' ? await renderReactSSG(head) : (head as string),
+      typeof head === 'object'
+        ? await renderReactSSG(head)
+        : (head as string | undefined),
   };
 };
 export type DryadFunctionResult = ReturnType<
@@ -134,6 +138,7 @@ export interface DryadFunctionFunction {
 const renderReactSSG = async (
   component: React.DOMElement<React.DOMAttributes<Element>, Element>,
 ) => {
+  console.log(component);
   const renderBody = document.createElement('div');
   ReactDOM.render(component, renderBody);
   return renderBody.innerHTML;
