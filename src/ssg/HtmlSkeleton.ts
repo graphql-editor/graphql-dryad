@@ -3,11 +3,15 @@ export const HtmlSkeletonStatic = ({
   style,
   script,
   head = '',
+  hydrate,
+  scriptName,
 }: {
   body: string;
   style?: string;
   script?: string;
   head?: string;
+  hydrate?: boolean;
+  scriptName?: string;
 }) => `
 <html>
     <head>
@@ -22,6 +26,18 @@ export const HtmlSkeletonStatic = ({
         ${
           script
             ? `<script type="module">
+          const m = await import("${scriptName}");
+          const Component = m.default;
+        ${
+          hydrate
+            ? `
+            const ReactDOM = await import('https://cdn.skypack.dev/react-dom@^17.0.2');
+            ReactDOM.hydrate(Component(await m.data?.()),document.body)`
+            : `
+        if(m && m.hydrate){
+          m.hydrate()
+        }`
+        }
             ${script}
         </script>`
             : ''

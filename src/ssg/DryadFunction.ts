@@ -3,7 +3,6 @@ import { Parser } from 'graphql-js-tree';
 // @ts-ignore
 import path from 'path-browserify';
 import { transform } from 'esbuild-wasm';
-import ReactDOM from 'react-dom';
 
 export interface DryadFunctionProps {
   schema: string;
@@ -103,20 +102,39 @@ export const DryadFunction = async ({
   const functionBody = [transpiledZeus.code, transpiled.code].join('\n');
   const replacedJS = blobelizeWithLibs('', functionBody, libsTransformed);
   const esmUrl = URL.createObjectURL(
-    new Blob([replacedJS.content], { type: 'text/javascript' }),
+    new Blob(
+      [
+        replacedJS.content.concat(`
+export const render = async ({Component}) => {
+  const ReactDOM = await import('https://cdn.skypack.dev/react-dom@^17.0.2');
+  const element = document.createElement('div')
+  const dataFn = typeof data === 'undefined' ? async () => { return {} } : data
+  ReactDOM.render(Component,element);
+  return element.innerHTML
+} 
+    `),
+      ],
+      { type: 'text/javascript' },
+    ),
   );
   const imported = await eval(`import("${esmUrl}")`);
-  const body = imported.default ? await imported.default() : '';
+
+  const data = imported.data ? await imported.data() : {};
+  const body = imported.default ? imported.default(data) : '';
   const head = imported.head ? await imported.head() : undefined;
+  const renderDefault = async (body: string) => body;
+  const render = imported.render || renderDefault;
+  const hydrate = typeof body === 'object';
+  // const htmlBlobUrl = URL.createObjectURL(new Blob([]));
   return {
-    body:
-      typeof body === 'object' ? await renderReactSSG(body) : (body as string),
+    body: hydrate ? await render({ Component: body }) : (body as string),
     script: functionBody,
     localScript: replacedJS.content,
+    hydrate,
     esmUrl,
     head:
       typeof head === 'object'
-        ? await renderReactSSG(head)
+        ? await render({ Component: head })
         : (head as string | undefined),
   };
 };
@@ -128,11 +146,3 @@ export type DryadFunctionResult = ReturnType<
 export interface DryadFunctionFunction {
   (): Promise<DryadFunctionResult>;
 }
-
-const renderReactSSG = async (
-  component: React.DOMElement<React.DOMAttributes<Element>, Element>,
-) => {
-  const renderBody = document.createElement('div');
-  ReactDOM.render(component, renderBody);
-  return renderBody.innerHTML;
-};

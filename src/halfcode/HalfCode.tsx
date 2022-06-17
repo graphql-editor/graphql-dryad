@@ -249,6 +249,8 @@ export const HalfCode = ({
           body: r.body,
           script: r.localScript,
           style: css,
+          scriptName: r.esmUrl,
+          hydrate: r.hydrate,
         }),
       );
     } catch (error) {

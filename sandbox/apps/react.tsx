@@ -24,18 +24,18 @@ export const ReactApp = () => {
 
 const libs = [
   {
-    content: `import React from 'https://cdn.skypack.dev/react@17.0.2';
+    content: `import React from 'https://cdn.skypack.dev/react';
 import { Avatar } from './components/Avatar';
 
 export const Post = ({
     avatar,
     username,
-    sentence
+    sentence  
 }:{
   avatar:string;
   username:string;
   sentence:string;
-}) => <div onClick={() => console.log("DDDD")} className="flex bg-white p-10 shadow-md space-x-4 transform hover:scale-105 transition-transform duration-200 cursor-pointer mx-5">
+}) => <div onClick={() => {document.body.innerHTML="DDD"}} className="flex bg-white p-10 shadow-md space-x-4 transform hover:scale-105 transition-transform duration-200 cursor-pointer mx-5">
         <div className="order-1">
             <img className="rounded-full" style={{width:50}} src={avatar} />
         </div>
@@ -49,7 +49,7 @@ export const Post = ({
     filePath: 'file:///Post.tsx',
   },
   {
-    content: `import React from 'https://cdn.skypack.dev/react@17.0.2';
+    content: `import React from 'https://cdn.skypack.dev/react';
 
 export const Avatar = ({
     avatar,
@@ -60,41 +60,44 @@ export const Avatar = ({
   },
 ];
 const reactExample = {
-  js: `import React from 'https://cdn.skypack.dev/react@17.0.2'
-import ReactDOM from 'https://cdn.skypack.dev/react-dom@17.0.2'
-
-import {Post} from './Post.js'
-
-const PostSelector = Selector("Twit")({
-    sentence: true,
-    Author: {
-        username: true,
-        avatar: true
-    }
-})
-type PostType = InputType<GraphQLTypes["Twit"],typeof PostSelector>
-
-const Posts = ({ posts }:{posts: PostType[]}) => {
-    return <div id="PostList" className="container mx-auto space-y-5">
-        {posts.map(p => <Post avatar={p.Author.avatar} sentence={p.sentence} username={p.Author.username} />)}
-    </div>
-}
-
-const Body = ({children}) => {
-    return <div className="p-4 bg-gray-100">{children}</div>
-}
-
-
-export default async () => {
-    const response = await Gql("query")({
-        Twits: PostSelector,
-        Me: {
-            avatar: true,
-            username: true
-        }
-    })
-    return <Body><Posts posts={response.Twits} /></Body>
-}`,
+  js: `import React from 'https://cdn.skypack.dev/react'
+  import ReactDOM from 'https://cdn.skypack.dev/react-dom'
+  
+  import {Post} from './Post.js'
+  
+  const PostSelector = Selector("Twit")({
+      sentence: true,
+      Author: {
+          username: true,
+          avatar: true
+      }
+  })
+  type PostType = InputType<GraphQLTypes["Twit"],typeof PostSelector>
+  
+  const Posts = ({ posts }:{posts: PostType[]}) => {
+      return <div id="PostList" className="container mx-auto space-y-5">
+          {posts.map(p => <Post avatar={p.Author.avatar} sentence={p.sentence} username={p.Author.username} />)}
+      </div>
+  }
+  
+  const Body = ({children}) => {
+      return <div className="p-4 bg-gray-100">{children}</div>
+  }
+  
+  export const data = async () => {
+      const response = await Gql("query")({
+          Twits: PostSelector,
+          Me: {
+              avatar: true,
+              username: true
+          }
+      })
+      return response
+  }
+  
+  export default (props:ReturnType<typeof data> extends Promise<infer R> ? R: never) => {
+      return <Body><Posts posts={props.Twits} /></Body>
+  }`,
   css: `@import 'https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.0.3/tailwind.min.css'`,
   schemaUrl: 'https://faker.graphqleditor.com/explore-projects/twitter/graphql',
 };
