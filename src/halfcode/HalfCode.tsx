@@ -84,7 +84,6 @@ export interface HalfCodeProps {
 }
 const root = tree.tree.main;
 let WASM_INITIALIZED = false;
-let extraGqlLib = '';
 let pathInitialized = '';
 
 const startService = async () => {
@@ -113,6 +112,7 @@ export const HalfCode = ({
   const [errors, setErrors] = useState<any>();
   const [wasmStarted, setWasmStarted] = useState(false);
 
+  const [zeusTypings, setZeusTypings] = useState('');
   const [dryad, setDryad] = useState<string>('');
   const [dryadPending, setDryadPending] = useState<
     'yes' | 'no' | 'unset' | 'empty'
@@ -199,7 +199,7 @@ export const HalfCode = ({
       const typings = TreeToTS.resolveTree({
         tree: graphqlTree,
       }).replace(/export /gm, '');
-      extraGqlLib = typings;
+      setZeusTypings(typings);
     }
   }, [schemaString, currentMonacoInstance]);
 
@@ -215,12 +215,19 @@ export const HalfCode = ({
     }
   }, [editor, currentMonacoInstance]);
 
-  const executeDryad = async (
-    js: string,
-    css: string,
-    schema: string,
-    url: string,
-  ) => {
+  const executeDryad = async ({
+    css,
+    js,
+    schema,
+    url,
+    headers,
+  }: {
+    js: string;
+    css: string;
+    schema: string;
+    url: string;
+    headers?: Record<string, string>;
+  }) => {
     try {
       setDryadPending('yes');
       const r = await DryadFunction({
@@ -228,6 +235,7 @@ export const HalfCode = ({
         schema,
         url,
         libs,
+        headers,
       });
       setErrors(undefined);
       if (!r || !r.body) {
@@ -251,7 +259,13 @@ export const HalfCode = ({
     const js = value[Editors.js];
     const css = value[Editors.css];
     if (js && schemaString && settings.url) {
-      executeDryad(js, css, schemaString, settings.url);
+      executeDryad({
+        js,
+        css,
+        schema: schemaString,
+        url: settings.url,
+        headers: settings.headers,
+      });
     }
   };
 
@@ -293,7 +307,7 @@ export const HalfCode = ({
             ...extralibs,
             ...(libs || []),
             {
-              content: extraGqlLib,
+              content: zeusTypings,
               filePath: 'file:///node_modules/@types/typings-zeus/index.d.ts',
             },
           ]);
@@ -316,7 +330,7 @@ export const HalfCode = ({
         }
       }
     });
-  }, [value[Editors.js], currentMonacoInstance, libs]);
+  }, [value[Editors.js], currentMonacoInstance, libs, zeusTypings]);
 
   useEffect(() => {
     if (currentMonacoInstance && editorTheme) {

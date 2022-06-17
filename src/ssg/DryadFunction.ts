@@ -10,17 +10,9 @@ export interface DryadFunctionProps {
   url: string;
   js: string;
   libs?: Array<{ content: string; filePath: string }>;
+  headers?: Record<string, string>;
 }
 
-export interface DryadFunctionResult {
-  body: string;
-  head?: string;
-  script: string;
-  localScript: string;
-}
-export interface DryadFunctionFunction {
-  (): Promise<DryadFunctionResult>;
-}
 const PACKAGE_IMPORT_REGEX = new RegExp(
   /^((?:import|export).* from[^('|")]*(?:"|'))(\.(?:[^('|")]*))("|')/gm,
 );
@@ -79,19 +71,24 @@ export const DryadFunction = async ({
   schema,
   url,
   js,
+  headers,
   libs = [],
-}: DryadFunctionProps): Promise<DryadFunctionResult> => {
+}: DryadFunctionProps) => {
   const graphqlTree = Parser.parse(schema);
   const jsSplit = TreeToTS.resolveTree({
     tree: graphqlTree,
     env: 'browser',
     host: url,
+    headers,
   });
+
+  console.log(jsSplit);
   const transpiledZeus = await transform(jsSplit, {
     target:
       'esnext' /* Specify ECMAScript target version: 'ES3' (default), 'ES5', 'ES2015', 'ES2016', 'ES2017', 'ES2018', 'ES2019', 'ES2020', or 'ESNEXT'. */,
     loader: 'ts',
   });
+  console.log(transpiledZeus);
   const transpiled = await transform(js, {
     target:
       'esnext' /* Specify ECMAScript target version: 'ES3' (default), 'ES5', 'ES2015', 'ES2016', 'ES2017', 'ES2018', 'ES2019', 'ES2020', or 'ESNEXT'. */,
@@ -113,16 +110,26 @@ export const DryadFunction = async ({
   );
   const imported = await eval(`import("${esmUrl}")`);
   const body = imported.default ? await imported.default() : '';
-  console.log(body);
   const head = imported.head ? await imported.head() : undefined;
 
   return {
-    body: typeof body === 'object' ? await renderReactSSG(body) : body,
+    body:
+      typeof body === 'object' ? await renderReactSSG(body) : (body as string),
     script: functionBody,
     localScript: replacedJS.content,
-    head,
+    esmUrl,
+    head:
+      typeof head === 'object' ? await renderReactSSG(head) : (head as string),
   };
 };
+export type DryadFunctionResult = ReturnType<
+  typeof DryadFunction
+> extends Promise<infer R>
+  ? R
+  : never;
+export interface DryadFunctionFunction {
+  (): Promise<DryadFunctionResult>;
+}
 
 const renderReactSSG = async (
   component: React.DOMElement<React.DOMAttributes<Element>, Element>,

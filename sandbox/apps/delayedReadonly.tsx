@@ -81,7 +81,7 @@ const reactExample = {
       </div>
   }
   export default async () =>{
-       const response = await Gql.query({
+       const response = await Gql("query")({
           Twits: {
               sentence: true,
               Author: {
@@ -102,6 +102,6 @@ const reactExample = {
       ReactDOM.render(<MainComponent posts={posts} me={me} />,divek)
       return divek.innerHTML
   }`,
-  css: `@import 'http://esm.sh/tailwindcss/dist/tailwind.min.css'`,
+  css: `@import 'https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.0.3/tailwind.min.css'`,
   schemaUrl: 'https://faker.graphqleditor.com/explore-projects/twitter/graphql',
 };
