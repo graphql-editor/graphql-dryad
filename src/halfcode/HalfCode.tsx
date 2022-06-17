@@ -89,7 +89,7 @@ let pathInitialized = '';
 const startService = async () => {
   await initialize({
     worker: true,
-    wasmURL: 'https://unpkg.com/esbuild-wasm@0.14.43/esbuild.wasm',
+    wasmURL: 'https://unpkg.com/esbuild-wasm@0.14.45/esbuild.wasm',
   });
 };
 export const HalfCode = ({
