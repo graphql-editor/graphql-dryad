@@ -1,10 +1,10 @@
 {
   "name": "graphql-dryad",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Component from graphql library",
   "main": "lib/index.js",
   "scripts": {
-    "start": "webpack serve --config ./sandbox/webpack.config.js --content-base ./sandbox/ --port 1456 --hot --inline --open",
+    "start": "webpack serve --config ./sandbox/webpack.config.js --content-base ./sandbox/ --port 1569 --hot --inline --open",
     "build": "ttsc --build tsconfig.build.json",
     "watch": "ttsc --watch --project tsconfig.build.json",
     "domTree": "tree src/index.treelang -f ts > src/cypressTree.ts && eslint --fix src/cypressTree.ts",

@@ -105,11 +105,12 @@ export const DryadFunction = async ({
     new Blob(
       [
         replacedJS.content.concat(`
-export const render = async ({Component}) => {
+export const render = async ({Component,data}) => {
   const ReactDOM = await import('https://cdn.skypack.dev/react-dom@^17.0.2');
   const element = document.createElement('div')
   const dataFn = typeof data === 'undefined' ? async () => { return {} } : data
-  ReactDOM.render(Component,element);
+  const d = await dataFn()
+  ReactDOM.render(Component(await dataFn()),element);
   return element.innerHTML
 } 
     `),
@@ -119,18 +120,16 @@ export const render = async ({Component}) => {
   );
   const imported = await eval(`import("${esmUrl}")`);
 
-  const data = imported.data ? await imported.data() : {};
-  const body = imported.default ? imported.default(data) : '';
+  const body = imported.default;
   const head = imported.head ? await imported.head() : undefined;
   const renderDefault = async (body: string) => body;
   const render = imported.render || renderDefault;
-  const hydrate = typeof body === 'object';
   // const htmlBlobUrl = URL.createObjectURL(new Blob([]));
   return {
-    body: hydrate ? await render({ Component: body }) : (body as string),
+    body: await render({ Component: body, data: imported.data }),
     script: functionBody,
     localScript: replacedJS.content,
-    hydrate,
+    hydrate: true,
     esmUrl,
     head:
       typeof head === 'object'
