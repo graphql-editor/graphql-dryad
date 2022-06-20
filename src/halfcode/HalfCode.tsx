@@ -29,6 +29,8 @@ export interface HalfCodeProps {
   libs?: Array<{ content: string; filePath: string }>;
 }
 const root = tree.tree.main;
+const ZEUS_TYPINGS_PATH = 'file:///node_modules/@types/typings-zeus/index.d.ts';
+const REACT_RUNTIME_PATH = 'file:///node_modules/react/jsx-runtime.d.ts';
 
 export const HalfCode = ({
   className = '',
@@ -75,10 +77,16 @@ export const HalfCode = ({
   useEffect(() => {
     if (currentMonacoInstance && currentLibraries) {
       currentMonacoInstance.languages.typescript.typescriptDefaults.setExtraLibs(
-        currentLibraries,
+        [
+          ...currentLibraries,
+          {
+            content: zeusTypings,
+            filePath: ZEUS_TYPINGS_PATH,
+          },
+        ],
       );
     }
-  }, [currentMonacoInstance, currentLibraries]);
+  }, [currentMonacoInstance, currentLibraries, zeusTypings]);
 
   useEffect(() => {
     return () => {
@@ -130,19 +138,11 @@ export const HalfCode = ({
           const reactLib = mergedLibs.find(({ name }) => name === 'react');
           if (reactLib) {
             extralibs.push({
-              filePath: 'file:///node_modules/react/jsx-runtime.d.ts',
+              filePath: REACT_RUNTIME_PATH,
               content: `import "${reactLib.url}";`,
             });
           }
-          setCurrentLibraries([
-            ...mergedLibs,
-            ...extralibs,
-            ...(libs || []),
-            {
-              content: zeusTypings,
-              filePath: 'file:///node_modules/@types/typings-zeus/index.d.ts',
-            },
-          ]);
+          setCurrentLibraries([...mergedLibs, ...extralibs, ...(libs || [])]);
 
           const paths = mergedLibs.reduce<Record<string, string[]>>((a, b) => {
             a[b.url] ||= [];
