@@ -62,8 +62,10 @@ const packageNameSplit = (pName: string): { name: string; version: string } => {
 
 const downloadTypings = async ({
   filesContent,
+  typingsURL = 'https://bt-api.azurewebsites.net/graphql',
 }: {
   filesContent: string[];
+  typingsURL?: string;
 }) => {
   const packages = mergePackages(filesContent)
     .filter((p) => !packageCache[`${p.packageName}`])
@@ -72,7 +74,7 @@ const downloadTypings = async ({
       ...packageNameSplit(p.packageName),
       url: `${p.url}/${p.packageName}`,
     }));
-  const ts = await fetchTypingsFromBundleTypings({ packages });
+  const ts = await fetchTypingsFromBundleTypings({ packages, typingsURL });
   const paths: typeof packageCache = {};
   ts.forEach((t) => {
     // const typingsPath = [t.p.packageName, 'index.d.ts'].join('/');
@@ -90,11 +92,9 @@ export const useTypings = () => {
   };
 };
 
-const bundledTypingsURL =
-  'https://project-615bfeca92e6cf66d7683a66.azurewebsites.net/graphql';
-
 const fetchTypingsFromBundleTypings = async ({
   packages,
+  typingsURL,
 }: {
   packages: Array<{
     name: string;
@@ -102,8 +102,9 @@ const fetchTypingsFromBundleTypings = async ({
     url: string;
     packageName: string;
   }>;
+  typingsURL: string;
 }) => {
-  const chain = Chain(bundledTypingsURL);
+  const chain = Chain(typingsURL);
   const typingsFiles: Array<{
     content: string;
     path: string;

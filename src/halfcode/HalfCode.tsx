@@ -26,6 +26,7 @@ export interface HalfCodeProps {
   theme?: EditorTheme;
   path?: string;
   readOnly?: boolean;
+  typingsURL?: string;
   libs?: Array<{ content: string; filePath: string }>;
 }
 const root = tree.tree.main;
@@ -42,6 +43,7 @@ export const HalfCode = ({
   libs,
   path,
   readOnly,
+  typingsURL,
 }: HalfCodeProps) => {
   const allEditors = [Editors.css, Editors.js];
 
@@ -123,45 +125,50 @@ export const HalfCode = ({
   }, []);
 
   useEffect(() => {
-    downloadTypings({ filesContent: [value[Editors.js]] }).then((types) => {
-      if (Object.keys(types).length) {
-        if (currentMonacoInstance) {
-          const extralibs: typeof currentLibraries = [];
-          const mergedLibs = Object.entries(types).flatMap(([, content]) => {
-            return content.map((c) => {
-              return {
-                filePath: `file:///${c.path}`,
-                ...c,
-              };
+    downloadTypings({ filesContent: [value[Editors.js]], typingsURL }).then(
+      (types) => {
+        if (Object.keys(types).length) {
+          if (currentMonacoInstance) {
+            const extralibs: typeof currentLibraries = [];
+            const mergedLibs = Object.entries(types).flatMap(([, content]) => {
+              return content.map((c) => {
+                return {
+                  filePath: `file:///${c.path}`,
+                  ...c,
+                };
+              });
             });
-          });
-          const reactLib = mergedLibs.find(({ name }) => name === 'react');
-          if (reactLib) {
-            extralibs.push({
-              filePath: REACT_RUNTIME_PATH,
-              content: `import "${reactLib.url}";`,
-            });
-          }
-          setCurrentLibraries([...mergedLibs, ...extralibs, ...(libs || [])]);
+            const reactLib = mergedLibs.find(({ name }) => name === 'react');
+            if (reactLib) {
+              extralibs.push({
+                filePath: REACT_RUNTIME_PATH,
+                content: `import "${reactLib.url}";`,
+              });
+            }
+            setCurrentLibraries([...mergedLibs, ...extralibs, ...(libs || [])]);
 
-          const paths = mergedLibs.reduce<Record<string, string[]>>((a, b) => {
-            a[b.url] ||= [];
-            a[b.url].push(`file:///${b.path}`);
-            return a;
-          }, {});
-          setCurrentTsConfig((tsconfig) => ({
-            ...tsconfig,
-            baseUrl: './',
-            paths,
-            types: ['typings-zeus'],
-            rootDir: './',
-            jsx: currentMonacoInstance.languages.typescript.JsxEmit.ReactJSX,
-            esModuleInterop: true,
-            allowSyntheticDefaultImports: true,
-          }));
+            const paths = mergedLibs.reduce<Record<string, string[]>>(
+              (a, b) => {
+                a[b.url] ||= [];
+                a[b.url].push(`file:///${b.path}`);
+                return a;
+              },
+              {},
+            );
+            setCurrentTsConfig((tsconfig) => ({
+              ...tsconfig,
+              baseUrl: './',
+              paths,
+              types: ['typings-zeus'],
+              rootDir: './',
+              jsx: currentMonacoInstance.languages.typescript.JsxEmit.ReactJSX,
+              esModuleInterop: true,
+              allowSyntheticDefaultImports: true,
+            }));
+          }
         }
-      }
-    });
+      },
+    );
   }, [value[Editors.js], currentMonacoInstance, libs, zeusTypings]);
 
   useEffect(() => {
