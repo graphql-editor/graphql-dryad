@@ -1,4 +1,6 @@
-import { GraphQLDryad } from '@/GraphQLDryad';
+import { HalfCodeApi } from '@/../dryad/lib/halfcode';
+import { useImperativeRef } from '@/useImperativeRef';
+import { GraphQLDryad } from 'graphql-dryad';
 import React, { useState } from 'react';
 
 export const ReactWidget = () => {
@@ -7,17 +9,34 @@ export const ReactWidget = () => {
     css: reactExample.css,
   });
 
+  const [api, setApi] = useImperativeRef<HalfCodeApi>();
+
   return (
     <div style={{ height: `100%` }}>
       <GraphQLDryad
+        ref={setApi}
         settings={{
           url: reactExample.schemaUrl,
           headers: {},
         }}
-        libs={[]}
         value={value}
         setValue={setValue}
       />
+      {api?.areTypesLoading && (
+        <div
+          style={{
+            color: '#fff',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: '#000a',
+            position: 'absolute',
+            inset: 0,
+          }}
+        >
+          Loading
+        </div>
+      )}
     </div>
   );
 };
@@ -35,19 +54,25 @@ const reactExample = {
   
   type AuthorType = FromSelector<typeof Author,"Profile">
   
-  const AuthorTag:React.FC<AuthorType> = ({
+  const AuthorTag:React.FC<AuthorType & { selected?:boolean; onClick:() => void }> = ({
       avatar,
       baseColor,
-      username
+      selected,
+      username,
+      onClick
   }) => {
-      return <a className={\`
-          flex flex-row items-center 
-          px-6 py-2 rounded 
-          bg-\${baseColor}-600
-          hover:bg-\${baseColor}-400
-      \`}>
+      return <a 
+                onClick={onClick}
+                className={\`
+                    flex flex-row items-center 
+                    p-2 rounded 
+                    bg-\${baseColor}-600
+                    hover:bg-\${baseColor}-400
+                    \${selected ? 'w-full' : 'w-48'}
+                    transition-all
+                    cursor-pointer\`}>
           <img className={\`
-              w-12 h-12 mr-2 rounded-full
+              w-8 h-8 mr-2 rounded-full
           \`} src={avatar} />
           <div className="text-white font-bold">
               {username}
@@ -56,6 +81,7 @@ const reactExample = {
   }
 
   const Widget = () => {
+      const [selected, setSelected] = React.useState("")
       const [authors,setAuthors] = React.useState<
           AuthorType[]
       >([])
@@ -70,6 +96,8 @@ const reactExample = {
       },[])
       return <div className="flex flex-row flex-wrap gap-4 p-4">
           {authors.map(a => <AuthorTag 
+          onClick={()=>setSelected(a.username)}
+              selected={a.username === selected}
               key={a.username} 
               {...a} 
           />)}

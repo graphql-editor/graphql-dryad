@@ -1,6 +1,6 @@
-import { simpleExample } from '@/../sandbox/simpleExample';
+import { simpleExample } from '@/simpleExample';
 import React, { useState } from 'react';
-import { GraphQLDryad } from '../src';
+import { GraphQLDryad } from 'graphql-dryad';
 
 export const Main = () => {
   const [value, setValue] = useState({

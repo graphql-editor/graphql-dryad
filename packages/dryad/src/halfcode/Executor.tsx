@@ -1,26 +1,19 @@
-import React, { useRef, useEffect, useState } from 'react';
+import React, {
+  useRef,
+  useEffect,
+  useState,
+  useImperativeHandle,
+  useCallback,
+} from 'react';
 import { getParsedSchema } from '../schema';
-import { R, Place, Placehold, LoadingDots } from '../components';
+import { Place, Placehold, LoadingDots, RNoop } from '../components';
 import { Values, Editors } from './Config';
 import { Settings } from '../models';
 import { DryadFunction, HtmlSkeletonStatic } from '../ssg';
 import styled from '@emotion/styled';
-import { tree } from '@/cypressTree';
 import { ErrorIcon } from './icons';
 import { useTheme } from '@/hooks/useTheme';
 import { initialize } from 'esbuild-wasm';
-
-const IconsDiv = styled.div`
-  position: absolute;
-  top: 47px;
-  height: 100px;
-  width: 60px;
-  margin-left: -60px;
-  align-items: end;
-  justify-content: start;
-  display: flex;
-  flex-flow: column nowrap;
-`;
 
 const ErrorWithIcon = styled.div`
   display: flex;
@@ -53,6 +46,11 @@ const MainFrame = styled.iframe`
   border: 0;
 `;
 
+const HelpText = styled.div`
+  display: flex;
+  align-items: center;
+`;
+
 export interface DryadExecutorProps {
   value: Values;
   settings: Settings;
@@ -68,12 +66,15 @@ const startService = async () => {
     wasmURL: 'https://unpkg.com/esbuild-wasm@0.14.45/esbuild.wasm',
   });
 };
-export const DryadExecutor = ({
-  value,
-  settings,
-  libs,
-  path,
-}: DryadExecutorProps) => {
+
+export interface DryadExecutorApi {
+  openBlob: () => void;
+  refreshDryad: () => void;
+}
+export const DryadExecutor = React.forwardRef<
+  DryadExecutorApi,
+  DryadExecutorProps
+>(({ value, settings, libs, path }, ref) => {
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
   const [schemaString, setSchema] = useState('');
@@ -87,13 +88,13 @@ export const DryadExecutor = ({
 
   const { theme: editorTheme } = useTheme();
 
-  const openBlob = () => {
+  const openBlob = useCallback(() => {
     const url = URL.createObjectURL(
       new Blob([dryad], { type: 'text/html;charset=utf-8' }),
     );
     // eslint-disable-next-line
     window?.open(url);
-  };
+  }, [dryad]);
 
   useEffect(() => {
     if (!WASM_INITIALIZED) {
@@ -130,49 +131,52 @@ export const DryadExecutor = ({
     });
   }, [settings.url]);
 
-  const executeDryad = async ({
-    css,
-    js,
-    schema,
-    url,
-    headers,
-  }: {
-    js: string;
-    css: string;
-    schema: string;
-    url: string;
-    headers?: Record<string, string>;
-  }) => {
-    try {
-      setDryadPending('yes');
-      const r = await DryadFunction({
-        js,
-        schema,
-        url,
-        libs,
-        headers,
-      });
-      setErrors(undefined);
-      if (!r || !r.body) {
-        setDryadPending('empty');
-        return;
+  const executeDryad = useCallback(
+    async ({
+      css,
+      js,
+      schema,
+      url,
+      headers,
+    }: {
+      js: string;
+      css: string;
+      schema: string;
+      url: string;
+      headers?: Record<string, string>;
+    }) => {
+      try {
+        setDryadPending('yes');
+        const r = await DryadFunction({
+          js,
+          schema,
+          url,
+          libs,
+          headers,
+        });
+        setErrors(undefined);
+        if (!r || !r.body) {
+          setDryadPending('empty');
+          return;
+        }
+        setDryadPending('no');
+        setDryad(
+          HtmlSkeletonStatic({
+            head: r.head,
+            body: r.body,
+            script: r.localScript,
+            style: css,
+            scriptName: r.esmUrl,
+            hydrate: r.hydrate,
+          }),
+        );
+      } catch (error) {
+        setErrors(error);
       }
-      setDryadPending('no');
-      setDryad(
-        HtmlSkeletonStatic({
-          head: r.head,
-          body: r.body,
-          script: r.localScript,
-          style: css,
-          scriptName: r.esmUrl,
-          hydrate: r.hydrate,
-        }),
-      );
-    } catch (error) {
-      setErrors(error);
-    }
-  };
-  const refreshDryad = async () => {
+    },
+    [libs],
+  );
+  const refreshDryad = useCallback(async () => {
     const js = value[Editors.js];
     const css = value[Editors.css];
     if (js && schemaString && settings.url) {
@@ -184,7 +188,7 @@ export const DryadExecutor = ({
         headers: settings.headers,
       });
     }
-  };
+  }, [executeDryad, value, schemaString, settings]);
 
   useEffect(() => {
     if (schemaString && wasmStarted && path && path !== pathInitialized) {
@@ -193,24 +197,14 @@ export const DryadExecutor = ({
     }
   }, [schemaString, wasmStarted, path]);
 
+  useImperativeHandle(
+    ref,
+    () => ({ refreshDryad, openBlob } as DryadExecutorApi),
+    [refreshDryad, openBlob],
+  );
+
   return (
     <Place>
-      <IconsDiv>
-        <R
-          title="Run GraphQL Query( Cmd/Ctrl + S )"
-          about="Run Query"
-          variant={'play'}
-          onClick={refreshDryad}
-          cypressName={tree.tree.main.execute.play.element}
-        />
-        <R
-          title="Preview in new tab"
-          about="Preview HTML"
-          variant={'eye'}
-          cypressName={tree.tree.main.execute.preview.element}
-          onClick={openBlob}
-        />
-      </IconsDiv>
       {errors && (
         <ErrorWithIcon>
           <ErrorIcon iconColor={editorTheme.error} size={4} />
@@ -221,8 +215,14 @@ export const DryadExecutor = ({
         <>
           {dryadPending === 'unset' ? (
             <Placehold>
-              Click play to run the code. {'\n'} Click eye to preview in new
-              tab.
+              <HelpText>
+                <span>Click</span>
+                <RNoop variant="play" /> to run the code.
+              </HelpText>
+              <HelpText>
+                <span>Click</span>
+                <RNoop variant="eye" /> to preview in new tab.
+              </HelpText>
             </Placehold>
           ) : dryadPending === 'empty' ? (
             <Placehold>Empty string returned from function</Placehold>
@@ -242,4 +242,4 @@ export const DryadExecutor = ({
       )}
     </Place>
   );
-};
+});

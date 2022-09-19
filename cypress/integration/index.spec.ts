@@ -1,6 +1,6 @@
 /// <reference types="cypress" />
 
-import { tree } from '@/cypressTree';
+import { tree } from 'graphql-dryad/lib/cypressTree';
 
 const jsInput = 'export default () => "<div>Hello world</div>"';
 const cssInput = `body{ background:red; }`;

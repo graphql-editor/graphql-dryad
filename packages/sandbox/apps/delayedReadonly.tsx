@@ -1,30 +1,23 @@
-import { GraphQLDryad } from '@/GraphQLDryad';
+import { GraphQLDryad } from 'graphql-dryad';
 import React, { useEffect, useState } from 'react';
 
-export const libChange = () => {
+export const delayedReadonly = () => {
   const [value, setValue] = useState({
     js: reactExample.js,
     css: reactExample.css,
   });
-  const [libs, setLibs] = useState<
-    Array<{ content: string; filePath: string }>
-  >([]);
+  const [readOnly, setReadonly] = useState(false);
 
   useEffect(() => {
     setTimeout(() => {
-      setLibs([
-        {
-          content: `export const Five = 5`,
-          filePath: `file:///Five.tsx`,
-        },
-      ]);
-    }, 3000);
+      setReadonly(true);
+    }, 5000);
   }, []);
 
   return (
     <div style={{ height: `100%` }}>
       <GraphQLDryad
-        libs={libs}
+        readOnly={readOnly}
         settings={{
           url: reactExample.schemaUrl,
           headers: {},
@@ -88,7 +81,7 @@ const reactExample = {
       </div>
   }
   export default async () =>{
-       const response = await Gql.query({
+       const response = await Gql("query")({
           Twits: {
               sentence: true,
               Author: {

@@ -1,0 +1,46 @@
+{
+  "name": "graphql-dryad",
+  "version": "2.0.4",
+  "description": "Component from graphql library",
+  "main": "lib/index.js",
+  "scripts": {
+    "build": "ttsc --build tsconfig.build.json",
+    "start": "ttsc --watch --project tsconfig.build.json",
+    "domTree": "tree src/index.treelang -f ts > src/cypressTree.ts && eslint --fix src/cypressTree.ts",
+    "bundle-typings-zeus": "zeus https://project-615bfeca92e6cf66d7683a66.azurewebsites.net/graphql ./src/bundle-typings-types --ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/graphql-editor/graphql-dryad.git"
+  },
+  "keywords": [
+    "react",
+    "graphql"
+  ],
+  "author": "Aexol <aexol@aexol.com> (http://aexol.com)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/graphql-editor/graphql-dryad/issues"
+  },
+  "homepage": "https://github.com/graphql-editor/graphql-dryad#readme",
+  "dependencies": {
+    "@emotion/core": "^11.0.0",
+    "@emotion/react": "^11.4.1",
+    "@emotion/styled": "^11.3.0",
+    "color2k": "^1.2.4",
+    "esbuild-wasm": "0.14.45",
+    "file-saver": "^2.0.5",
+    "graphql-js-tree": "^0.1.1",
+    "graphql-zeus": "^5.1.9",
+    "path-browserify": "^1.0.1",
+    "re-resizable": "^6.9.0",
+    "react-feather": "^2.0.9",
+    "unstated-next": "^1.1.0"
+  },
+  "peerDependencies": {
+    "@monaco-editor/react": "^4.2.2",
+    "monaco-editor": ">=0.27.0",
+    "react": ">=17.0.2",
+    "react-dom": ">=17.0.2"
+  }
+}

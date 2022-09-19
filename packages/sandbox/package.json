@@ -1,0 +1,29 @@
+{
+  "name": "sandbox",
+  "version": "2.0.4",
+  "description": "Component from graphql library",
+  "main": "lib/index.js",
+  "scripts": {
+    "start": "webpack serve --port 1569 --hot --inline --open"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/graphql-editor/graphql-dryad.git"
+  },
+  "keywords": [
+    "react",
+    "graphql"
+  ],
+  "author": "Aexol <aexol@aexol.com> (http://aexol.com)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/graphql-editor/graphql-dryad/issues"
+  },
+  "homepage": "https://github.com/graphql-editor/graphql-dryad#readme",
+  "dependencies": {
+    "@emotion/core": "^11.0.0",
+    "@emotion/react": "^11.4.1",
+    "@emotion/styled": "^11.3.0",
+    "graphql-dryad": "*"
+  }
+}

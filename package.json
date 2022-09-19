@@ -1,20 +1,19 @@
 {
-  "name": "graphql-dryad",
+  "name": "graphql-dryad-repo",
   "version": "2.0.3",
   "description": "Component from graphql library",
   "main": "lib/index.js",
   "scripts": {
-    "start": "webpack serve --config ./sandbox/webpack.config.js --content-base ./sandbox/ --port 1569 --hot --inline --open",
-    "build": "ttsc --build tsconfig.build.json",
-    "watch": "ttsc --watch --project tsconfig.build.json",
-    "domTree": "tree src/index.treelang -f ts > src/cypressTree.ts && eslint --fix src/cypressTree.ts",
-    "test": "cypress open",
-    "bundle-typings-zeus": "zeus https://project-615bfeca92e6cf66d7683a66.azurewebsites.net/graphql ./src/bundle-typings-types --ts"
+    "test": "cypress open"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/graphql-editor/graphql-dryad.git"
   },
+  "workspaces": [
+    "./packages/dryad",
+    "./packages/sandbox"
+  ],
   "keywords": [
     "react",
     "graphql"
@@ -28,22 +27,7 @@
   "dependencies": {
     "@emotion/core": "^11.0.0",
     "@emotion/react": "^11.4.1",
-    "@emotion/styled": "^11.3.0",
-    "color2k": "^1.2.4",
-    "esbuild-wasm": "0.14.45",
-    "file-saver": "^2.0.5",
-    "graphql-js-tree": "^0.1.1",
-    "graphql-zeus": "^5.0.7",
-    "path-browserify": "^1.0.1",
-    "re-resizable": "^6.9.0",
-    "react-feather": "^2.0.9",
-    "unstated-next": "^1.1.0"
-  },
-  "peerDependencies": {
-    "@monaco-editor/react": "^4.2.2",
-    "monaco-editor": ">=0.27.0",
-    "react": ">=17.0.2",
-    "react-dom": ">=17.0.2"
+    "@emotion/styled": "^11.3.0"
   },
   "devDependencies": {
     "@monaco-editor/react": "^4.2.2",

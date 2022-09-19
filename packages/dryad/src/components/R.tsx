@@ -11,9 +11,10 @@ const Main = styled.div`
     },
   }) => mainClose};
   cursor: pointer;
-  height: 40px;
-  border-radius: 10px;
-  margin: 5px;
+  height: 30px;
+  width: 30px;
+  border-radius: 15px;
+  margin: 7px;
   display: flex;
   transform: rotate(0deg);
   transition: 0.25s all;
@@ -46,6 +47,18 @@ export const R: FunctionComponent<RProps> = ({
 }) => {
   return (
     <Main title={title} onClick={onClick} about={about} data-cy={cypressName}>
+      {variant === 'refresh' && <RefreshCw size={15} />}
+      {variant === 'play' && <Play size={15} />}
+      {variant === 'eye' && <Eye size={15} />}
+    </Main>
+  );
+};
+
+export const RNoop: FunctionComponent<Pick<RProps, 'variant'>> = ({
+  variant,
+}) => {
+  return (
+    <Main>
       {variant === 'refresh' && <RefreshCw size={15} />}
       {variant === 'play' && <Play size={15} />}
       {variant === 'eye' && <Eye size={15} />}

@@ -1,4 +1,4 @@
-import { GraphQLDryad } from '@/GraphQLDryad';
+import { GraphQLDryad } from 'graphql-dryad';
 import React, { useState } from 'react';
 
 export const Company = () => {

@@ -60,20 +60,23 @@ const packageNameSplit = (pName: string): { name: string; version: string } => {
   };
 };
 
-const downloadTypings = async ({
-  filesContent,
-  typingsURL = 'https://bt-api.azurewebsites.net/graphql',
-}: {
-  filesContent: string[];
-  typingsURL?: string;
-}) => {
-  const packages = mergePackages(filesContent)
+const getPackages = ({ filesContent }: { filesContent: string[] }) => {
+  return mergePackages(filesContent)
     .filter((p) => !packageCache[`${p.packageName}`])
     .map((p) => ({
       ...p,
       ...packageNameSplit(p.packageName),
       url: `${p.url}/${p.packageName}`,
     }));
+};
+
+const downloadTypings = async ({
+  packages,
+  typingsURL = 'https://bt-api.azurewebsites.net/graphql',
+}: {
+  packages: ReturnType<typeof getPackages>;
+  typingsURL?: string;
+}) => {
   const ts = await fetchTypingsFromBundleTypings({ packages, typingsURL });
   const paths: typeof packageCache = {};
   ts.forEach((t) => {
@@ -89,6 +92,7 @@ const downloadTypings = async ({
 export const useTypings = () => {
   return {
     downloadTypings,
+    getPackages,
   };
 };
 

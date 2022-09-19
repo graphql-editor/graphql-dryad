@@ -1,7 +1,7 @@
-import { Main } from '@/../sandbox/Main';
+import { Main } from '@/Main';
 import React from 'react';
 import { render } from 'react-dom';
-import * as apps from '@/../sandbox/apps';
+import * as apps from '@/apps';
 
 export type AppType = keyof typeof apps;
 export const App = () => {
