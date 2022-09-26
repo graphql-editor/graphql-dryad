@@ -39,7 +39,7 @@ const mergePackages = (filesContent: string[]) => {
     }, []);
 };
 
-let packageCache: {
+export type PackageCache = {
   [packageName: string]: {
     content: string;
     path: string;
@@ -47,7 +47,7 @@ let packageCache: {
     name: string;
     packageName: string;
   }[];
-} = {};
+};
 
 const packageNameSplit = (pName: string): { name: string; version: string } => {
   const splitted = pName.split('@').filter((p) => !!p);
@@ -60,7 +60,13 @@ const packageNameSplit = (pName: string): { name: string; version: string } => {
   };
 };
 
-const getPackages = ({ filesContent }: { filesContent: string[] }) => {
+const getPackages = ({
+  filesContent,
+  packageCache,
+}: {
+  filesContent: string[];
+  packageCache: PackageCache;
+}) => {
   return mergePackages(filesContent)
     .filter((p) => !packageCache[`${p.packageName}`])
     .map((p) => ({
@@ -78,15 +84,14 @@ const downloadTypings = async ({
   typingsURL?: string;
 }) => {
   const ts = await fetchTypingsFromBundleTypings({ packages, typingsURL });
-  const paths: typeof packageCache = {};
+  const paths: PackageCache = {};
   ts.forEach((t) => {
     // const typingsPath = [t.p.packageName, 'index.d.ts'].join('/');
     message(`Installing typings for "${t.name}"`, 'yellowBright');
     paths[`${t.packageName}`] ||= [];
     paths[`${t.packageName}`].push(t);
   });
-  packageCache = { ...packageCache, ...paths };
-  return packageCache;
+  return paths;
 };
 
 export const useTypings = () => {

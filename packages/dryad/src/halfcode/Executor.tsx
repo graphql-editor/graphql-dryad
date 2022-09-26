@@ -51,6 +51,16 @@ const HelpText = styled.div`
   align-items: center;
 `;
 
+const KBD = styled.kbd`
+  background: ${({ theme }) => theme.background.mainMiddle};
+  border: 2px solid ${({ theme }) => theme.background.mainFurthest};
+  border-radius: 5px;
+  margin: 2px;
+  color: ${({ theme }) => theme.text};
+  padding: 5px 10px;
+  font-size: 12px;
+`;
+
 export interface DryadExecutorProps {
   value: Values;
   settings: Settings;
@@ -217,7 +227,8 @@ export const DryadExecutor = React.forwardRef<
             <Placehold>
               <HelpText>
                 <span>Click</span>
-                <RNoop variant="play" /> to run the code.
+                <RNoop variant="play" /> to run the code or use shortcut -{` `}
+                <KBD>ctrl</KBD>/<KBD>cmd</KBD> + <KBD>S</KBD>
               </HelpText>
               <HelpText>
                 <span>Click</span>

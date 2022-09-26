@@ -18,7 +18,7 @@ import { tree } from '@/cypressTree';
 import Editor from '@monaco-editor/react';
 import { useTheme } from '@/hooks/useTheme';
 import { EditorTheme } from '@/Theming/DarkTheme';
-import { useTypings } from '@/hooks/useTypings';
+import { PackageCache, useTypings } from '@/hooks/useTypings';
 import { DryadExecutor, DryadExecutorApi } from '@/halfcode/Executor';
 import { useImperativeRef } from '@/hooks/useImperativeRef';
 
@@ -78,6 +78,7 @@ export const HalfCode = React.forwardRef<HalfCodeApi, HalfCodeProps>(
     const { downloadTypings, getPackages } = useTypings();
     const [api, setApi] = useImperativeRef<DryadExecutorApi>();
     const [typesLoading, setTypesLoading] = useState(false);
+    const [packageCache, setPackageCache] = useState<PackageCache>({});
 
     useEffect(() => {
       if (currentTsConfig && currentMonacoInstance) {
@@ -137,58 +138,61 @@ export const HalfCode = React.forwardRef<HalfCodeApi, HalfCodeProps>(
 
     const packages = useMemo(() => {
       if (!currentMonacoInstance) return [];
-      return getPackages({ filesContent: [value[Editors.js]] });
-    }, [value[Editors.js], currentMonacoInstance]);
+      return getPackages({ packageCache, filesContent: [value[Editors.js]] });
+    }, [value[Editors.js], currentMonacoInstance, packageCache]);
 
     useEffect(() => {
       if (!packages.length) {
         return;
       }
       setTypesLoading(true);
-      downloadTypings({ packages, typingsURL }).then((types) => {
-        if (Object.keys(types).length) {
-          if (currentMonacoInstance) {
-            const extralibs: typeof currentLibraries = [];
-            const mergedLibs = Object.entries(types).flatMap(([, content]) => {
+      downloadTypings({ packages, typingsURL }).then((paths) => {
+        setPackageCache((pc) => ({ ...pc, ...paths }));
+        setTypesLoading(false);
+      });
+    }, [packages, libs, zeusTypings]);
+
+    useEffect(() => {
+      if (Object.keys(packageCache).length) {
+        if (currentMonacoInstance) {
+          const extralibs: typeof currentLibraries = [];
+          const mergedLibs = Object.entries(packageCache).flatMap(
+            ([, content]) => {
               return content.map((c) => {
                 return {
                   filePath: `file:///${c.path}`,
                   ...c,
                 };
               });
+            },
+          );
+          const reactLib = mergedLibs.find(({ name }) => name === 'react');
+          if (reactLib) {
+            extralibs.push({
+              filePath: REACT_RUNTIME_PATH,
+              content: `import "${reactLib.url}";`,
             });
-            const reactLib = mergedLibs.find(({ name }) => name === 'react');
-            if (reactLib) {
-              extralibs.push({
-                filePath: REACT_RUNTIME_PATH,
-                content: `import "${reactLib.url}";`,
-              });
-            }
-            setCurrentLibraries([...mergedLibs, ...extralibs, ...(libs || [])]);
-
-            const paths = mergedLibs.reduce<Record<string, string[]>>(
-              (a, b) => {
-                a[b.url] ||= [];
-                a[b.url].push(`file:///${b.path}`);
-                return a;
-              },
-              {},
-            );
-            setCurrentTsConfig((tsconfig) => ({
-              ...tsconfig,
-              baseUrl: './',
-              paths,
-              types: ['typings-zeus'],
-              rootDir: './',
-              jsx: currentMonacoInstance.languages.typescript.JsxEmit.ReactJSX,
-              esModuleInterop: true,
-              allowSyntheticDefaultImports: true,
-            }));
           }
+          setCurrentLibraries([...mergedLibs, ...extralibs, ...(libs || [])]);
+
+          const paths = mergedLibs.reduce<Record<string, string[]>>((a, b) => {
+            a[b.url] ||= [];
+            a[b.url].push(`file:///${b.path}`);
+            return a;
+          }, {});
+          setCurrentTsConfig((tsconfig) => ({
+            ...tsconfig,
+            baseUrl: './',
+            paths,
+            types: ['typings-zeus'],
+            rootDir: './',
+            jsx: currentMonacoInstance.languages.typescript.JsxEmit.ReactJSX,
+            esModuleInterop: true,
+            allowSyntheticDefaultImports: true,
+          }));
         }
-        setTypesLoading(false);
-      });
-    }, [packages, libs, zeusTypings]);
+      }
+    }, [packageCache]);
 
     useEffect(() => {
       if (currentMonacoInstance && editorTheme) {
