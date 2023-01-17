@@ -45,18 +45,18 @@ const reactExample = {
   js: `import React from 'https://cdn.skypack.dev/react@17.0.2'
   import ReactDOM from 'https://cdn.skypack.dev/react-dom@17.0.2'
   
-  const Author = Selector("Profile")({
-      avatar: true,
+  const Author = Selector("User")({
+      avatarFrameColor:true,
       username:true,
-      baseColor:true
+      avatarUrl:true
   })
   
   
-  type AuthorType = FromSelector<typeof Author,"Profile">
+  type AuthorType = FromSelector<typeof Author,"User">
   
   const AuthorTag:React.FC<AuthorType & { selected?:boolean; onClick:() => void }> = ({
-      avatar,
-      baseColor,
+      avatarUrl,
+      avatarFrameColor,
       selected,
       username,
       onClick
@@ -66,14 +66,14 @@ const reactExample = {
                 className={\`
                     flex flex-row items-center 
                     p-2 rounded 
-                    bg-\${baseColor}-600
-                    hover:bg-\${baseColor}-400
+                    bg-\${avatarFrameColor}-600
+                    hover:bg-\${avatarFrameColor}-400
                     \${selected ? 'w-full' : 'w-48'}
                     transition-all
                     cursor-pointer\`}>
           <img className={\`
               w-8 h-8 mr-2 rounded-full
-          \`} src={avatar} />
+          \`} src={avatarUrl} />
           <div className="text-white font-bold">
               {username}
           </div>
@@ -87,11 +87,11 @@ const reactExample = {
       >([])
       React.useEffect(() => {
           Gql("query")({
-              Twits:{
-                  Author
+              twits:{
+                  author:Author
               }
           }).then(data => {
-              setAuthors(data.Twits.map(t => t.Author))
+              setAuthors(data.twits.map(t => t.author))
           })
       },[])
       return <div className="flex flex-row flex-wrap gap-4 p-4">

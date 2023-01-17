@@ -6,7 +6,7 @@ import React, {
 } from 'react';
 import type * as monaco from 'monaco-editor';
 import { Resizable } from 're-resizable';
-import { TreeToTS } from 'graphql-zeus';
+import { TreeToTS } from 'graphql-zeus-core';
 import { Parser } from 'graphql-js-tree';
 import { getParsedSchema } from '../schema';
 import { Tabs, Container, Tab } from '../components';
@@ -21,6 +21,7 @@ import { EditorTheme } from '@/Theming/DarkTheme';
 import { PackageCache, useTypings } from '@/hooks/useTypings';
 import { DryadExecutor, DryadExecutorApi } from '@/halfcode/Executor';
 import { useImperativeRef } from '@/hooks/useImperativeRef';
+import { useDebouncedValue } from '@/useDebouncedValue';
 
 export interface HalfCodeProps {
   className?: string;
@@ -79,6 +80,7 @@ export const HalfCode = React.forwardRef<HalfCodeApi, HalfCodeProps>(
     const [api, setApi] = useImperativeRef<DryadExecutorApi>();
     const [typesLoading, setTypesLoading] = useState(false);
     const [packageCache, setPackageCache] = useState<PackageCache>({});
+    const debouncedEditorValue = useDebouncedValue(value[Editors.js], 1000);
 
     useEffect(() => {
       if (currentTsConfig && currentMonacoInstance) {
@@ -138,8 +140,11 @@ export const HalfCode = React.forwardRef<HalfCodeApi, HalfCodeProps>(
 
     const packages = useMemo(() => {
       if (!currentMonacoInstance) return [];
-      return getPackages({ packageCache, filesContent: [value[Editors.js]] });
-    }, [value[Editors.js], currentMonacoInstance, packageCache]);
+      return getPackages({
+        packageCache,
+        filesContent: [debouncedEditorValue],
+      });
+    }, [debouncedEditorValue, currentMonacoInstance, packageCache]);
 
     useEffect(() => {
       if (!packages.length) {
@@ -147,8 +152,9 @@ export const HalfCode = React.forwardRef<HalfCodeApi, HalfCodeProps>(
       }
       setTypesLoading(true);
       downloadTypings({ packages, typingsURL }).then((paths) => {
-        setPackageCache((pc) => ({ ...pc, ...paths }));
         setTypesLoading(false);
+        if (!paths) return;
+        setPackageCache((pc) => ({ ...pc, ...paths }));
       });
     }, [packages, libs, zeusTypings]);
 

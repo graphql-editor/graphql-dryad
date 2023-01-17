@@ -1,4 +1,4 @@
-import { Utils } from 'graphql-zeus';
+import { Utils } from '@/schema/utils';
 
 export const getParsedSchema = async ({
   url,

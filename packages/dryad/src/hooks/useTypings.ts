@@ -83,15 +83,19 @@ const downloadTypings = async ({
   packages: ReturnType<typeof getPackages>;
   typingsURL?: string;
 }) => {
-  const ts = await fetchTypingsFromBundleTypings({ packages, typingsURL });
-  const paths: PackageCache = {};
-  ts.forEach((t) => {
-    // const typingsPath = [t.p.packageName, 'index.d.ts'].join('/');
-    message(`Installing typings for "${t.name}"`, 'yellowBright');
-    paths[`${t.packageName}`] ||= [];
-    paths[`${t.packageName}`].push(t);
-  });
-  return paths;
+  try {
+    const ts = await fetchTypingsFromBundleTypings({ packages, typingsURL });
+    const paths: PackageCache = {};
+    ts.forEach((t) => {
+      // const typingsPath = [t.p.packageName, 'index.d.ts'].join('/');
+      message(`Installing typings for "${t.name}"`, 'yellowBright');
+      paths[`${t.packageName}`] ||= [];
+      paths[`${t.packageName}`].push(t);
+    });
+    return paths;
+  } catch (error) {
+    return;
+  }
 };
 
 export const useTypings = () => {

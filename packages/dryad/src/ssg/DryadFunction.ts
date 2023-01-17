@@ -1,4 +1,4 @@
-import { TreeToTS } from 'graphql-zeus';
+import { TreeToTS } from 'graphql-zeus-core';
 import { Parser } from 'graphql-js-tree';
 // @ts-ignore
 import path from 'path-browserify';
